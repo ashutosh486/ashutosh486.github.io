@@ -1,13 +1,1133 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>
-            AshutoshCodes' Portfolio
-        </title>
-    </head>
-    <body>
-        <p>
-            This is my Portfolio
-        </p>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashutosh Pandey - AI Engineer & Full-Stack Developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-darker: #060920;
+            --bg-card: #141b3a;
+            --text-primary: #e0e6ff;
+            --text-secondary: #a0aec0;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #ff006e;
+            --accent-tertiary: #8338ec;
+            --accent-success: #06ffa5;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --shadow: 0 8px 32px rgba(0, 217, 255, 0.1);
+            --shadow-hover: 0 12px 48px rgba(0, 217, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.03;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--accent-primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent-secondary) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--accent-tertiary) 0%, transparent 50%);
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header/Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 80px 0;
+        }
+
+        .hero-content {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .greeting {
+            font-size: 1.25rem;
+            color: var(--accent-primary);
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 16px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .greeting::before {
+            content: '> ';
+            color: var(--accent-success);
+        }
+
+        .name-large {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .tagline {
+            font-size: clamp(1.25rem, 3vw, 2rem);
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-weight: 300;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .tagline .highlight {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 0.8s both;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-3);
+            color: var(--bg-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .scroll-indicator::after {
+            content: '↓';
+            font-size: 2rem;
+            color: var(--accent-primary);
+        }
+
+        /* Section Styles */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::before {
+            content: '<';
+            color: var(--accent-primary);
+            margin-right: 8px;
+        }
+
+        .section-title::after {
+            content: ' />';
+            color: var(--accent-primary);
+            margin-left: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* About Section */
+        .about-content {
+            background: var(--bg-card);
+            padding: 48px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .about-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .contact-link:hover {
+            color: var(--accent-success);
+            transform: translateX(5px);
+        }
+
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .skill-category {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-3);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .skill-category:hover::before {
+            transform: scaleX(1);
+        }
+
+        .skill-category:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .skill-category-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        /* Experience Timeline */
+        .timeline {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-tertiary), var(--accent-secondary));
+            opacity: 0.3;
+        }
+
+        .timeline-item {
+            margin-bottom: 48px;
+            position: relative;
+        }
+
+        .timeline-content {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            box-shadow: var(--shadow);
+            margin-left: calc(50% + 32px);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 0;
+            margin-right: calc(50% + 32px);
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 32px;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            border: 4px solid var(--bg-dark);
+            z-index: 2;
+            box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.2);
+        }
+
+        .job-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .company-name {
+            font-size: 1.125rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .job-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 16px;
+        }
+
+        .job-location {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .job-description {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .job-description li {
+            padding-left: 24px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .job-description li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--accent-primary);
+            font-size: 1.25rem;
+        }
+
+        /* Education & Certifications */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-secondary);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .card-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 12px;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .card-link:hover {
+            color: var(--accent-success);
+            transform: translateX(5px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 24px;
+            background: var(--bg-darker);
+            border-top: 1px solid rgba(0, 217, 255, 0.1);
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .footer-text .code {
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 16px;
+            }
+
+            .timeline-content {
+                margin-left: 48px !important;
+                margin-right: 0 !important;
+            }
+
+            .timeline-dot {
+                left: 16px;
+            }
+
+            .skills-grid,
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 60px 0;
+            }
+
+            section {
+                padding: 60px 0;
+            }
+        }
+
+        /* Code-like elements */
+        code, .code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(0, 217, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--accent-primary);
+            font-size: 0.9em;
+        }
+
+        /* Loader animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="greeting" id="greeting">console.log("Hello, World!");</div>
+                <h1 class="name-large" id="fullName">Ashutosh Pandey</h1>
+                <p class="tagline">
+                    <span class="highlight">AI Engineer</span> × 
+                    <span class="highlight">Full-Stack Developer</span> × 
+                    <span class="highlight">Automation Specialist</span>
+                </p>
+                <div class="cta-buttons">
+                    <a href="#about" class="btn btn-primary">Learn More</a>
+                    <a href="#contact" class="btn btn-secondary">Get In Touch</a>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator"></div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">About</h2>
+                <p class="section-subtitle">Building intelligent systems that make a difference</p>
+            </div>
+            <div class="about-content">
+                <p class="about-text" id="summaryContent">
+                    <!-- Summary will be inserted here -->
+                </p>
+                <div class="contact-links" id="contactLinks">
+                    <!-- Contact links will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Skills</h2>
+                <p class="section-subtitle">Technologies & tools I work with</p>
+            </div>
+            <div class="skills-grid" id="skillsGrid">
+                <!-- Skills will be inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Experience</h2>
+                <p class="section-subtitle">My professional journey</p>
+            </div>
+            <div class="timeline" id="experienceTimeline">
+                <!-- Experience timeline will be inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Education</h2>
+                <p class="section-subtitle">Academic background</p>
+            </div>
+            <div class="cards-grid" id="educationGrid">
+                <!-- Education cards will be inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications Section -->
+    <section id="certifications">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Certifications</h2>
+                <p class="section-subtitle">Continuous learning & professional development</p>
+            </div>
+            <div class="cards-grid" id="certificationsGrid">
+                <!-- Certification cards will be inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Publications Section -->
+    <section id="publications" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Publications</h2>
+                <p class="section-subtitle">Research & patents</p>
+            </div>
+            <div class="cards-grid" id="publicationsGrid">
+                <!-- Publications will be inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <p class="footer-text">
+                Designed & Built by <span class="code">Ashutosh Pandey</span>
+            </p>
+            <p class="footer-text">
+                © 2025 • Made with <span style="color: var(--accent-secondary);">❤</span> and <span class="code">code</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Resume data from your actual resume model
+        const resumeData = {
+            personal: {
+                full_name: "Ashutosh Pandey",
+                email: "ashutosh14486@gmail.com",
+                phone: "+91-8004644122",
+                location: "Prayagraj, India",
+                linkedin: "https://www.linkedin.com/in/ashutosh14486",
+                github: "https://github.com/ashutosh486"
+            },
+            summary: {
+                content: "I am a skilled AI and automation specialist with a proven track record in launching innovative solutions and improving operational efficiency. With rich experience in machine learning, natural language processing, and cloud technologies, I have successfully led cross-functional teams and developed end-to-end automation projects that drive significant organizational improvements."
+            },
+            skills: {
+                categories: [
+                    { title: "Backend", content: "Python, Flask, Jinja2, psycopg2, pandas, numpy, Streamlit" },
+                    { title: "Frontend", content: "HTML, CSS" },
+                    { title: "Database", content: "PostgreSQL, SQLite, MongoDB" },
+                    { title: "Cloud", content: "AWS, Azure" },
+                    { title: "IDE & ADLM", content: "VSCode, PyCharm, git, Jira, Confluence" },
+                    { title: "ML/NLP", content: "sklearn, keras, fastText, gensim, nltk, spaCy, transformers, sentence-transformers, LangChain" },
+                    { title: "Data & MLOps", content: "mlflow, PySpark, Databricks, CVAT (annotation)" }
+                ]
+            },
+            experience: [
+                {
+                    title: "Manager",
+                    company: "NielsenIQ",
+                    location: "Remote",
+                    start_date: "February 2025",
+                    end_date: "Present",
+                    is_current: true,
+                    bullets: [
+                        "Oversaw launch of a GenAI support chatbot with compliance across security, legal, cloud and architecture policies",
+                        "Coordinated cross-functional teams to ensure data privacy and system integrity during development and rollout",
+                        "Used GPT-4o-mini with LangChain to build agents/skills automating support chats",
+                        "Implemented multiple automation solutions including ETL, realizing ~14+ FTE equivalent savings"
+                    ]
+                },
+                {
+                    title: "Senior Expert – Innovation & Automation",
+                    company: "NielsenIQ",
+                    location: "Remote",
+                    start_date: "September 2022",
+                    end_date: "February 2025",
+                    is_current: false,
+                    bullets: [
+                        "Built an Extreme Multi-Class Classification model (transformer + vectorDB) for 50k+ classes",
+                        "Delivered Semantic Search (retrieval/encoding/reranking) to match products from millions of options",
+                        "Created annotation & training pipelines for Object Detection to extract promos/descriptions/products from flyers",
+                        "Trained NER to extract brand, quantity, UoM, price from descriptions",
+                        "Developed end-to-end automation: Jinja2/HTML/CSS frontend, Flask/Python/pandas backend, SQL + Azure Blob storage",
+                        "Used Azure AutoML for text classification of product categories; built bs4 + Streamlit scraper for retailer flyers"
+                    ]
+                },
+                {
+                    title: "AI Engineering Senior Analyst",
+                    company: "Accenture Solutions Pvt. Ltd",
+                    location: "Mumbai, India",
+                    start_date: "June 2021",
+                    end_date: "August 2022",
+                    is_current: false,
+                    bullets: [
+                        "Led a team of 3 to deliver ASR in a dockerized setup; achieved ~5% accuracy improvement and higher CSAT",
+                        "Implemented monitoring and fortnightly AWS pricing reports with cost-optimization recommendations",
+                        "Designed a multi-service AWS solution for audio transcription: Transcribe, Comprehend, S3, EC2, Glacier, CodeCommit"
+                    ]
+                },
+                {
+                    title: "AI Engineering Analyst",
+                    company: "Accenture Solutions Pvt. Ltd",
+                    location: "Mumbai, India",
+                    start_date: "September 2018",
+                    end_date: "May 2021",
+                    is_current: false,
+                    bullets: [
+                        "Built a custom ASR model via transfer learning on ~4000 hours of raw audio; improved accuracy/performance",
+                        "Delivered text analytics: Emotion/Sentiment (BERT TL), document similarity (doc2vec, WMD, LSI)",
+                        "Implemented entity extraction in queries; mapped SQL data to Neo4j with graph visualization",
+                        "Enhanced recommendations by reducing space complexity; executed JMeter load tests for scalability",
+                        "Served as SPOC for the ASR project; drove code reusability and customer-appreciated improvements"
+                    ]
+                }
+            ],
+            education: [
+                {
+                    degree: "B.Tech. in Electronics & Communication Engineering",
+                    institution: "National Institute of Technology, Hamirpur (NIT Hamirpur)",
+                    location: "H.P., India",
+                    start_date: "August 2014",
+                    end_date: "June 2018",
+                    gpa: "8.20"
+                }
+            ],
+            certificates: [
+                {
+                    title: "Deep Learning Specialization",
+                    issuer: "Coursera",
+                    link: "https://www.coursera.org/verify/specialization/8YQRZ4Y7JKVY"
+                },
+                {
+                    title: "Deep Learning",
+                    issuer: "NPTEL (IIT Madras)",
+                    link: "https://nptel.ac.in/noc/E_Certificate/NPTEL19CS85S41820511191175777"
+                },
+                {
+                    title: "Introduction to TensorFlow for AI, ML, and DL",
+                    issuer: "Coursera",
+                    link: "https://www.coursera.org/verify/XR3T4N255MD9"
+                },
+                {
+                    title: "ML0101EN: Machine Learning with Python—A Practical Introduction",
+                    issuer: "edX (IBM)",
+                    link: "https://courses.edx.org/certificates/2c36b5d6be984eb28ed78e796a2d2151"
+                }
+            ],
+            publications: [
+                {
+                    type: "patent",
+                    title: "Textual Entailment (US20210110277A1)",
+                    description: "Status: Published",
+                    link: "https://patents.google.com/patent/US20210110277A1/"
+                }
+            ],
+            hobbies: {
+                content: "Traveling and exploring places, Listening to music, Chess, Badminton, and Table Tennis"
+            }
+        };
+
+        // Render portfolio data
+        function renderPortfolio(data) {
+            // Personal info & greeting
+            if (data.personal) {
+                document.getElementById('fullName').textContent = data.personal.full_name || '';
+                
+                // Contact links
+                const contactLinks = document.getElementById('contactLinks');
+                contactLinks.innerHTML = '';
+                
+                if (data.personal.email) {
+                    const emailLink = document.createElement('a');
+                    emailLink.href = `mailto:${data.personal.email}`;
+                    emailLink.className = 'contact-link';
+                    emailLink.innerHTML = `📧 ${data.personal.email}`;
+                    contactLinks.appendChild(emailLink);
+                }
+                
+                if (data.personal.phone) {
+                    const phoneLink = document.createElement('a');
+                    phoneLink.href = `tel:${data.personal.phone}`;
+                    phoneLink.className = 'contact-link';
+                    phoneLink.innerHTML = `📱 ${data.personal.phone}`;
+                    contactLinks.appendChild(phoneLink);
+                }
+                
+                if (data.personal.location) {
+                    const locationSpan = document.createElement('span');
+                    locationSpan.className = 'contact-link';
+                    locationSpan.innerHTML = `📍 ${data.personal.location}`;
+                    contactLinks.appendChild(locationSpan);
+                }
+                
+                if (data.personal.linkedin) {
+                    const linkedinLink = document.createElement('a');
+                    linkedinLink.href = data.personal.linkedin;
+                    linkedinLink.target = '_blank';
+                    linkedinLink.className = 'contact-link';
+                    linkedinLink.innerHTML = '💼 LinkedIn';
+                    contactLinks.appendChild(linkedinLink);
+                }
+                
+                if (data.personal.github) {
+                    const githubLink = document.createElement('a');
+                    githubLink.href = data.personal.github;
+                    githubLink.target = '_blank';
+                    githubLink.className = 'contact-link';
+                    githubLink.innerHTML = '🐙 GitHub';
+                    contactLinks.appendChild(githubLink);
+                }
+            }
+
+            // Summary
+            if (data.summary && data.summary.content) {
+                document.getElementById('summaryContent').textContent = data.summary.content;
+            }
+
+            // Skills
+            if (data.skills && data.skills.categories && data.skills.categories.length > 0) {
+                const skillsGrid = document.getElementById('skillsGrid');
+                skillsGrid.innerHTML = '';
+                
+                data.skills.categories.forEach(category => {
+                    if (category.content && category.content.trim()) {
+                        const skillCard = document.createElement('div');
+                        skillCard.className = 'skill-category';
+                        
+                        const title = document.createElement('h3');
+                        title.className = 'skill-category-title';
+                        title.textContent = category.title;
+                        
+                        const tagsContainer = document.createElement('div');
+                        tagsContainer.className = 'skill-tags';
+                        
+                        // Split skills by comma and create tags
+                        const skills = category.content.split(',').map(s => s.trim());
+                        skills.forEach(skill => {
+                            const tag = document.createElement('span');
+                            tag.className = 'skill-tag';
+                            tag.textContent = skill;
+                            tagsContainer.appendChild(tag);
+                        });
+                        
+                        skillCard.appendChild(title);
+                        skillCard.appendChild(tagsContainer);
+                        skillsGrid.appendChild(skillCard);
+                    }
+                });
+            }
+
+            // Experience Timeline
+            if (data.experience && data.experience.length > 0) {
+                const timeline = document.getElementById('experienceTimeline');
+                timeline.innerHTML = '';
+                
+                data.experience.forEach(exp => {
+                    const timelineItem = document.createElement('div');
+                    timelineItem.className = 'timeline-item';
+                    
+                    const dot = document.createElement('div');
+                    dot.className = 'timeline-dot';
+                    
+                    const content = document.createElement('div');
+                    content.className = 'timeline-content';
+                    
+                    let html = `
+                        <h3 class="job-title">${exp.title}</h3>
+                        <div class="company-name">${exp.company}</div>
+                        <div class="job-date">
+                            ${exp.start_date} - ${exp.end_date || 'Present'}
+                            ${exp.location ? `<span class="job-location"> • ${exp.location}</span>` : ''}
+                        </div>
+                    `;
+                    
+                    if (exp.bullets && exp.bullets.length > 0) {
+                        html += '<ul class="job-description">';
+                        exp.bullets.forEach(bullet => {
+                            html += `<li>${bullet}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    content.innerHTML = html;
+                    timelineItem.appendChild(dot);
+                    timelineItem.appendChild(content);
+                    timeline.appendChild(timelineItem);
+                });
+            }
+
+            // Education
+            if (data.education && data.education.length > 0) {
+                const educationGrid = document.getElementById('educationGrid');
+                educationGrid.innerHTML = '';
+                
+                data.education.forEach(edu => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    let html = `
+                        <h3 class="card-title">${edu.degree}</h3>
+                        <div class="card-subtitle">${edu.institution}</div>
+                        <div class="card-date">
+                            ${edu.start_date} - ${edu.end_date || 'Present'}
+                            ${edu.location ? ` • ${edu.location}` : ''}
+                        </div>
+                    `;
+                    
+                    if (edu.gpa) {
+                        html += `<div class="card-date">GPA: ${edu.gpa}</div>`;
+                    }
+                    
+                    card.innerHTML = html;
+                    educationGrid.appendChild(card);
+                });
+            }
+
+            // Certifications
+            if (data.certificates && data.certificates.length > 0) {
+                const certificationsGrid = document.getElementById('certificationsGrid');
+                certificationsGrid.innerHTML = '';
+                
+                data.certificates.forEach(cert => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    let html = `<h3 class="card-title">${cert.title}</h3>`;
+                    
+                    if (cert.issuer) {
+                        html += `<div class="card-subtitle">${cert.issuer}</div>`;
+                    }
+                    
+                    if (cert.valid_from) {
+                        html += `<div class="card-date">Issued: ${cert.valid_from}${cert.valid_till ? ` - Valid till: ${cert.valid_till}` : ''}</div>`;
+                    }
+                    
+                    if (cert.link) {
+                        html += `<a href="${cert.link}" target="_blank" class="card-link">View Certificate →</a>`;
+                    }
+                    
+                    card.innerHTML = html;
+                    certificationsGrid.appendChild(card);
+                });
+            }
+
+            // Publications
+            if (data.publications && data.publications.length > 0) {
+                const publicationsSection = document.getElementById('publications');
+                publicationsSection.style.display = 'block';
+                
+                const publicationsGrid = document.getElementById('publicationsGrid');
+                publicationsGrid.innerHTML = '';
+                
+                data.publications.forEach(pub => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    let html = `<h3 class="card-title">${pub.title}</h3>`;
+                    
+                    if (pub.type) {
+                        html += `<div class="card-subtitle">${pub.type.charAt(0).toUpperCase() + pub.type.slice(1)}</div>`;
+                    }
+                    
+                    if (pub.description) {
+                        html += `<div class="card-date">${pub.description}</div>`;
+                    }
+                    
+                    if (pub.link) {
+                        html += `<a href="${pub.link}" target="_blank" class="card-link">View ${pub.type === 'patent' ? 'Patent' : 'Publication'} →</a>`;
+                    }
+                    
+                    card.innerHTML = html;
+                    publicationsGrid.appendChild(card);
+                });
+            }
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Typing animation for greeting
+        function typeWriter(element, text, speed = 50) {
+            let i = 0;
+            element.textContent = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            
+            type();
+        }
+
+        // Initialize the portfolio on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPortfolio(resumeData);
+            
+            // Animate greeting text
+            const greetingElement = document.getElementById('greeting');
+            setTimeout(() => {
+                typeWriter(greetingElement, 'console.log("Hello, World!");', 50);
+            }, 500);
+            
+            // Add intersection observer for fade-in animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all sections
+            document.querySelectorAll('section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
 </html>
