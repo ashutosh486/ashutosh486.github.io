@@ -33,7 +33,7 @@ const GitDiffTheme = {
                             </div>
                         </div>
                         <div class="mt-3 pl-12">
-                            <div class="text-white font-bold">feat: Add senior ML engineer to team 🚀</div>
+                            <div class="text-white font-bold">feat: Add ${portfolioContent.title} to team 🚀</div>
                         </div>
                     </div>
                 </div>

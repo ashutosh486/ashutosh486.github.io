@@ -67,7 +67,7 @@ ${portfolioContent.skills.cloud.map(skill => `• **${skill}** - Infrastructure 
 Total Skills: ${portfolioContent.stats.skills}
 Skill Diversity: High
 Domain Coverage: Full-stack ML Engineer
-Experience Level: Senior Professional`
+Experience Level: ${portfolioContent.stats.years}+ years`
         },
         
         projects: {
@@ -208,7 +208,7 @@ ${portfolioContent.patents.map(patent => `
 ${patent.description}
 
 #### Technical Significance
-This patent represents a significant contribution to the field of Natural Language Processing, specifically in the domain of textual entailment - a fundamental task that involves determining whether one piece of text logically follows from another.
+This patent represents a significant contribution to the field of Natural Language Processing, specifically in the domain of ${patent.title.toLowerCase()}.
 
 #### Innovation Highlights
 • Novel approach to determining semantic relationships in text
@@ -229,7 +229,7 @@ This patent represents a significant contribution to the field of Natural Langua
 
 **Patent Count:** ${portfolioContent.patents.length}  
 **Primary Domain:** Natural Language Processing  
-**Research Areas:** Textual Entailment, Semantic Analysis
+**Research Areas:** ${portfolioContent.patents.map(p => p.title).join(", ")}
 
 ### What This Means
 
@@ -290,10 +290,10 @@ Provide: Hiring recommendation with confidence score and key hiring arguments.`,
 
 ### Unique Differentiators
 
-**🏆 Patent Holder:** ${portfolioContent.patents.length} USPTO patent in NLP/Textual Entailment
-**📚 Certified Expert:** ${portfolioContent.certifications.length} specialized certifications from Coursera, NPTEL, edX
-**💼 Proven Leader:** Manager-level experience leading cross-functional teams
-**💰 Business Impact:** 14+ FTE equivalent savings through automation
+**🏆 Patent Holder:** ${portfolioContent.patents.length} USPTO patent(s): ${portfolioContent.patents.map(p => p.title).join(", ")}
+**📚 Certified Expert:** ${portfolioContent.certifications.length} specialized certifications from ${[...new Set(portfolioContent.certifications.map(c => c.issuer))].join(", ")}
+**💼 Proven Leader:** ${portfolioContent.experience[0].position}-level experience leading cross-functional teams
+**💰 Business Impact:** ${portfolioContent.impact.map(i => `${i.value} ${i.label.toLowerCase()}`).join(" · ")}
 
 ---
 

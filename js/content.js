@@ -6,6 +6,7 @@ const portfolioContent = {
     name: "Ashutosh Pandey",
     title: "Manager - AI & Automation Specialist",
     tagline: "Building intelligent solutions with GenAI and ML",
+    specialization: "GenAI & Automation",
     location: "Prayagraj, India",
     email: "ashutosh14486@gmail.com",
     phone: "+91-8004644122",
@@ -28,6 +29,13 @@ const portfolioContent = {
         funFact: "I hold a patent in Textual Entailment and have delivered solutions saving 14+ FTE equivalent! 🚀"
     },
     
+    // Headline impact numbers (Model Card benchmarks, Prompt Studio)
+    impact: [
+        { value: "14+ FTE", label: "Equivalent Savings Delivered" },
+        { value: "50K+", label: "Classes Handled in ML Model" },
+        { value: "4000+", label: "Hours ASR Training Data" }
+    ],
+
     // Skills
     skills: {
         backend: ["Python", "Flask", "Jinja2", "psycopg2", "pandas", "numpy", "Streamlit"],

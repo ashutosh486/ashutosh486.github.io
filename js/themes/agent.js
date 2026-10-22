@@ -11,8 +11,8 @@ const AgentTheme = {
             position: { x: 200, y: 100 },
             category: 'expertise',
             skills: portfolioContent.skills.ml.filter(s => s.includes('GPT') || s.includes('LangChain') || s.includes('transformers')),
-            description: 'Develops generative AI solutions using GPT-4, LangChain, and transformer models. Led GenAI chatbot launch with full enterprise compliance.',
-            achievements: portfolioContent.experience[0].achievements.filter(a => a.toLowerCase().includes('genai') || a.toLowerCase().includes('gpt'))
+            description: 'Develops generative AI solutions using LLMs, agents, and transformer models.',
+            achievements: portfolioContent.experience.flatMap(exp => exp.achievements).filter(a => a.toLowerCase().includes('genai') || a.toLowerCase().includes('gpt'))
         },
         {
             id: 'ml',
@@ -22,8 +22,8 @@ const AgentTheme = {
             position: { x: 500, y: 100 },
             category: 'expertise',
             skills: portfolioContent.skills.ml.slice(0, 6),
-            description: 'Expert in machine learning, NLP, and classification models. Built extreme multi-class classification handling 50K+ classes.',
-            achievements: portfolioContent.experience[1].achievements.filter(a => a.toLowerCase().includes('classification') || a.toLowerCase().includes('nlp'))
+            description: 'Expert in machine learning, NLP, and classification models.',
+            achievements: portfolioContent.experience.flatMap(exp => exp.achievements).filter(a => a.toLowerCase().includes('classification') || a.toLowerCase().includes('nlp'))
         },
         {
             id: 'system',
@@ -44,8 +44,8 @@ const AgentTheme = {
             position: { x: 100, y: 300 },
             category: 'infrastructure',
             skills: portfolioContent.skills.cloud,
-            description: 'Designs and implements cloud infrastructure on AWS and Azure. Built scalable ML systems and storage solutions.',
-            achievements: portfolioContent.experience[2].achievements.filter(a => a.toLowerCase().includes('aws') || a.toLowerCase().includes('cloud'))
+            description: `Designs and implements cloud infrastructure on ${portfolioContent.skills.cloud.join(', ')}. Built scalable ML systems and storage solutions.`,
+            achievements: portfolioContent.experience.flatMap(exp => exp.achievements).filter(a => a.toLowerCase().includes('aws') || a.toLowerCase().includes('cloud'))
         },
         {
             id: 'fullstack',
@@ -55,8 +55,8 @@ const AgentTheme = {
             position: { x: 600, y: 300 },
             category: 'development',
             skills: [...portfolioContent.skills.languages, ...portfolioContent.skills.frameworks.slice(0, 4)],
-            description: 'Builds end-to-end applications with Flask, Angular, and modern web technologies. Created automation platforms saving 14+ FTE.',
-            achievements: portfolioContent.experience[0].achievements.filter(a => a.toLowerCase().includes('automation') || a.toLowerCase().includes('platform'))
+            description: 'Builds end-to-end applications with modern web technologies.',
+            achievements: portfolioContent.experience.flatMap(exp => exp.achievements).filter(a => a.toLowerCase().includes('automation') || a.toLowerCase().includes('platform'))
         },
         {
             id: 'data',
@@ -66,7 +66,7 @@ const AgentTheme = {
             position: { x: 200, y: 450 },
             category: 'data',
             skills: portfolioContent.skills.databases,
-            description: 'Manages data pipelines, databases, and storage solutions. Expert in SQL, MongoDB, and data processing at scale.',
+            description: `Manages data pipelines, databases, and storage solutions. Expert in ${portfolioContent.skills.databases.join(', ')} and data processing at scale.`,
             achievements: []
         },
         {
@@ -78,7 +78,7 @@ const AgentTheme = {
             category: 'specialized',
             skills: ['Object Detection', 'NER', 'Annotation Pipelines'],
             description: 'Develops computer vision and object detection systems. Created pipelines for extracting products from retail flyers.',
-            achievements: portfolioContent.experience[1].achievements.filter(a => a.toLowerCase().includes('object') || a.toLowerCase().includes('detection'))
+            achievements: portfolioContent.experience.flatMap(exp => exp.achievements).filter(a => a.toLowerCase().includes('object') || a.toLowerCase().includes('detection'))
         }
     ],
 
