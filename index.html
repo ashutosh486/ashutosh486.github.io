@@ -2,75 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ashutosh - Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ashutosh Pandey</title>
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900 text-white">
-    <!-- Minimalist Theme Selector -->
-    <div id="themeSelectorContainer" class="fixed bottom-4 left-4 z-50">
-        <!-- Theme Dock -->
-        <div class="theme-dock">
-            <!-- Dock Plate (appears on hover/click with opaque background) -->
-            <div id="themeOptionsDeck" class="absolute bottom-16 left-0 mb-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-5 transition-all duration-300 opacity-0 pointer-events-none transform scale-95 origin-bottom-left border border-gray-200">
-                <!-- Grid layout: 5 columns x 3 rows -->
-                <div class="grid grid-cols-5 gap-4 mb-4" style="width: 320px;">
-                    <!-- Row 1 -->
-                    <button data-theme="chatgpt" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-green-200 hover:border-green-400 transform hover:scale-110 hover:z-10" title="ChatGPT Interface">
-                        <i class="fas fa-comments text-green-600 text-xl"></i>
-                    </button>
-                    <button data-theme="modelcard" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-blue-200 hover:border-blue-400 transform hover:scale-110 hover:z-10" title="Model Card Resume">
-                        <i class="fas fa-id-card text-blue-600 text-xl"></i>
-                    </button>
-                    <button data-theme="vscode" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-purple-200 hover:border-purple-400 transform hover:scale-110 hover:z-10" title="VSCode Workspace">
-                        <i class="fas fa-code text-purple-600 text-xl"></i>
-                    </button>
-                    <button data-theme="terminal" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-cyan-50 to-sky-50 hover:from-cyan-100 hover:to-sky-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-cyan-200 hover:border-cyan-400 transform hover:scale-110 hover:z-10" title="Terminal">
-                        <i class="fas fa-terminal text-cyan-600 text-xl"></i>
-                    </button>
-                    
-                    <!-- Row 2 -->
-                    <button data-theme="notebook" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-yellow-200 hover:border-yellow-400 transform hover:scale-110 hover:z-10" title="Interactive Notebook">
-                        <i class="fas fa-book text-yellow-600 text-xl"></i>
-                    </button>
-                    <button data-theme="paper" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transform hover:scale-110 hover:z-10" title="Research Paper">
-                        <i class="fas fa-file-alt text-gray-600 text-xl"></i>
-                    </button>
-                    <button data-theme="book" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-amber-200 hover:border-amber-400 transform hover:scale-110 hover:z-10" title="Markdown Book">
-                        <i class="fas fa-book-open text-amber-600 text-xl"></i>
-                    </button>
-                    <button data-theme="apple" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-rose-200 hover:border-rose-400 transform hover:scale-110 hover:z-10" title="Apple Persona Card">
-                        <i class="fab fa-apple text-rose-600 text-xl"></i>
-                    </button>
-                    <button data-theme="scifi" class="theme-option-inline w-14 h-14 bg-gradient-to-br from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 rounded-xl shadow-md hover:shadow-xl transition-all flex items-center justify-center border-2 border-cyan-200 hover:border-cyan-400 transform hover:scale-110 hover:z-10" title="Sci-Fi Console">
-                        <i class="fas fa-satellite-dish text-cyan-600 text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Floating Button (always visible when dock is closed) -->
-            <button id="themeFloatingBtn" class="w-14 h-14 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center group">
-                <i class="fas fa-palette text-white text-xl group-hover:rotate-12 transition-transform duration-300"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Theme Loading Overlay -->
-    <div id="themeLoadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
-            <div class="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-gray-700 font-medium">Loading theme...</p>
-        </div>
-    </div>
+    <a href="#themeContainer" class="skip-link shell-ui">Skip to content</a>
 
     <!-- Theme Container -->
-    <div id="themeContainer" class="min-h-screen"></div>
+    <div id="themeContainer" tabindex="-1"></div>
+
+    <!-- Theme switcher: sits in a theme's [data-theme-slot] when it has one, otherwise floats bottom-right -->
+    <button id="themeDock" type="button" class="theme-dock shell-ui" aria-haspopup="dialog" aria-controls="themeChooser">
+        <span id="themeDockTile" class="theme-tile theme-tile--sm" aria-hidden="true"></span>
+        <span id="themeDockLabel" class="theme-dock-label"></span>
+        <i class="fas fa-chevron-up theme-dock-chevron" aria-hidden="true"></i>
+    </button>
+
+    <!-- Theme chooser: opens on every visit with the current theme preselected; collapses into the switcher -->
+    <dialog id="themeChooser" class="chooser shell-ui" aria-labelledby="themeChooserTitle" aria-describedby="themeChooserHint">
+        <div class="chooser-panel">
+            <header class="chooser-head">
+                <div>
+                    <h2 id="themeChooserTitle" class="chooser-title">Choose a Theme</h2>
+                    <p id="themeChooserHint" class="chooser-hint"></p>
+                </div>
+                <button type="button" class="chooser-icon-btn" data-collapse aria-label="Collapse theme chooser">
+                    <i class="fas fa-down-left-and-up-right-to-center" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div id="themeChooserList" class="chooser-list"></div>
+            <footer class="chooser-foot">
+                <p class="chooser-foot-hint"><kbd>Esc</kbd> to collapse</p>
+                <button id="themeChooserContinue" type="button" class="chooser-primary" data-collapse></button>
+            </footer>
+        </div>
+    </dialog>
 
     <!-- Scripts -->
     <script src="js/content.js"></script>
-    
+
     <!-- Original Themes -->
     <script src="js/themes/chatgpt.js"></script>
     <script src="js/themes/modelcard.js"></script>
@@ -78,7 +56,7 @@
     <script src="js/themes/terminal.js"></script>
     <script src="js/themes/neural.js"></script>
     <script src="js/themes/notebook.js"></script>
-    
+
     <!-- New Themes -->
     <script src="js/themes/paper.js"></script>
     <script src="js/themes/api.js"></script>
@@ -89,7 +67,7 @@
     <script src="js/themes/gitdiff.js"></script>
     <script src="js/themes/json.js"></script>
     <script src="js/themes/training.js"></script>
-    
+
     <script src="js/main.js"></script>
 </body>
 </html>

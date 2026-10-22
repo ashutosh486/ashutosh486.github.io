@@ -10,23 +10,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Smooth transitions for theme switching */
-#themeContainer {
-    animation: fadeIn 0.5s ease-in;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
@@ -46,28 +29,401 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* Theme Selector Hover Zone */
+#themeContainer:focus {
+    outline: none;
+}
+
+/* Theme switches cross-fade (View Transitions API) */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.25s;
+}
+
+/* ---------- Shell: theme switcher & chooser (neutral, Geist, no gradients) ---------- */
+.shell-ui {
+    --shell-bg: #0a0a0a;
+    --shell-surface: #111111;
+    --shell-hover: #1a1a1a;
+    --shell-border: rgba(255, 255, 255, 0.1);
+    --shell-border-strong: rgba(255, 255, 255, 0.2);
+    --shell-text: #ededed;
+    --shell-muted: #a1a1a1;
+    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.shell-ui:focus-visible,
+.shell-ui :focus-visible {
+    outline: 2px solid var(--shell-text);
+    outline-offset: 2px;
+}
+
+.shell-ui button,
+button.shell-ui {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--shell-border-strong);
+    background: var(--shell-bg);
+    color: var(--shell-text);
+    font-size: 14px;
+    transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+    transform: none;
+}
+
+/* Preview tile: the theme's own background and accent */
+.theme-tile {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 15px;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.theme-tile--sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    font-size: 10px;
+}
+
+/* Switcher pill */
 .theme-dock {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px 0 5px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--shell-text);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s;
 }
 
-/* Add invisible hover extension zone between button and dock */
-.theme-dock::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    pointer-events: auto;
+.theme-dock:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.06);
 }
 
-#themeSelectorContainer:hover #themeOptionsDeck {
-    opacity: 1;
-    pointer-events: auto;
-    transform: scale(1);
+.theme-dock.is-floating {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 60;
+    background: rgba(10, 10, 10, 0.88);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
+.theme-dock.is-floating:hover {
+    background: var(--shell-hover);
+}
+
+.theme-dock-chevron {
+    font-size: 9px;
+    color: var(--shell-muted);
+}
+
+/* Chooser dialog */
+.chooser {
+    width: min(720px, calc(100vw - 32px));
+    max-width: none;
+    max-height: min(640px, calc(100dvh - 32px));
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--shell-text);
+    color-scheme: dark;
+    overflow: visible;
+}
+
+.chooser::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.chooser-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+    overflow: hidden;
+    border: 1px solid var(--shell-border);
+    border-radius: 16px;
+    background: var(--shell-bg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.chooser-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 12px;
+}
+
+.chooser-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.chooser-hint {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--shell-muted);
+}
+
+.chooser-icon-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--shell-muted);
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.chooser-icon-btn:hover {
+    background: var(--shell-hover);
+    color: var(--shell-text);
+}
+
+.chooser-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 4px 20px 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.chooser-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--shell-border);
+    border-radius: 12px;
+    background: var(--shell-surface);
+    color: inherit;
+    text-align: left;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chooser-item:hover {
+    border-color: var(--shell-border-strong);
+    background: var(--shell-hover);
+}
+
+.chooser-item[aria-current="true"] {
+    border-color: var(--shell-text);
+}
+
+.chooser-item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chooser-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chooser-item-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.chooser-item-blurb {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--shell-muted);
+    text-wrap: pretty;
+}
+
+.chooser-item-check {
+    display: none;
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.chooser-item[aria-current="true"] .chooser-item-check {
+    display: inline-block;
+}
+
+.chooser-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--shell-border);
+    background: var(--shell-surface);
+}
+
+.chooser-foot-hint {
+    font-size: 13px;
+    color: var(--shell-muted);
+}
+
+.chooser-foot-hint kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 6px;
+    background: var(--shell-bg);
+    color: var(--shell-text);
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.chooser-primary {
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--shell-text);
+    color: var(--shell-bg);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.15s;
+}
+
+.chooser-primary:hover {
+    background: #ffffff;
+}
+
+.chooser[open] {
+    animation: chooser-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.chooser[open]::backdrop {
+    animation: chooser-fade 0.22s ease-out;
+}
+
+@keyframes chooser-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+@keyframes chooser-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chooser-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Phones: bottom sheet with 44px targets */
+@media (max-width: 639px) {
+    .theme-dock {
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 9px;
+    }
+    .theme-dock-label,
+    .theme-dock-chevron,
+    .chooser-foot-hint {
+        display: none;
+    }
+    .chooser {
+        width: 100vw;
+        max-height: 85dvh;
+        margin: auto 0 0;
+    }
+    .chooser[open] {
+        animation-name: chooser-sheet-in;
+    }
+    .chooser-panel {
+        border-bottom: 0;
+        border-radius: 16px 16px 0 0;
+    }
+    .chooser-head {
+        padding: 16px 16px 8px;
+    }
+    .chooser-list {
+        grid-template-columns: 1fr;
+        padding: 4px 16px 16px;
+    }
+    .chooser-item {
+        min-height: 56px;
+    }
+    .chooser-icon-btn {
+        width: 44px;
+        height: 44px;
+    }
+    .chooser-foot {
+        padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    }
+    .chooser-primary {
+        flex: 1;
+        height: 44px;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+    .chooser-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Collapse: shrinks toward the switcher (transform-origin is set in main.js); exits faster than it enters */
+.chooser.is-closing {
+    animation: chooser-out 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.chooser.is-closing::backdrop {
+    animation: chooser-fade 0.16s ease-in reverse forwards;
+}
+
+@keyframes chooser-out {
+    to {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chooser,
+    .chooser::backdrop {
+        animation: none !important;
+    }
+}
 /* ChatGPT theme */
 #cgRoot {
     color-scheme: dark;

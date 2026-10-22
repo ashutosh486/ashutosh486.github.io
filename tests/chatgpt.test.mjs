@@ -45,7 +45,7 @@ assert.deepEqual(b.errors.filter(e => e.includes('chatgpt.js')), [], 'no runtime
 b.close();
 
 // Mobile
-b = await openTheme('chatgpt', { width: 390, height: 844, mobile: true, port: 9401 });
+b = await openTheme('chatgpt', { width: 390, height: 844, mobile: true });
 assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), '390x390', 'no horizontal overflow');
 await b.shot(`${out}-7-m-welcome.png`);
 await b.evaluate(`document.getElementById('cgMenuBtn').click()`); await sleep(500); await b.shot(`${out}-8-m-drawer.png`);

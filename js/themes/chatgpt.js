@@ -91,8 +91,8 @@ const ChatGPTTheme = {
                         <div id="cgThread" class="relative mx-auto flex min-h-full max-w-4xl flex-col gap-6 px-4 pb-8 pt-2 md:px-8"></div>
                     </div>
 
-                    <!-- Composer; extra bottom padding on mobile keeps it above the global theme button -->
-                    <div class="mx-auto w-full max-w-4xl px-3 pb-[88px] md:px-8 md:pb-3">
+                    <!-- Composer -->
+                    <div class="mx-auto w-full max-w-4xl px-3 pb-[max(12px,env(safe-area-inset-bottom))] md:px-8">
                         <div class="relative">
                             <div class="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-[linear-gradient(to_top,#212121,transparent)]"></div>
                             <div id="cgMenu" class="absolute bottom-full left-0 right-0 mb-2 hidden max-h-72 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#2a2a2a] p-1.5 shadow-[0_1px_2px_rgba(0,0,0,.4),0_12px_32px_rgba(0,0,0,.45)]" role="listbox" aria-label="Commands"></div>
