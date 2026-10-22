@@ -44,6 +44,7 @@ Tests drive the real page in headless Chrome. They need no npm install, only Nod
 node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
 node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignored)
 node tests/modelcard.test.mjs  # desktop + 390px phone
+node tests/vscode.test.mjs     # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -58,7 +59,7 @@ node tests/modelcard.test.mjs  # desktop + 390px phone
 | Shell (switcher, chooser, transitions) | — | **Rebuilt (3 rounds), merged** | `theme/shell` | Merged to `develop` |
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
-| VSCode | ✅ | Not started | | 594px wide on phones; sidebar takes 2/3 of screen |
+| VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
@@ -263,6 +264,53 @@ Checked with `tests/modelcard.test.mjs` at 1440px and 390px:
 - Switching theme disconnects the observer, with no runtime errors.
 - Round 2: show more expands in place with the button below. The Résumé tab switches in place, keeps `#modelcard`, is built from `content.js` (no embedded PDF viewer) and has no overflow at 390px. The sidebar isn't pushed off the top at the end, and there's no more than 100px of blank space after the content.
 
+### VS Code (`theme/vscode`): rebuilt from scratch
+
+#### VS Code before
+
+- A fixed 256px sidebar and a 192px fake terminal (`ls -la`, `git status`, today's date): 594px wide on phones, with the sidebar taking 2/3 of the screen.
+- Every file was Markdown pushed through a regex converter (headings in blue, green and yellow; tables in cyan).
+- One tab that just renamed itself; activity bar icons did nothing; no keyboard support; file rows were `div`s.
+- Showed the phone number twice; "Open To" list (speaking, consulting) was made up in the theme.
+- Switching files waited on a 150ms `setTimeout`.
+
+#### VS Code after
+
+- **Looks like VS Code (Dark Modern):** title bar with the command center, activity bar (Explorer, Go to File, then GitHub / LinkedIn / Website / Email), Explorer tree, tabs, breadcrumbs, editor and status bar (branch, problems, `Ln, Col`, encoding, language mode). Seti file icons. One accent: VS Code blue.
+- **Workspace built from `content.js`:**
+  - `README.md`: photo, name, title, tagline, bio, `impact` table, `stats`, interests, contact links and the résumé.
+  - `experience.md`: every role with all achievements and technologies.
+  - `projects/`: one Markdown file per project (slug from the title), with highlights, stack and site link.
+  - `reading.md`: `currentlyReading`.
+  - `skills.json`: syntax-highlighted, line-numbered, each skill once (same dedupe as Model Card), valid JSON.
+  - `education.yml`: education, certifications and the patent, with clickable URLs.
+  - `Ashutosh_Pandey_Resume.pdf`: VS Code's "binary file" notice with Open in browser / Download. No embedded viewer.
+  - Markdown files show as VS Code's Markdown preview; JSON/YAML as source with a line gutter. Clicking a line highlights it and updates `Ln N, Col 1`.
+- **Behaves like VS Code:**
+  - Opening a file adds a tab; tabs close (the neighbour takes over); closing them all shows the empty editor with its shortcuts.
+  - Each file keeps its scroll position.
+  - `⌘P` / `Ctrl+P` (or the command center) opens Quick Open: fuzzy file search, ↑/↓, Enter, Escape, click outside.
+  - `⌘B` / `Ctrl+B` or the Explorer icon hides the sidebar. The `projects` folder and the root collapse.
+- **Phones:** the activity bar goes away; a 44px menu button slides the Explorer in as a drawer over a dimmed backdrop (Escape or a tap outside closes it, picking a file closes it). 44px rows and tabs, 16px Quick Open input, only the active tab shows its close button.
+- **Motion:** files fade and rise in, Quick Open drops in, folder chevrons rotate, the drawer slides. All transform/opacity, all off under reduced motion.
+- **Corner:** the editor ends with enough padding to clear the switcher, and the status bar's right side stops at `--theme-dock-w` + 24px.
+- **Code:** `cleanup()` removes the window key listener. Text in source views is escaped. No timers.
+- **Dropped:** the fake terminal, the phone number, the "Open To" list.
+
+#### VS Code verified
+
+Checked with `tests/vscode.test.mjs` at 1440px and 390px:
+
+- README shows name, bio, impact, email and `stats.years` from `content.js`; one file per project.
+- Clicking a file makes it the active tab and highlights it in the Explorer; on phones the drawer slides in and closes after the pick, with 44px targets.
+- `skills.json` is valid JSON with each skill once; the status bar follows the file and the clicked line.
+- `education.yml` shows the degree, patent number and certificate links.
+- `Ctrl+P` focuses Quick Open, "asr" + Enter opens the ASR project.
+- The PDF tab has no embedded viewer and downloads from the `content.js` path in a new tab.
+- Closing every tab shows the empty editor, which reopens README. `Ctrl+B` hides the sidebar.
+- No horizontal overflow; nothing under the switcher at the end of a file.
+- Switching theme removes the key listener, with no runtime errors.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -272,7 +320,8 @@ Checked with `tests/modelcard.test.mjs` at 1440px and 390px:
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
 - [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
-- [ ] **Basics:** meta description, Open Graph tags, favicon. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
+- [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)
+- [ ] **Basics:** meta description, Open Graph tags. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
 - [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.
 
 ## content.js notes (for the owner to decide)
