@@ -16,12 +16,12 @@ const portfolioContent = {
         github: "https://github.com/ashutosh486",
         linkedin: "https://linkedin.com/in/ashutosh14486",
         twitter: "",  // Optional: add your Twitter username
-        portfolio: "https://ashutoshcodes.in",
+        portfolio: "https://about.ashutoshcodes.in",
     },
     
     // About Section
     about: {
-        greeting: "Hey there! 👋",
+        greeting: "Hey there!",
         tagline: "Building intelligent solutions with GenAI and ML",
         bio: "I am a skilled AI and automation specialist with a proven track record in launching innovative solutions and improving operational efficiency. With rich experience in machine learning, natural language processing, and cloud technologies, I have successfully led cross-functional teams and developed end-to-end automation projects that drive significant organizational improvements.",
         shortBio: "AI and automation specialist with expertise in GenAI, NLP, and cloud technologies, driving innovation and operational efficiency.",
@@ -177,11 +177,21 @@ const portfolioContent = {
     // Education
     education: [
         {
+            degree: "M.Tech. in AIML (Artificial Intelligence and Machine Learning)",
+            institution: "Birla Institute of Technology and Science, Pilani (BITS Pilani)",
+            year: "2026 - Present",
+            gpa: "9.0/10.0",
+            location: "Rajasthan, India",
+            description: "",
+            achievements: [
+                ]
+        },
+        {
             degree: "B.Tech. in Electronics & Communication Engineering",
             institution: "National Institute of Technology, Hamirpur (NIT Hamirpur)",
             year: "2014 - 2018",
             gpa: "8.20/10.0",
-            location: "H.P., India",
+            location: "H.P. India",
             description: "Strong foundation in signal processing and communication with focus on machine learning and data structures",
             achievements: [
                 "Strong foundation in signal processing and communication",
