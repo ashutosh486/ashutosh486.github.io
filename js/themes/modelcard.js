@@ -12,7 +12,7 @@ const ModelCardTheme = {
                         <div class="flex items-center justify-between">
                             <div>
                                 <h1 class="text-4xl font-bold text-gray-900 mb-1">${portfolioContent.name.toUpperCase()}-AI</h1>
-                                <p class="text-gray-600">Model Card • Version 2025.1 • Last Updated: ${new Date().toLocaleDateString()}</p>
+                                <p class="text-gray-600">Model Card • Version ${new Date().getFullYear()}.1 • Last Updated: ${new Date().toLocaleDateString()}</p>
                             </div>
                             <div class="flex gap-3">
                                 <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">Production Ready</span>
@@ -49,7 +49,7 @@ const ModelCardTheme = {
                                 </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
                                     <p class="text-sm text-gray-600 mb-1">Specialization</p>
-                                    <p class="text-lg font-semibold text-gray-900">GenAI & Automation</p>
+                                    <p class="text-lg font-semibold text-gray-900">${portfolioContent.specialization}</p>
                                 </div>
                             </div>
                         </div>
@@ -117,18 +117,14 @@ const ModelCardTheme = {
                             Benchmarks & Performance
                         </h2>
                         <div class="grid md:grid-cols-3 gap-6">
-                            <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl">
-                                <div class="text-4xl font-bold text-purple-600 mb-2">14+ FTE</div>
-                                <div class="text-sm text-gray-600">Equivalent Savings Delivered</div>
-                            </div>
-                            <div class="text-center p-6 bg-gradient-to-br from-green-50 to-teal-50 rounded-xl">
-                                <div class="text-4xl font-bold text-green-600 mb-2">50K+</div>
-                                <div class="text-sm text-gray-600">Classes Handled in ML Model</div>
-                            </div>
-                            <div class="text-center p-6 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl">
-                                <div class="text-4xl font-bold text-orange-600 mb-2">4000+</div>
-                                <div class="text-sm text-gray-600">Hours ASR Training Data</div>
-                            </div>
+                            ${portfolioContent.impact.map((item, i) => {
+                                const [bg, text] = [['from-purple-50 to-blue-50', 'text-purple-600'], ['from-green-50 to-teal-50', 'text-green-600'], ['from-orange-50 to-red-50', 'text-orange-600']][i % 3];
+                                return `
+                            <div class="text-center p-6 bg-gradient-to-br ${bg} rounded-xl">
+                                <div class="text-4xl font-bold ${text} mb-2">${item.value}</div>
+                                <div class="text-sm text-gray-600">${item.label}</div>
+                            </div>`;
+                            }).join('')}
                         </div>
                         
                         <!-- Projects as Benchmarks -->

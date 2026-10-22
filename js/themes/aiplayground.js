@@ -24,7 +24,7 @@ const AIPlaygroundTheme = {
                     <div class="p-4 border-t border-gray-700">
                         <div class="text-xs text-gray-500 mb-2">Model Information</div>
                         <div class="text-xs text-gray-400">
-                            <div class="mb-1">Version: 2025.1</div>
+                            <div class="mb-1">Version: ${new Date().getFullYear()}.1</div>
                             <div>Status: <span class="text-green-400">Active</span></div>
                         </div>
                     </div>

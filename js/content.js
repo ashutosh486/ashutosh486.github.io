@@ -6,6 +6,7 @@ const portfolioContent = {
     name: "Ashutosh Pandey",
     title: "Manager - AI & Automation Specialist",
     tagline: "Building intelligent solutions with GenAI and ML",
+    specialization: "GenAI & Automation",
     location: "Prayagraj, India",
     email: "ashutosh14486@gmail.com",
     phone: "+91-8004644122",
@@ -28,19 +29,32 @@ const portfolioContent = {
         funFact: "I hold a patent in Textual Entailment and have delivered solutions saving 14+ FTE equivalent! 🚀"
     },
     
+    // Headline impact numbers (Model Card benchmarks, Prompt Studio)
+    impact: [
+        { value: "14+ FTE", label: "Equivalent Savings Delivered" },
+        { value: "50K+", label: "Classes Handled in ML Model" },
+        { value: "4000+", label: "Hours ASR Training Data" }
+    ],
+
     // Skills
     skills: {
+        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         backend: ["Python", "Flask", "Jinja2", "psycopg2", "pandas", "numpy", "Streamlit"],
         frontend: ["HTML", "CSS", "JavaScript", "Angular", "Tailwind CSS"],
         database: ["PostgreSQL", "SQLite", "MongoDB"],
         ml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4", "TensorFlow", "PyTorch"],
-        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         frameworks: ["Flask", "Angular", "Tailwind CSS", "Streamlit", "LangChain", "pandas", "numpy"],
         cloud: ["AWS", "Azure", "Databricks"],
         aiml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4"],
         mlops: ["mlflow", "PySpark", "Databricks", "CVAT", "Docker"],
         databases: ["PostgreSQL", "SQLite", "MongoDB"],
         tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence", "Docker", "mlflow"]
+    },
+    
+    // Display names for the skill categories above
+    skillLabels: {
+        languages: "Languages", backend: "Backend", frontend: "Frontend", database: "Databases", ml: "Machine Learning",
+        frameworks: "Frameworks", cloud: "Cloud", aiml: "AI / ML", mlops: "MLOps", databases: "Databases", tools: "Tools"
     },
     
     // Projects
@@ -255,7 +269,10 @@ const portfolioContent = {
     hobbies: ["Traveling and exploring places", "Listening to music", "Playing Chess", "Badminton", "Table Tennis"],
     
     // Picture placeholder
-    picture: "https://via.placeholder.com/200x200/667eea/ffffff?text=AP",
+    picture: "images/profile.jpg",
+    
+    // Résumé PDF offered for download (theme chooser, ChatGPT /resume, sidebar, hire card)
+    resume: "docs/Ashutosh_Pandey_Resume.pdf",
     
     // Chat Commands (for ChatGPT theme)
     chatCommands: [
@@ -268,6 +285,7 @@ const portfolioContent = {
         { command: "/reading", description: "See what I'm reading" },
         { command: "/contact", description: "Get in touch with me" },
         { command: "/hire", description: "Ready to hire me!" },
+        { command: "/resume", description: "Download my résumé" },
         { command: "/help", description: "Show available commands" }
     ]
 };

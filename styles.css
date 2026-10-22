@@ -10,23 +10,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Smooth transitions for theme switching */
-#themeContainer {
-    animation: fadeIn 0.5s ease-in;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
@@ -46,122 +29,579 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* Theme Selector Hover Zone */
-.theme-dock {
-    position: relative;
+#themeContainer:focus {
+    outline: none;
 }
 
-/* Add invisible hover extension zone between button and dock */
-.theme-dock::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    pointer-events: auto;
+/* Theme switches cross-fade (View Transitions API) */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.25s;
 }
 
-#themeSelectorContainer:hover #themeOptionsDeck {
-    opacity: 1;
-    pointer-events: auto;
-    transform: scale(1);
+/* ---------- Shell: theme switcher & chooser (neutral, Geist, no gradients) ---------- */
+.shell-ui {
+    --shell-bg: #0a0a0a;
+    --shell-surface: #111111;
+    --shell-hover: #1a1a1a;
+    --shell-border: rgba(255, 255, 255, 0.1);
+    --shell-border-strong: rgba(255, 255, 255, 0.2);
+    --shell-text: #ededed;
+    --shell-muted: #a1a1a1;
+    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Typing animation */
-@keyframes typing {
-    from {
-        width: 0;
-    }
-    to {
-        width: 100%;
-    }
+.shell-ui:focus-visible,
+.shell-ui :focus-visible {
+    outline: 2px solid var(--shell-text);
+    outline-offset: 2px;
 }
 
-@keyframes blink {
-    50% {
-        border-color: transparent;
-    }
+.shell-ui button,
+button.shell-ui {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.typing-animation {
-    overflow: hidden;
-    border-right: 2px solid;
-    white-space: nowrap;
-    animation: typing 2s steps(40, end), blink 0.75s step-end infinite;
+.skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--shell-border-strong);
+    background: var(--shell-bg);
+    color: var(--shell-text);
+    font-size: 14px;
+    transform: translateY(-200%);
 }
 
-/* Fade-in for messages */
-@keyframes messageSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.skip-link:focus-visible {
+    transform: none;
 }
 
-.message-fade-in {
-    animation: messageSlideIn 0.4s ease-out;
-}
-
-/* Pulse animation */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.pulse-animation {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* ChatGPT Sidebar Tooltips */
-.sidebar-item-wrapper {
-    position: relative;
-    display: flex;
+/* Preview tile: the theme's own background and accent */
+.theme-tile {
+    display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 15px;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-.sidebar-tooltip {
-    position: absolute;
-    left: 100%;
-    margin-left: 12px;
-    padding: 6px 12px;
-    background-color: #1f2937;
-    color: white;
-    font-size: 0.75rem;
+.theme-tile--sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    font-size: 10px;
+}
+
+/* Switcher pill: current theme's tile and name, bottom-right in every theme */
+.theme-dock {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px 0 5px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.88);
+    color: var(--shell-text);
+    font-size: 13px;
     font-weight: 500;
-    border-radius: 6px;
     white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background-color 0.15s, border-color 0.15s;
 }
 
-.sidebar-tooltip::before {
-    content: '';
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 5px solid transparent;
-    border-right-color: #1f2937;
+.theme-dock:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    background: var(--shell-hover);
 }
 
-.sidebar-item-wrapper:hover .sidebar-tooltip {
-    opacity: 1;
-    transform: translateX(0);
-    transition-delay: 0.1s;
+.theme-dock-chevron {
+    font-size: 9px;
+    color: var(--shell-muted);
+}
+
+/* Chooser dialog */
+.chooser {
+    width: min(720px, calc(100vw - 32px));
+    max-width: none;
+    max-height: min(640px, calc(100dvh - 32px));
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--shell-text);
+    color-scheme: dark;
+    overflow: visible;
+}
+
+.chooser::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.chooser-panel:focus {
+    outline: none;
+}
+
+.chooser-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+    overflow: hidden;
+    border: 1px solid var(--shell-border);
+    border-radius: 16px;
+    background: var(--shell-bg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.chooser-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 12px;
+}
+
+.chooser-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.chooser-hint {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--shell-muted);
+}
+
+.chooser-icon-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--shell-muted);
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.chooser-icon-btn:hover {
+    background: var(--shell-hover);
+    color: var(--shell-text);
+}
+
+.chooser-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 4px 20px 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.chooser-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--shell-border);
+    border-radius: 12px;
+    background: var(--shell-surface);
+    color: inherit;
+    text-align: left;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chooser-item:hover {
+    border-color: var(--shell-border-strong);
+    background: var(--shell-hover);
+}
+
+.chooser-item[aria-current="true"] {
+    border-color: var(--shell-text);
+}
+
+/* Focus ring sits on the border, so a focused card never shows two boxes */
+.chooser-item:focus-visible {
+    outline-offset: -1px;
+}
+
+.chooser-item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chooser-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chooser-item-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.chooser-item-blurb {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--shell-muted);
+    text-wrap: pretty;
+}
+
+.chooser-item-check {
+    display: none;
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.chooser-item[aria-current="true"] .chooser-item-check {
+    display: inline-block;
+}
+
+.chooser-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--shell-border);
+    background: var(--shell-surface);
+}
+
+.chooser-foot-hint {
+    font-size: 13px;
+    color: var(--shell-muted);
+}
+
+.chooser-foot-hint kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 6px;
+    background: var(--shell-bg);
+    color: var(--shell-text);
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.chooser-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chooser-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 8px;
+    color: var(--shell-text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chooser-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    background: var(--shell-hover);
+}
+
+.chooser-secondary[hidden] {
+    display: none;
+}
+
+.chooser-primary {
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--shell-text);
+    color: var(--shell-bg);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.15s;
+}
+
+.chooser-primary:hover {
+    background: #ffffff;
+}
+
+.chooser[open] {
+    animation: chooser-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.chooser[open]::backdrop {
+    animation: chooser-fade 0.22s ease-out;
+}
+
+@keyframes chooser-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+@keyframes chooser-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chooser-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Phones: bottom sheet with 44px targets */
+@media (max-width: 639px) {
+    .theme-dock {
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 9px;
+    }
+    .theme-dock-label,
+    .theme-dock-chevron,
+    .chooser-foot-hint,
+    .chooser-wide-only {
+        display: none;
+    }
+    .chooser-actions {
+        flex: 1;
+    }
+    .chooser-secondary {
+        height: 44px;
+    }
+    .chooser {
+        width: 100vw;
+        max-height: 85dvh;
+        margin: auto 0 0;
+    }
+    .chooser[open] {
+        animation-name: chooser-sheet-in;
+    }
+    .chooser-panel {
+        border-bottom: 0;
+        border-radius: 16px 16px 0 0;
+    }
+    .chooser-head {
+        padding: 16px 16px 8px;
+    }
+    .chooser-list {
+        grid-template-columns: 1fr;
+        padding: 4px 16px 16px;
+    }
+    .chooser-item {
+        min-height: 56px;
+    }
+    .chooser-icon-btn {
+        width: 44px;
+        height: 44px;
+    }
+    .chooser-foot {
+        padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    }
+    .chooser-primary {
+        flex: 1;
+        height: 44px;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+    .chooser-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Collapse: shrinks toward the switcher (transform-origin is set in main.js); exits faster than it enters */
+.chooser.is-closing {
+    animation: chooser-out 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.chooser.is-closing::backdrop {
+    animation: chooser-fade 0.16s ease-in reverse forwards;
+}
+
+@keyframes chooser-out {
+    to {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chooser,
+    .chooser::backdrop {
+        animation: none !important;
+    }
+}
+/* ChatGPT theme */
+#cgRoot {
+    color-scheme: dark;
+}
+
+#cgRoot :focus-visible {
+    outline: 2px solid #ececec;
+    outline-offset: 2px;
+}
+
+/* The composer shows focus with its own ring */
+#cgRoot textarea:focus-visible {
+    outline: none;
+}
+
+#cgRoot button,
+#cgRoot a,
+#cgRoot summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#cgRoot summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Desktop: the sidebar collapses to an icon rail */
+@media (min-width: 768px) {
+    #cgSidebar {
+        transition: width 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .cg-collapsed #cgSidebar {
+        width: 60px;
+    }
+    .cg-collapsed .cg-label {
+        display: none;
+    }
+    .cg-collapsed .cg-side-head,
+    .cg-collapsed .cg-links {
+        flex-direction: column;
+    }
+    .cg-collapsed #cgClose {
+        order: -1;
+    }
+    .cg-collapsed .cg-topic,
+    .cg-collapsed .cg-profile {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+/* Leaves room for the page's theme switcher (width from --theme-dock-w) where the composer would run under it:
+   the switcher sits 16px from the right edge, the composer row is inset 12px (32px from md up) */
+.cg-dock-gap {
+    display: none;
+    flex-shrink: 0;
+    width: calc(var(--theme-dock-w, 44px) + 4px);
+}
+
+@media (max-width: 1439px) {
+    .cg-dock-gap {
+        display: block;
+    }
+}
+
+@media (min-width: 768px) {
+    .cg-dock-gap {
+        width: calc(var(--theme-dock-w, 44px) - 16px);
+    }
+}
+
+.cg-in {
+    animation: cg-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Answer blocks reveal one after another; --i is set per block in chatgpt.js */
+.cg-block {
+    animation: cg-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes cg-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.cg-dots span {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: #b4b4b4;
+    animation: cg-bounce 1.2s ease-in-out infinite;
+}
+
+.cg-dots span:nth-child(2) { animation-delay: 0.15s; }
+.cg-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes cg-bounce {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+/* Progress fills by scaling, not by animating width */
+.cg-bar {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cg-bar.is-filled {
+    transform: none;
+}
+
+.cg-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cg-in, .cg-block, .cg-dots span {
+        animation: none;
+    }
+    .cg-bar, #cgSidebar {
+        transition: none;
+    }
 }
 
 /* VSCode theme specific */

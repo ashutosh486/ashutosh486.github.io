@@ -11,7 +11,7 @@ const APIDocsTheme = {
                 <div class="w-80 bg-gray-900 text-white overflow-y-auto">
                     <div class="p-6 border-b border-gray-700">
                         <h1 class="text-2xl font-bold mb-2">${portfolioContent.name} API</h1>
-                        <p class="text-sm text-gray-400">v2025.1</p>
+                        <p class="text-sm text-gray-400">v${new Date().getFullYear()}.1</p>
                         <p class="text-xs text-gray-500 mt-2">Base URL: <code class="bg-gray-800 px-2 py-1 rounded">https://api.${portfolioContent.name.toLowerCase().replace(' ', '')}.dev</code></p>
                     </div>
                     

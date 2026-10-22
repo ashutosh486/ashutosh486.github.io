@@ -17,16 +17,15 @@ const NeuralTheme = {
         // Layer 1 - Education
         { id: 'education', x: 25, y: 50, layer: 1, label: 'Education', color: '#8b5cf6', data: { type: 'education', content: portfolioContent.education } },
         
-        // Layer 2 - Experience
-        { id: 'exp1', x: 40, y: 25, layer: 2, label: portfolioContent.experience[0].company, color: '#ec4899', data: portfolioContent.experience[0] },
-        { id: 'exp2', x: 40, y: 45, layer: 2, label: portfolioContent.experience[1].company, color: '#ec4899', data: portfolioContent.experience[1] },
-        { id: 'exp3', x: 40, y: 65, layer: 2, label: portfolioContent.experience[2].company, color: '#ec4899', data: portfolioContent.experience[2] },
-        { id: 'exp4', x: 40, y: 85, layer: 2, label: portfolioContent.experience[3].company, color: '#ec4899', data: portfolioContent.experience[3] },
-        
-        // Layer 3 - Projects
-        { id: 'proj1', x: 55, y: 30, layer: 3, label: portfolioContent.projects[0].title.substring(0, 15), color: '#10b981', data: portfolioContent.projects[0] },
-        { id: 'proj2', x: 55, y: 50, layer: 3, label: portfolioContent.projects[1].title.substring(0, 15), color: '#10b981', data: portfolioContent.projects[1] },
-        { id: 'proj3', x: 55, y: 70, layer: 3, label: portfolioContent.projects[2].title.substring(0, 15), color: '#10b981', data: portfolioContent.projects[2] },
+        // Layer 2 - Experience (one node per role, centred vertically)
+        ...portfolioContent.experience.map((exp, i, all) => (
+            { id: `exp${i}`, x: 40, y: 50 + (i - (all.length - 1) / 2) * Math.min(20, 80 / all.length), layer: 2, label: exp.company, color: '#ec4899', data: exp }
+        )),
+
+        // Layer 3 - Projects (first 3)
+        ...portfolioContent.projects.slice(0, 3).map((proj, i, all) => (
+            { id: `proj${i}`, x: 55, y: 50 + (i - (all.length - 1) / 2) * 20, layer: 3, label: proj.title.substring(0, 15), color: '#10b981', data: proj }
+        )),
         
         // Layer 4 - Certifications & Patents
         { id: 'certifications', x: 70, y: 40, layer: 4, label: 'Certifications', color: '#f59e0b', data: { type: 'certifications', content: portfolioContent.certifications } },
@@ -40,26 +39,17 @@ const NeuralTheme = {
         // About to Education
         { from: 'about', to: 'education' },
         
-        // Education to Experience
-        { from: 'education', to: 'exp1' },
-        { from: 'education', to: 'exp2' },
-        { from: 'education', to: 'exp3' },
-        { from: 'education', to: 'exp4' },
-        
-        // Experience to Projects
-        { from: 'exp1', to: 'proj1' },
-        { from: 'exp1', to: 'proj2' },
-        { from: 'exp2', to: 'proj1' },
-        { from: 'exp2', to: 'proj2' },
-        { from: 'exp3', to: 'proj2' },
-        { from: 'exp3', to: 'proj3' },
-        { from: 'exp4', to: 'proj3' },
-        
+        // Education to Experience, Experience to Projects (fully connected, like a dense layer)
+        ...portfolioContent.experience.flatMap((_, i) => [
+            { from: 'education', to: `exp${i}` },
+            ...portfolioContent.projects.slice(0, 3).map((_, j) => ({ from: `exp${i}`, to: `proj${j}` }))
+        ]),
+
         // Projects to Certifications/Patents
-        { from: 'proj1', to: 'certifications' },
-        { from: 'proj2', to: 'certifications' },
-        { from: 'proj2', to: 'patents' },
-        { from: 'proj3', to: 'patents' },
+        ...portfolioContent.projects.slice(0, 3).flatMap((_, j) => [
+            { from: `proj${j}`, to: 'certifications' },
+            { from: `proj${j}`, to: 'patents' }
+        ]),
         
         // Certifications/Patents back to Contact
         { from: 'certifications', to: 'contact' },
