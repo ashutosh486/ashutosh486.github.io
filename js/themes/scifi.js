@@ -100,7 +100,6 @@ const SciFiTheme = {
                                         <div class="border-l-2 border-cyan-700 pl-4">
                                             <div class="flex items-start justify-between gap-4 mb-2">
                                                 <div class="text-sm font-bold text-cyan-300">MISSION-${String(idx + 1).padStart(3, '0')}: ${project.title.toUpperCase()}</div>
-                                                <div class="text-xs text-cyan-600 whitespace-nowrap">${project.period}</div>
                                             </div>
                                             <div class="text-xs text-cyan-400 leading-relaxed mb-2">
                                                 ${project.description.substring(0, 120)}...
@@ -125,7 +124,7 @@ const SciFiTheme = {
                                     <div>
                                         <div class="flex justify-between text-xs mb-1">
                                             <span class="text-cyan-600">SKILL INDEX</span>
-                                            <span class="text-cyan-300 font-bold">${Object.values(portfolioContent.skills).flat().length}</span>
+                                            <span class="text-cyan-300 font-bold">${portfolioContent.stats.skills}</span>
                                         </div>
                                         <div class="h-1 bg-cyan-950 border border-cyan-900">
                                             <div class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]" style="width: 95%"></div>
@@ -145,7 +144,7 @@ const SciFiTheme = {
                                     <div>
                                         <div class="flex justify-between text-xs mb-1">
                                             <span class="text-cyan-600">EXPERIENCE LEVEL</span>
-                                            <span class="text-cyan-300 font-bold">${portfolioContent.experience.length}+ YRS</span>
+                                            <span class="text-cyan-300 font-bold">${portfolioContent.stats.years}+ YRS</span>
                                         </div>
                                         <div class="h-1 bg-cyan-950 border border-cyan-900">
                                             <div class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]" style="width: 92%"></div>
@@ -185,19 +184,19 @@ const SciFiTheme = {
                                         </div>
                                     </a>
                                     
-                                    <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
+                                    <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
                                         <i class="fab fa-github text-cyan-500 group-hover:text-cyan-300"></i>
                                         <div class="text-xs">
                                             <div class="text-cyan-600">CODE REPOSITORY</div>
-                                            <div class="text-cyan-400 text-[10px]">github.com/${portfolioContent.social.github}</div>
+                                            <div class="text-cyan-400 text-[10px]">${portfolioContent.social.github.replace('https://', '')}</div>
                                         </div>
                                     </a>
                                     
-                                    <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
+                                    <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
                                         <i class="fab fa-linkedin text-cyan-500 group-hover:text-cyan-300"></i>
                                         <div class="text-xs">
                                             <div class="text-cyan-600">PROFESSIONAL NETWORK</div>
-                                            <div class="text-cyan-400 text-[10px]">linkedin.com/in/${portfolioContent.social.linkedin}</div>
+                                            <div class="text-cyan-400 text-[10px]">${portfolioContent.social.linkedin.replace('https://', '')}</div>
                                         </div>
                                     </a>
                                 </div>

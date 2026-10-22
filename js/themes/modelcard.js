@@ -45,7 +45,7 @@ const ModelCardTheme = {
                                 </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
                                     <p class="text-sm text-gray-600 mb-1">Training Duration</p>
-                                    <p class="text-lg font-semibold text-gray-900">7+ Years</p>
+                                    <p class="text-lg font-semibold text-gray-900">${portfolioContent.stats.years}+ Years</p>
                                 </div>
                                 <div class="bg-gray-50 rounded-lg p-4">
                                     <p class="text-sm text-gray-600 mb-1">Specialization</p>
@@ -162,7 +162,7 @@ const ModelCardTheme = {
                             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                                 <h3 class="text-lg font-bold text-gray-900">${edu.degree}</h3>
                                 <p class="text-purple-600 font-medium">${edu.institution}</p>
-                                <p class="text-sm text-gray-600 mt-1">${edu.duration} • GPA: ${edu.gpa}</p>
+                                <p class="text-sm text-gray-600 mt-1">${edu.year} • GPA: ${edu.gpa}</p>
                             </div>
                         `).join('')}
                     </div>

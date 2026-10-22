@@ -64,7 +64,7 @@ ${portfolioContent.skills.frameworks.map(skill => `• **${skill}** - Extensive 
 ${portfolioContent.skills.cloud.map(skill => `• **${skill}** - Infrastructure and deployment`).join('\n')}
 
 ## Assessment Summary
-Total Skills: ${Object.values(portfolioContent.skills).flat().length}
+Total Skills: ${portfolioContent.stats.skills}
 Skill Diversity: High
 Domain Coverage: Full-stack ML Engineer
 Experience Level: Senior Professional`
@@ -86,7 +86,6 @@ ${portfolioContent.projects.map(p => `- ${p.title}`).join('\n')}`,
 
 ${portfolioContent.projects.slice(0, 4).map(project => `
 ## ${project.title}
-**Timeline:** ${project.period}
 
 ${project.description}
 
@@ -377,11 +376,11 @@ Provide: Hiring recommendation with confidence score and key hiring arguments.`,
                                 <div class="mt-6 pt-4 border-t border-slate-800">
                                     <div class="text-xs text-slate-500 mb-2">SOCIAL LINKS</div>
                                     <div class="flex flex-col gap-2">
-                                        <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
+                                        <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
                                             <i class="fab fa-github"></i>
                                             <span>GitHub</span>
                                         </a>
-                                        <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
+                                        <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
                                             <i class="fab fa-linkedin"></i>
                                             <span>LinkedIn</span>
                                         </a>

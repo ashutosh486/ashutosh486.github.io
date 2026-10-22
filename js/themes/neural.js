@@ -371,7 +371,7 @@ const NeuralTheme = {
                         <div class="border-l-2 border-purple-500 pl-3">
                             <p class="font-bold text-white">${edu.degree}</p>
                             <p class="text-gray-400">${edu.institution}</p>
-                            <p class="text-gray-500">${edu.duration}</p>
+                            <p class="text-gray-500">${edu.year}</p>
                             ${edu.gpa ? `<p class="text-purple-300">GPA: ${edu.gpa}</p>` : ''}
                         </div>
                     `).join('')}

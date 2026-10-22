@@ -174,7 +174,7 @@ ${portfolioContent.about.bio}
                 portfolioContent.education.forEach(edu => {
                     output += `<span class="text-cyan-400">${edu.degree}</span>\n`;
                     output += `${edu.institution}\n`;
-                    output += `${edu.duration} | GPA: ${edu.gpa}\n`;
+                    output += `${edu.year} | GPA: ${edu.gpa}\n`;
                 });
                 return output;
             }
@@ -198,7 +198,7 @@ ${portfolioContent.about.bio}
                 portfolioContent.education.forEach(edu => {
                     output += `<span class="text-cyan-400">${edu.degree}</span>\n`;
                     output += `${edu.institution}\n`;
-                    output += `${edu.duration} | GPA: ${edu.gpa}\n`;
+                    output += `${edu.year} | GPA: ${edu.gpa}\n`;
                 });
                 return output;
             }

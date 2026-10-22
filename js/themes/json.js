@@ -17,12 +17,12 @@ const JsonTheme = {
                     {
                         "network": "GitHub",
                         "username": portfolioContent.social.github,
-                        "url": `https://github.com/${portfolioContent.social.github}`
+                        "url": `${portfolioContent.social.github}`
                     },
                     {
                         "network": "LinkedIn",
                         "username": portfolioContent.social.linkedin,
-                        "url": `https://linkedin.com/in/${portfolioContent.social.linkedin}`
+                        "url": `${portfolioContent.social.linkedin}`
                     }
                 ],
                 "interests": portfolioContent.about.interests
@@ -184,11 +184,11 @@ const JsonTheme = {
                         <div class="mt-8 pt-4 border-t border-gray-800">
                             <div class="text-xs font-semibold text-gray-500 uppercase mb-3">Links</div>
                             <div class="space-y-2">
-                                <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-200 transition-colors">
+                                <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-200 transition-colors">
                                     <i class="fab fa-github"></i>
                                     <span>GitHub Profile</span>
                                 </a>
-                                <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-200 transition-colors">
+                                <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-200 transition-colors">
                                     <i class="fab fa-linkedin"></i>
                                     <span>LinkedIn Profile</span>
                                 </a>

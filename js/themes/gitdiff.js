@@ -21,10 +21,10 @@ const GitDiffTheme = {
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs transition-colors">
+                                <a href="${portfolioContent.social.github}" target="_blank" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs transition-colors">
                                     <i class="fab fa-github mr-1"></i> GitHub
                                 </a>
-                                <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs transition-colors">
+                                <a href="${portfolioContent.social.linkedin}" target="_blank" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs transition-colors">
                                     <i class="fab fa-linkedin mr-1"></i> LinkedIn
                                 </a>
                                 <a href="mailto:${portfolioContent.email}" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 border border-green-500 rounded text-xs transition-colors font-semibold">
@@ -41,7 +41,7 @@ const GitDiffTheme = {
                 <div class="max-w-6xl mx-auto px-6 py-6">
                     <!-- Diff Stats -->
                     <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 mb-6">
-                        <div class="text-xs text-gray-500 mb-2">Showing changes with ${Object.values(portfolioContent.skills).flat().length} additions</div>
+                        <div class="text-xs text-gray-500 mb-2">Showing changes with ${portfolioContent.stats.skills} additions</div>
                         <div class="space-y-1">
                             <div class="flex items-center gap-3 text-xs">
                                 <span class="text-gray-400 w-48">profile/about.json</span>
@@ -58,7 +58,7 @@ const GitDiffTheme = {
                                     <div class="flex-1 bg-gray-800 h-2 rounded-full overflow-hidden">
                                         <div class="bg-green-500 h-full" style="width: 100%"></div>
                                     </div>
-                                    <span class="text-green-400">+${Object.values(portfolioContent.skills).flat().length} skills</span>
+                                    <span class="text-green-400">+${portfolioContent.stats.skills} skills</span>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 text-xs">
@@ -122,7 +122,7 @@ const GitDiffTheme = {
                                 <i class="fas fa-file-code text-purple-400 mr-2"></i>
                                 skills/technical.yaml
                             </span>
-                            <span class="text-xs text-green-400">+${Object.values(portfolioContent.skills).flat().length} additions</span>
+                            <span class="text-xs text-green-400">+${portfolioContent.stats.skills} additions</span>
                         </div>
                         <div class="p-4">
                             ${Object.entries(portfolioContent.skills).map(([category, skills]) => `
@@ -182,7 +182,6 @@ const GitDiffTheme = {
                                 <div class="mb-4">
                                     <div class="text-green-400">+### ${project.title}</div>
                                     <div class="text-green-400">+</div>
-                                    <div class="text-green-400">+**Timeline:** ${project.period}</div>
                                     <div class="text-green-400">+</div>
                                     <div class="text-green-400">+${project.description}</div>
                                     <div class="text-green-400">+</div>

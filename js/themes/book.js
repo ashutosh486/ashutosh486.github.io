@@ -213,7 +213,7 @@ const BookTheme = {
                     <h2>Quick Stats</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-6 not-prose">
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-blue-600">${Object.values(portfolioContent.skills).flat().length}+</div>
+                            <div class="text-3xl font-bold text-blue-600">${portfolioContent.stats.skills}+</div>
                             <div class="text-sm text-gray-600 mt-1">Skills</div>
                         </div>
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
@@ -221,7 +221,7 @@ const BookTheme = {
                             <div class="text-sm text-gray-600 mt-1">Projects</div>
                         </div>
                         <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-green-600">${portfolioContent.experience.length}+</div>
+                            <div class="text-3xl font-bold text-green-600">${portfolioContent.stats.years}+</div>
                             <div class="text-sm text-gray-600 mt-1">Years Exp.</div>
                         </div>
                         <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-lg text-center">
@@ -328,7 +328,7 @@ const BookTheme = {
                         </div>
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
                             <h3 class="font-bold text-purple-900 mb-2">Total Arsenal</h3>
-                            <div class="text-4xl font-bold text-purple-700">${Object.values(portfolioContent.skills).flat().length}+</div>
+                            <div class="text-4xl font-bold text-purple-700">${portfolioContent.stats.skills}+</div>
                             <p class="text-sm text-purple-800 mt-1">Technologies & Tools</p>
                         </div>
                     </div>
@@ -392,7 +392,7 @@ const BookTheme = {
                     
                     <div class="bg-blue-50 border-l-4 border-blue-600 p-6 my-8 rounded-r-lg">
                         <p class="text-blue-900">
-                            <strong>💼 Career Insight:</strong> This experience represents ${portfolioContent.experience.length}+ years of hands-on work in AI/ML and software engineering, with a consistent focus on innovation, leadership, and measurable business impact.
+                            <strong>💼 Career Insight:</strong> This experience represents ${portfolioContent.stats.years}+ years of hands-on work in AI/ML and software engineering, with a consistent focus on innovation, leadership, and measurable business impact.
                         </p>
                     </div>
                 `;
@@ -669,16 +669,16 @@ const BookTheme = {
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
                             <i class="fab fa-linkedin text-3xl text-purple-600 mb-3"></i>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">LinkedIn</h3>
-                            <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="text-purple-600 hover:underline">
-                                linkedin.com/in/${portfolioContent.social.linkedin}
+                            <a href="${portfolioContent.social.linkedin}" target="_blank" class="text-purple-600 hover:underline">
+                                ${portfolioContent.social.linkedin.replace('https://', '')}
                             </a>
                         </div>
                         
                         <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl">
                             <i class="fab fa-github text-3xl text-gray-900 mb-3"></i>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">GitHub</h3>
-                            <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="text-gray-900 hover:underline">
-                                github.com/${portfolioContent.social.github}
+                            <a href="${portfolioContent.social.github}" target="_blank" class="text-gray-900 hover:underline">
+                                ${portfolioContent.social.github.replace('https://', '')}
                             </a>
                         </div>
                         

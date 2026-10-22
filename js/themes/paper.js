@@ -91,7 +91,7 @@ const PaperTheme = {
                                 <h2 class="text-xl font-serif font-bold mb-4 text-gray-900 uppercase" style="letter-spacing: 0.05em;">Abstract</h2>
                                 <p class="text-sm font-serif leading-relaxed text-gray-800 text-justify" style="text-indent: 1.5em;">
                                     ${portfolioContent.about.bio} This work presents a comprehensive analysis of contributions spanning 
-                                    ${portfolioContent.experience.length} major organizations, with demonstrated expertise in 
+                                    ${portfolioContent.stats.companies} major organizations, with demonstrated expertise in 
                                     ${Object.keys(portfolioContent.skills).length} technical domains and 
                                     ${portfolioContent.projects.length}+ production-grade implementations.
                                 </p>
@@ -103,7 +103,7 @@ const PaperTheme = {
                                 <p class="text-sm font-serif leading-relaxed text-gray-800 text-justify mb-4" style="text-indent: 1.5em;">
                                     As the field of artificial intelligence continues to evolve, the demand for experienced practitioners 
                                     capable of bridging theoretical concepts with production systems has intensified. This paper presents 
-                                    ${portfolioContent.name}, an ML/AI engineer with ${portfolioContent.experience.length}+ years of hands-on experience.
+                                    ${portfolioContent.name}, an ML/AI engineer with ${portfolioContent.stats.years}+ years of hands-on experience.
                                 </p>
                                 <p class="text-sm font-serif leading-relaxed text-gray-800 text-justify mb-4" style="text-indent: 1.5em;">
                                     <em>Research Interests:</em> ${portfolioContent.about.interests.join(', ')}.

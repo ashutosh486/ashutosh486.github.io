@@ -39,10 +39,10 @@ const TrainingTheme = {
                                 <a href="mailto:${portfolioContent.email}" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-sm font-semibold transition-all shadow-lg">
                                     <i class="fas fa-envelope mr-2"></i>Contact Me
                                 </a>
-                                <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                                <a href="${portfolioContent.social.linkedin}" target="_blank" class="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
                                     <i class="fab fa-linkedin"></i>
                                 </a>
-                                <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                                <a href="${portfolioContent.social.github}" target="_blank" class="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
                                     <i class="fab fa-github"></i>
                                 </a>
                             </div>
@@ -247,7 +247,6 @@ const TrainingTheme = {
                                         <tr class="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
                                             <td class="py-3 px-4">
                                                 <div class="font-medium text-gray-200">${project.title}</div>
-                                                <div class="text-xs text-gray-500">${project.period}</div>
                                             </td>
                                             <td class="py-3 px-4 text-gray-300 max-w-md">
                                                 ${project.description.substring(0, 80)}...

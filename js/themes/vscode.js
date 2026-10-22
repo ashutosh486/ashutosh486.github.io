@@ -77,7 +77,7 @@ ${book.link ? '\n[Learn More](' + book.link + ')' : ''}
 
 ${portfolioContent.education.map(edu => `## ${edu.degree}
 **${edu.institution}**  
-*${edu.duration}* | GPA: ${edu.gpa}
+*${edu.year}* | GPA: ${edu.gpa}
 
 ${edu.achievements.map(a => `- ${a}`).join('\n')}
 `).join('\n\n')}`
@@ -198,7 +198,7 @@ Feel free to reach out for:
                         <div class="flex-1 p-4 overflow-y-auto font-mono text-xs">
                             <div class="text-green-400">ashutosh@portfolio:~$ ls -la</div>
                             <div class="text-gray-400">total 7</div>
-                            <div class="text-gray-400">drwxr-xr-x  7 ashutosh  staff  224 Nov 25 2025 .</div>
+                            <div class="text-gray-400">drwxr-xr-x  7 ashutosh  staff  224 ${new Date().toDateString().slice(4)} .</div>
                             <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  2.1K About.md</div>
                             <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  1.5K Skills.md</div>
                             <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  3.2K Experience.md</div>

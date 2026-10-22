@@ -46,7 +46,7 @@ const AppleTheme = {
                                     <!-- Quick Stats -->
                                     <div class="grid grid-cols-3 gap-4">
                                         <div class="text-center p-4 bg-gray-50 rounded-2xl">
-                                            <div class="text-3xl font-bold text-blue-600">${Object.values(portfolioContent.skills).flat().length}+</div>
+                                            <div class="text-3xl font-bold text-blue-600">${portfolioContent.stats.skills}+</div>
                                             <div class="text-xs text-gray-600 mt-1 font-medium">Skills</div>
                                         </div>
                                         <div class="text-center p-4 bg-gray-50 rounded-2xl">
@@ -54,7 +54,7 @@ const AppleTheme = {
                                             <div class="text-xs text-gray-600 mt-1 font-medium">Projects</div>
                                         </div>
                                         <div class="text-center p-4 bg-gray-50 rounded-2xl">
-                                            <div class="text-3xl font-bold text-pink-600">${portfolioContent.experience.length}+</div>
+                                            <div class="text-3xl font-bold text-pink-600">${portfolioContent.stats.years}+</div>
                                             <div class="text-xs text-gray-600 mt-1 font-medium">Years</div>
                                         </div>
                                     </div>
@@ -71,10 +71,10 @@ const AppleTheme = {
                                     
                                     <!-- Social Links -->
                                     <div class="flex justify-center gap-4 pt-4">
-                                        <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
+                                        <a href="${portfolioContent.social.github}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
                                             <i class="fab fa-github text-gray-700 text-xl"></i>
                                         </a>
-                                        <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
+                                        <a href="${portfolioContent.social.linkedin}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
                                             <i class="fab fa-linkedin text-gray-700 text-xl"></i>
                                         </a>
                                         ${portfolioContent.social.twitter ? `

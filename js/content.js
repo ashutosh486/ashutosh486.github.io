@@ -39,7 +39,6 @@ const portfolioContent = {
         cloud: ["AWS", "Azure", "Databricks"],
         aiml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4"],
         mlops: ["mlflow", "PySpark", "Databricks", "CVAT", "Docker"],
-        tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence"],
         databases: ["PostgreSQL", "SQLite", "MongoDB"],
         tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence", "Docker", "mlflow"]
     },
@@ -271,6 +270,20 @@ const portfolioContent = {
         { command: "/hire", description: "Ready to hire me!" },
         { command: "/help", description: "Show available commands" }
     ]
+};
+
+// Derived numbers shown by themes - computed from the data above, don't edit by hand
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const careerStart = Math.min(...portfolioContent.experience.map(exp => {
+    const [month, year] = exp.period.split(' - ')[0].split(' ');
+    return new Date(+year, MONTHS.indexOf(month)).getTime();
+}));
+portfolioContent.stats = {
+    years: Math.floor((Date.now() - careerStart) / (365.25 * 24 * 3600 * 1000)),
+    // Skill categories overlap (e.g. Python is in several), so count each skill once
+    skills: new Set(Object.values(portfolioContent.skills).flat().map(s => s.toLowerCase())).size,
+    projects: portfolioContent.projects.length,
+    companies: new Set(portfolioContent.experience.map(exp => exp.company)).size
 };
 
 console.log('✅ portfolioContent loaded successfully');

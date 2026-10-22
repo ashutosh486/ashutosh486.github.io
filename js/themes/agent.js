@@ -173,7 +173,7 @@ const AgentTheme = {
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs text-slate-400">Skills Covered</span>
-                                        <span class="text-sm font-bold text-green-400">${Object.values(portfolioContent.skills).flat().length}</span>
+                                        <span class="text-sm font-bold text-green-400">${portfolioContent.stats.skills}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs text-slate-400">Projects Delivered</span>

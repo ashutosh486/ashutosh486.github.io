@@ -10,7 +10,7 @@ const NotebookTheme = {
         {
             type: 'code',
             content: `# Import required libraries\nimport pandas as pd\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom datetime import datetime\n\nprint("Portfolio initialized successfully!")\nprint(f"Last updated: {datetime.now().strftime('%Y-%m-%d')}")`,
-            output: `Portfolio initialized successfully!\nLast updated: 2025-11-25`,
+            output: `Portfolio initialized successfully!\nLast updated: ${new Date().toISOString().slice(0, 10)}`,
             executed: true
         },
         {
