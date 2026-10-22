@@ -96,53 +96,35 @@ button.shell-ui {
     box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-.theme-tile--sm {
-    width: 24px;
-    height: 24px;
-    border-radius: 999px;
-    font-size: 10px;
-}
-
-/* Switcher pill */
+/* Switcher: one round button, bottom-right in every theme */
 .theme-dock {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 36px;
-    padding: 0 12px 0 5px;
-    border: 1px solid var(--shell-border-strong);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--shell-text);
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background-color 0.15s, border-color 0.15s;
-}
-
-.theme-dock:hover {
-    border-color: rgba(255, 255, 255, 0.32);
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.theme-dock.is-floating {
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
     bottom: max(16px, env(safe-area-inset-bottom));
     z-index: 60;
-    background: rgba(10, 10, 10, 0.88);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.9);
+    color: var(--shell-text);
+    font-size: 16px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
 }
 
-.theme-dock.is-floating:hover {
+.theme-dock:hover {
+    border-color: rgba(255, 255, 255, 0.32);
     background: var(--shell-hover);
 }
 
-.theme-dock-chevron {
-    font-size: 9px;
-    color: var(--shell-muted);
+.theme-dock:active {
+    transform: scale(0.96);
 }
 
 /* Chooser dialog */
@@ -161,6 +143,10 @@ button.shell-ui {
 
 .chooser::backdrop {
     background: rgba(0, 0, 0, 0.55);
+}
+
+.chooser-panel:focus {
+    outline: none;
 }
 
 .chooser-panel {
@@ -245,6 +231,11 @@ button.shell-ui {
     border-color: var(--shell-text);
 }
 
+/* Focus ring sits on the border, so a focused card never shows two boxes */
+.chooser-item:focus-visible {
+    outline-offset: -1px;
+}
+
 .chooser-item-text {
     display: flex;
     flex-direction: column;
@@ -305,6 +296,36 @@ button.shell-ui {
     font-size: 12px;
 }
 
+.chooser-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chooser-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--shell-border-strong);
+    border-radius: 8px;
+    color: var(--shell-text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chooser-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    background: var(--shell-hover);
+}
+
+.chooser-secondary[hidden] {
+    display: none;
+}
+
 .chooser-primary {
     height: 36px;
     padding: 0 14px;
@@ -350,16 +371,15 @@ button.shell-ui {
 
 /* Phones: bottom sheet with 44px targets */
 @media (max-width: 639px) {
-    .theme-dock {
-        justify-content: center;
-        min-width: 44px;
-        height: 44px;
-        padding: 0 9px;
-    }
-    .theme-dock-label,
-    .theme-dock-chevron,
-    .chooser-foot-hint {
+    .chooser-foot-hint,
+    .chooser-wide-only {
         display: none;
+    }
+    .chooser-actions {
+        flex: 1;
+    }
+    .chooser-secondary {
+        height: 44px;
     }
     .chooser {
         width: 100vw;
@@ -450,16 +470,42 @@ button.shell-ui {
     display: none;
 }
 
-/* Desktop: the sidebar collapses to give the chat the full width */
+/* Desktop: the sidebar collapses to an icon rail */
 @media (min-width: 768px) {
     #cgSidebar {
-        transition: margin-left 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        transition: width 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     }
     .cg-collapsed #cgSidebar {
-        margin-left: -260px;
+        width: 60px;
     }
-    .cg-collapsed #cgMenuBtn {
-        display: inline-flex;
+    .cg-collapsed .cg-label {
+        display: none;
+    }
+    .cg-collapsed .cg-side-head,
+    .cg-collapsed .cg-links {
+        flex-direction: column;
+    }
+    .cg-collapsed #cgClose {
+        order: -1;
+    }
+    .cg-collapsed .cg-topic,
+    .cg-collapsed .cg-profile {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+/* Leaves room for the page's floating theme switcher where the composer would run under it */
+.cg-dock-gap {
+    display: none;
+    flex-shrink: 0;
+    width: 48px;
+}
+
+@media (max-width: 1279px) {
+    .cg-dock-gap {
+        display: block;
     }
 }
 

@@ -70,15 +70,13 @@ class PortfolioController {
 
         const swap = () => {
             if (this.currentTheme) this.themes[this.currentTheme].cleanup?.();
-            // Park the dock outside the container first - render() replaces the container's HTML
-            document.body.append(this.dock);
             try {
                 theme.render();
             } catch (error) {
                 console.error(`Error rendering theme ${themeName}:`, error);
             }
             this.currentTheme = themeName;
-            this.placeDock();
+            this.dock.setAttribute('aria-label', `Change theme, current theme ${theme.name}`);
             this.syncPage();
         };
 
@@ -92,18 +90,6 @@ class PortfolioController {
             history[pushHistory ? 'pushState' : 'replaceState'](null, '', `#${themeName}`);
         }
         this.save(themeName);
-    }
-
-    // The dock lives inside the theme when it offers a [data-theme-slot], so it never covers content
-    placeDock() {
-        const slot = document.querySelector('#themeContainer [data-theme-slot]');
-        (slot || document.body).append(this.dock);
-        this.dock.classList.toggle('is-floating', !slot);
-
-        const meta = this.metaFor(this.currentTheme);
-        this.paintTile(document.getElementById('themeDockTile'), meta);
-        document.getElementById('themeDockLabel').textContent = meta.label;
-        this.dock.setAttribute('aria-label', `Change theme, current theme ${this.themes[this.currentTheme].name}`);
     }
 
     // Title, browser UI colour and scrollbar/form colour scheme follow the active theme
@@ -121,6 +107,13 @@ class PortfolioController {
     buildChooser() {
         const count = Object.keys(this.themes).length;
         document.getElementById('themeChooserHint').textContent = `One résumé, ${count} interfaces. Switch anytime from the theme button.`;
+        const resume = portfolioContent.resume;
+        if (resume) {
+            const link = document.getElementById('themeChooserResume');
+            link.href = resume;
+            link.download = resume.split('/').pop();
+            link.hidden = false;
+        }
         this.list.innerHTML = Object.entries(this.themes).map(([key, theme]) => {
             const meta = this.metaFor(key);
             return `
@@ -173,7 +166,8 @@ class PortfolioController {
         this.chooser.classList.remove('is-closing');
         this.chooser.style.transformOrigin = '';
         if (!this.chooser.open) this.chooser.showModal();
-        this.list.querySelector('[aria-current="true"]')?.focus();
+        // Focus the window itself: the current card is already marked, and a focus ring on it would draw a second box
+        this.chooser.querySelector('.chooser-panel').focus();
     }
 
     closeChooser(then) {
@@ -192,12 +186,6 @@ class PortfolioController {
         this.chooser.style.transformOrigin = `${dock.left + dock.width / 2 - box.left}px ${dock.top + dock.height / 2 - box.top}px`;
         this.chooser.classList.add('is-closing');
         setTimeout(finish, 160);
-    }
-
-    paintTile(tile, meta) {
-        tile.style.background = meta.bg;
-        tile.style.color = meta.fg;
-        tile.innerHTML = `<i class="${meta.icon}"></i>`;
     }
 
     // ---------- persistence (per browser; storage can be unavailable in private mode) ----------

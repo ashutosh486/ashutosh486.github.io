@@ -19,16 +19,14 @@
     <!-- Theme Container -->
     <div id="themeContainer" tabindex="-1"></div>
 
-    <!-- Theme switcher: sits in a theme's [data-theme-slot] when it has one, otherwise floats bottom-right -->
-    <button id="themeDock" type="button" class="theme-dock shell-ui" aria-haspopup="dialog" aria-controls="themeChooser">
-        <span id="themeDockTile" class="theme-tile theme-tile--sm" aria-hidden="true"></span>
-        <span id="themeDockLabel" class="theme-dock-label"></span>
-        <i class="fas fa-chevron-up theme-dock-chevron" aria-hidden="true"></i>
+    <!-- Theme switcher: same spot (bottom-right) in every theme; themes keep that corner clear -->
+    <button id="themeDock" type="button" class="theme-dock shell-ui" aria-haspopup="dialog" aria-controls="themeChooser" aria-label="Change theme" title="Change theme">
+        <i class="fas fa-palette" aria-hidden="true"></i>
     </button>
 
     <!-- Theme chooser: opens on every visit with the current theme preselected; collapses into the switcher -->
     <dialog id="themeChooser" class="chooser shell-ui" aria-labelledby="themeChooserTitle" aria-describedby="themeChooserHint">
-        <div class="chooser-panel">
+        <div class="chooser-panel" tabindex="-1">
             <header class="chooser-head">
                 <div>
                     <h2 id="themeChooserTitle" class="chooser-title">Choose a Theme</h2>
@@ -41,7 +39,12 @@
             <div id="themeChooserList" class="chooser-list"></div>
             <footer class="chooser-foot">
                 <p class="chooser-foot-hint"><kbd>Esc</kbd> to collapse</p>
-                <button id="themeChooserContinue" type="button" class="chooser-primary" data-collapse></button>
+                <div class="chooser-actions">
+                    <a id="themeChooserResume" class="chooser-secondary" hidden>
+                        <i class="fas fa-arrow-down" aria-hidden="true"></i><span><span class="chooser-wide-only">Download </span>Résumé</span>
+                    </a>
+                    <button id="themeChooserContinue" type="button" class="chooser-primary" data-collapse></button>
+                </div>
             </footer>
         </div>
     </dialog>

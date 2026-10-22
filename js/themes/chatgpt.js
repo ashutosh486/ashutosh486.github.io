@@ -2,16 +2,18 @@
 const ChatGPTTheme = {
     name: "ChatGPT Interface",
     timers: [],
+    iconBtn: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#b4b4b4] transition-colors hover:bg-white/5 hover:text-white md:h-9 md:w-9',
 
     // Icon per command key (UI only - the commands themselves come from content.js chatCommands)
     icons: {
         about: 'fa-user', skills: 'fa-code', experience: 'fa-briefcase', education: 'fa-graduation-cap',
         certifications: 'fa-certificate', projects: 'fa-rocket', reading: 'fa-book-open',
-        contact: 'fa-envelope', hire: 'fa-handshake', help: 'fa-circle-question'
+        contact: 'fa-envelope', hire: 'fa-handshake', resume: 'fa-file-arrow-down', help: 'fa-circle-question'
     },
 
     // Free-text questions map to a command by word prefix; first match wins, so "hire" is checked before "job"
     intents: [
+        ['resume', ['resume', 'résumé', 'cv', 'download', 'pdf']],
         ['hire', ['hire', 'hiring', 'available', 'opportunit', 'recruit', 'freelance']],
         ['contact', ['contact', 'email', 'mail', 'phone', 'reach', 'connect', 'linkedin', 'github', 'call']],
         ['skills', ['skill', 'stack', 'tech', 'tool', 'language', 'framework', 'know']],
@@ -28,7 +30,7 @@ const ChatGPTTheme = {
     followUps: {
         about: ['experience', 'projects'], skills: ['projects', 'experience'], experience: ['projects', 'skills'],
         projects: ['experience', 'contact'], education: ['certifications', 'experience'], certifications: ['education', 'projects'],
-        reading: ['about', 'contact'], contact: ['hire'], hire: ['projects', 'contact'], help: ['about', 'projects']
+        reading: ['about', 'contact'], contact: ['resume', 'hire'], hire: ['resume', 'projects'], resume: ['contact', 'hire'], help: ['about', 'projects']
     },
 
     render() {
@@ -41,39 +43,39 @@ const ChatGPTTheme = {
             <div id="cgRoot" class="flex h-[100dvh] overflow-hidden bg-[#212121] text-[#ececec] antialiased">
                 <div id="cgScrim" class="fixed inset-0 z-30 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
 
-                <!-- Sidebar: drawer on mobile, collapsible on desktop -->
-                <aside id="cgSidebar" class="fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 -translate-x-full flex-col bg-[#171717] transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] md:static md:translate-x-0" aria-label="Topics">
-                    <div class="flex items-center gap-1 px-2 pt-2">
-                        <button id="cgNewChat" class="flex min-h-11 flex-1 items-center gap-2.5 rounded-lg px-2 text-left transition-colors hover:bg-white/5 md:min-h-10">
+                <!-- Sidebar: drawer on mobile; on desktop it collapses to an icon rail (.cg-label hides) -->
+                <aside id="cgSidebar" class="fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 -translate-x-full flex-col overflow-hidden bg-[#171717] transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] md:static md:translate-x-0" aria-label="Topics">
+                    <div class="cg-side-head flex items-center gap-1 px-2 pt-2">
+                        <p class="cg-label flex min-w-0 flex-1 items-center gap-2.5 px-2">
                             ${this.avatar('h-7 w-7')}
-                            <span class="font-semibold" translate="no">${this.first}GPT</span>
-                            <i class="fas fa-pen-to-square ml-auto text-sm text-[#b4b4b4]" aria-hidden="true"></i>
-                            <span class="sr-only">New chat</span>
-                        </button>
-                        <button id="cgClose" class="flex h-11 w-11 items-center justify-center rounded-lg text-[#b4b4b4] transition-colors hover:bg-white/5 hover:text-white md:h-10 md:w-10" aria-label="Close sidebar">
+                            <span class="truncate font-semibold" translate="no">${this.first}GPT</span>
+                        </p>
+                        <button id="cgNewChat" class="${this.iconBtn}" aria-label="New chat" title="New chat"><i class="fas fa-pen-to-square" aria-hidden="true"></i></button>
+                        <button id="cgClose" class="${this.iconBtn}" aria-label="Close sidebar" title="Collapse sidebar" aria-expanded="true">
                             <i class="fas fa-xmark md:hidden" aria-hidden="true"></i><i class="fas fa-table-columns hidden md:inline" aria-hidden="true"></i>
                         </button>
                     </div>
                     <nav class="cg-scroll mt-4 flex-1 overflow-y-auto overscroll-contain px-2">
-                        <p class="px-2 pb-1.5 text-xs font-medium text-[#8e8e8e]">Topics</p>
+                        <p class="cg-label px-2 pb-1.5 text-xs font-medium text-[#8e8e8e]">Topics</p>
                         ${this.commands.filter(cmd => cmd.key !== 'help').map(cmd => `
-                            <button class="cg-topic group flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm text-[#d1d1d1] transition-colors hover:bg-white/5 md:min-h-9" data-key="${cmd.key}">
-                                <i class="fas ${this.icons[cmd.key] || 'fa-message'} w-4 text-center text-[#8e8e8e] transition-colors group-hover:text-[#ececec]" aria-hidden="true"></i>
-                                <span class="truncate">${cmd.description}</span>
+                            <button class="cg-topic group flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm text-[#d1d1d1] transition-colors hover:bg-white/5 md:min-h-9" data-key="${cmd.key}" title="${cmd.description}">
+                                <i class="fas ${this.icons[cmd.key] || 'fa-message'} w-4 shrink-0 text-center text-[#8e8e8e] transition-colors group-hover:text-[#ececec]" aria-hidden="true"></i>
+                                <span class="cg-label truncate">${cmd.description}</span>
                             </button>
                         `).join('')}
                     </nav>
                     <div class="border-t border-white/5 p-2">
-                        <div class="flex items-center gap-3 px-2 py-2">
-                            ${this.avatar('h-9 w-9')}
-                            <div class="min-w-0">
+                        <div class="cg-profile flex items-center gap-3 px-2 py-2">
+                            ${this.avatar('h-8 w-8')}
+                            <div class="cg-label min-w-0">
                                 <p class="truncate text-sm font-medium">${c.name}</p>
                                 <p class="truncate text-xs text-[#8e8e8e]">${c.title}</p>
                             </div>
                         </div>
-                        <div class="flex gap-1 px-1">
+                        <div class="cg-links flex items-center gap-1">
                             ${[[c.social.github, 'fab fa-github', 'GitHub'], [c.social.linkedin, 'fab fa-linkedin-in', 'LinkedIn'], [`mailto:${c.email}`, 'fas fa-envelope', 'Email']]
-                                .map(([href, icon, label]) => `<a href="${href}" ${href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} aria-label="${label}" class="flex h-11 w-11 items-center justify-center rounded-lg text-[#b4b4b4] transition-colors hover:bg-white/5 hover:text-white md:h-9 md:w-9"><i class="${icon}" aria-hidden="true"></i></a>`).join('')}
+                                .map(([href, icon, label]) => `<a href="${href}" ${href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} aria-label="${label}" title="${label}" class="${this.iconBtn}"><i class="${icon}" aria-hidden="true"></i></a>`).join('')}
+                            ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" aria-label="Download résumé" title="Download résumé" class="${this.iconBtn}"><i class="fas fa-file-arrow-down" aria-hidden="true"></i></a>` : ''}
                         </div>
                     </div>
                 </aside>
@@ -81,26 +83,25 @@ const ChatGPTTheme = {
                 <!-- Chat -->
                 <main class="relative flex min-w-0 flex-1 flex-col">
                     <header class="flex h-14 shrink-0 items-center gap-1 px-2 md:px-4">
-                        <button id="cgMenuBtn" class="flex h-11 w-11 items-center justify-center rounded-lg text-[#b4b4b4] transition-colors hover:bg-white/5 hover:text-white md:hidden md:h-10 md:w-10" aria-label="Open sidebar"><i class="fas fa-bars" aria-hidden="true"></i></button>
+                        <button id="cgMenuBtn" class="${this.iconBtn} md:hidden" aria-label="Open sidebar"><i class="fas fa-bars" aria-hidden="true"></i></button>
                         <p class="px-1 text-lg font-semibold"><span translate="no">${this.first}GPT</span> <span class="hidden text-sm font-normal text-[#8e8e8e] lg:inline">· ${c.title}</span></p>
-                        <!-- The page shell mounts its theme switcher here -->
-                        <div class="ml-auto" data-theme-slot></div>
                     </header>
 
                     <div id="cgScroll" class="cg-scroll flex-1 overflow-y-auto overscroll-contain">
-                        <div id="cgThread" class="relative mx-auto flex min-h-full max-w-4xl flex-col gap-6 px-4 pb-8 pt-2 md:px-8"></div>
+                        <div id="cgThread" class="relative mx-auto flex min-h-full max-w-4xl flex-col gap-6 px-4 pb-6 pt-2 md:px-8"></div>
                     </div>
 
                     <!-- Composer -->
                     <div class="mx-auto w-full max-w-4xl px-3 pb-[max(12px,env(safe-area-inset-bottom))] md:px-8">
-                        <div class="relative">
-                            <div class="pointer-events-none absolute -top-8 left-0 right-0 h-8 bg-[linear-gradient(to_top,#212121,transparent)]"></div>
+                        <div class="relative flex items-end gap-2">
                             <div id="cgMenu" class="absolute bottom-full left-0 right-0 mb-2 hidden max-h-72 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#2a2a2a] p-1.5 shadow-[0_1px_2px_rgba(0,0,0,.4),0_12px_32px_rgba(0,0,0,.45)]" role="listbox" aria-label="Commands"></div>
-                            <form id="cgForm" class="flex items-end gap-2 rounded-[26px] bg-[#303030] py-2 pl-5 pr-2 ring-1 ring-white/5 transition-shadow focus-within:ring-white/20">
+                            <form id="cgForm" class="flex flex-1 items-end gap-2 rounded-[26px] bg-[#303030] py-2 pl-5 pr-2 ring-1 ring-white/5 transition-shadow focus-within:ring-white/20">
                                 <label for="cgInput" class="sr-only">Message</label>
                                 <textarea id="cgInput" rows="1" placeholder="Ask anything…" autocomplete="off" class="max-h-48 flex-1 resize-none bg-transparent py-1.5 text-base leading-6 text-[#ececec] placeholder-[#8e8e8e] outline-none"></textarea>
                                 <button id="cgSend" type="submit" aria-label="Send message" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white/40 transition-[background-color,color,transform] active:scale-95 md:h-9 md:w-9"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
                             </form>
+                            <!-- Keeps the composer clear of the page's floating theme switcher (bottom-right) on narrower screens -->
+                            <div class="cg-dock-gap" aria-hidden="true"></div>
                         </div>
                         <p class="mt-2 text-center text-xs text-[#8e8e8e]">Answers come from ${this.first}'s résumé<span class="hidden sm:inline"> · Enter to send · Type / for commands</span></p>
                     </div>
@@ -140,9 +141,15 @@ const ChatGPTTheme = {
             this.send(this.input.value, true);
         });
         document.getElementById('cgNewChat').addEventListener('click', () => this.showWelcome());
-        // Same buttons drive the mobile drawer and the desktop collapse
-        document.getElementById('cgMenuBtn').addEventListener('click', () => desktop.matches ? this.root.classList.remove('cg-collapsed') : this.toggleDrawer(true));
-        document.getElementById('cgClose').addEventListener('click', () => desktop.matches ? this.root.classList.add('cg-collapsed') : this.toggleDrawer(false));
+        document.getElementById('cgMenuBtn').addEventListener('click', () => this.toggleDrawer(true));
+        // Mobile: closes the drawer. Desktop: toggles between the full sidebar and the icon rail
+        document.getElementById('cgClose').addEventListener('click', (e) => {
+            if (!desktop.matches) return this.toggleDrawer(false);
+            const collapsed = this.root.classList.toggle('cg-collapsed');
+            e.currentTarget.setAttribute('aria-expanded', String(!collapsed));
+            e.currentTarget.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            e.currentTarget.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        });
         document.getElementById('cgScrim').addEventListener('click', () => this.toggleDrawer(false));
 
         this.input.addEventListener('input', () => {
@@ -402,7 +409,7 @@ const ChatGPTTheme = {
                 <div class="flex gap-4 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
                     <!-- Drawn cover: the content.js cover URLs point at a placeholder service that no longer exists -->
                     <div class="flex h-24 w-16 shrink-0 items-end overflow-hidden rounded-[4px] border-l-4 border-white/20 bg-[#3a3a3a] p-1.5 shadow-[0_1px_2px_rgba(0,0,0,.5),0_6px_16px_rgba(0,0,0,.35)]" aria-hidden="true">
-                        <span class="text-[9px] font-semibold leading-tight text-white/80 [overflow-wrap:anywhere]">${book.title}</span>
+                        <span class="text-[9px] font-semibold leading-tight text-white/80 [hyphens:auto] [overflow-wrap:break-word]">${book.title}</span>
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 class="font-semibold leading-6 text-white">${book.title}</h3>
@@ -462,7 +469,26 @@ const ChatGPTTheme = {
                     <div class="mt-5 flex flex-wrap gap-2">
                         <a href="mailto:${c.email}" class="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-white/85"><i class="fas fa-envelope mr-2" aria-hidden="true"></i>Email Me</a>
                         <a href="${c.social.linkedin}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/5"><i class="fab fa-linkedin-in mr-2" aria-hidden="true"></i>LinkedIn</a>
+                        ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/5"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download Résumé</a>` : ''}
                     </div>
+                </div>
+            `;
+        },
+
+        resume() {
+            const c = portfolioContent;
+            if (!c.resume) return `<p>My résumé isn't available for download yet. Try /contact instead.</p>`;
+            const file = c.resume.split('/').pop();
+            return `
+                <p>Here's my résumé as a PDF.</p>
+                <div class="flex items-center gap-3 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10 sm:gap-4 sm:p-4">
+                    <span class="flex h-12 w-10 shrink-0 items-center justify-center rounded-md bg-white/5 text-[#ececec] ring-1 ring-white/10"><i class="fas fa-file-pdf" aria-hidden="true"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium text-white">${file}</p>
+                        <p class="text-xs text-[#8e8e8e]">PDF · ${c.name}</p>
+                    </div>
+                    <a href="${c.resume}" target="_blank" rel="noopener" class="hidden min-h-11 items-center rounded-full px-4 text-sm font-medium text-white ring-1 ring-white/20 transition-colors hover:bg-white/5 sm:inline-flex">Open</a>
+                    <a href="${c.resume}" download="${file}" class="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-black transition-colors hover:bg-white/85"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download</a>
                 </div>
             `;
         },

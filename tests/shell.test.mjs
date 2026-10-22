@@ -11,8 +11,8 @@ const state = b => b.evaluate(`JSON.stringify({
     hash: location.hash,
     open: document.getElementById('themeChooser').open,
     current: document.querySelector('#themeChooserList [aria-current="true"]')?.dataset.theme,
-    floating: document.getElementById('themeDock').classList.contains('is-floating'),
-    inSlot: !!document.querySelector('[data-theme-slot] #themeDock'),
+    dock: (r => [Math.round(innerWidth - r.right), Math.round(innerHeight - r.bottom)])(document.getElementById('themeDock').getBoundingClientRect()),
+    panelFocused: document.activeElement?.classList.contains('chooser-panel'),
     title: document.title,
     focus: document.activeElement?.id || document.activeElement?.dataset?.theme
 })`).then(JSON.parse);
@@ -25,16 +25,18 @@ let b = await openPage();
 let s = await state(b);
 assert.equal(s.open, true, 'chooser asks on first visit');
 assert.equal(s.current, s.theme, 'current theme preselected');
-assert.equal(s.focus, s.theme, 'focus starts on the current theme');
+assert.equal(s.panelFocused, true, 'focus starts on the window, not a card (no double box)');
+assert.equal(await b.evaluate(`document.getElementById('themeChooserResume').getAttribute('href')`), await b.evaluate('portfolioContent.resume'), 'chooser offers the résumé from content.js');
+assert.ok(await b.evaluate(`document.getElementById('themeChooserResume').hasAttribute('download')`), 'résumé link downloads');
 assert.equal(s.title, `${await b.evaluate('portfolioContent.name')} · ${await b.evaluate('ChatGPTTheme.name')}`, 'title reflects theme');
 await b.shot(`${out}-1-chooser.png`);
 
-// Escape collapses into the switcher, which sits in ChatGPT's header slot
+// Escape collapses into the switcher, bottom-right like every theme
 await b.key('Escape'); await sleep(400);
 s = await state(b);
 assert.equal(s.open, false, 'Escape collapses');
 assert.equal(s.focus, 'themeDock', 'focus returns to the switcher');
-assert.equal(s.inSlot, true, 'switcher sits in the theme slot');
+assert.deepEqual(s.dock, [16, 16], 'switcher sits bottom-right');
 await b.shot(`${out}-2-docked.png`);
 
 // Reopen and pick a theme without a slot
@@ -42,7 +44,7 @@ await b.evaluate(`document.getElementById('themeDock').click()`); await sleep(40
 assert.equal((await state(b)).open, true, 'switcher reopens chooser');
 await b.evaluate(`document.querySelector('[data-theme="paper"]').click()`); await sleep(900);
 s = await state(b);
-assert.deepEqual([s.theme, s.hash, s.open, s.floating], ['paper', '#paper', false, true], 'pick switches theme, updates URL, floats switcher');
+assert.deepEqual([s.theme, s.hash, s.open, s.dock], ['paper', '#paper', false, [16, 16]], 'pick switches theme, updates URL, switcher stays bottom-right');
 await b.shot(`${out}-3-paper.png`);
 
 // Refresh keeps the theme and asks again with it preselected
@@ -62,6 +64,20 @@ await b.evaluate('history.back()'); await sleep(900);
 assert.equal((await state(b)).theme, 'paper', 'Back returns to previous theme');
 assert.deepEqual(b.errors.filter(e => /main\.js|chatgpt\.js/.test(e)), [], 'no shell errors');
 b.close();
+
+// The switcher never covers ChatGPT's composer, at any width
+const overlaps = `(() => { const a = document.getElementById('themeDock').getBoundingClientRect(), f = document.getElementById('cgForm').getBoundingClientRect();
+    return a.left < f.right && f.left < a.right && a.top < f.bottom && f.top < a.bottom; })()`;
+for (const [width, height, mobile] of [[1440, 900, false], [1100, 800, false], [1024, 768, false], [390, 844, true]]) {
+    b = await openPage('chatgpt', { width, height, mobile });
+    await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);
+    assert.equal(await b.evaluate(overlaps), false, `switcher clear of composer at ${width}px`);
+    if (!mobile) {
+        await b.evaluate(`document.getElementById('cgClose').click()`); await sleep(400);
+        assert.equal(await b.evaluate(overlaps), false, `switcher clear of composer at ${width}px with rail`);
+    }
+    b.close();
+}
 
 // Phone: bottom sheet, 44px targets, no sideways scroll
 b = await openPage('', { width: 390, height: 844, mobile: true });

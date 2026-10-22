@@ -271,6 +271,9 @@ const portfolioContent = {
     // Picture placeholder
     picture: "images/profile.jpg",
     
+    // Résumé PDF offered for download (theme chooser, ChatGPT /resume, sidebar, hire card)
+    resume: "docs/Ashutosh_Pandey_Resume.pdf",
+    
     // Chat Commands (for ChatGPT theme)
     chatCommands: [
         { command: "/about", description: "Learn more about me" },
@@ -282,6 +285,7 @@ const portfolioContent = {
         { command: "/reading", description: "See what I'm reading" },
         { command: "/contact", description: "Get in touch with me" },
         { command: "/hire", description: "Ready to hire me!" },
+        { command: "/resume", description: "Download my résumé" },
         { command: "/help", description: "Show available commands" }
     ]
 };

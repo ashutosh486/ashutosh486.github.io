@@ -19,7 +19,7 @@ Goal: every theme should feel smooth and polished, on desktop and phones. We wor
   - Theme kept in the URL.
   - No `transition: all`.
   - `…` in placeholders.
-- **Works at 390px wide**, with no horizontal scroll. The theme switcher never covers content: a theme offers a `data-theme-slot` in its header, or leaves the bottom-right corner free.
+- **Works at 390px wide**, with no horizontal scroll. The theme switcher is a 44px round button fixed bottom-right (16px inset) in **every** theme. Each theme keeps that corner clear (ChatGPT adds a gap beside its composer below 1280px).
 - **Theme hygiene:** escape anything the visitor types, use no dead image/placeholder URLs, and have `cleanup()` clear every timer and global listener the theme creates.
 - Keep all theme files, including the disabled ones (neural, api, prompt, gitdiff, json, training) and the unused ones (agent, aiplayground).
 
@@ -34,7 +34,7 @@ Goal: every theme should feel smooth and polished, on desktop and phones. We wor
 
 Flow: branch → rebuild → run the tests → update this file → commit on the branch → review → merge into `feature/ashutoshcodes`.
 
-When one branch needs another, cut it from that branch and merge in order. Right now `theme/shell` is stacked on `theme/chatgpt`, because ChatGPT's header hosts the switcher. Merge `theme/chatgpt` first, then `theme/shell`.
+When one branch needs another, cut it from that branch and merge in order. Right now `theme/shell` is stacked on `theme/chatgpt`; merge `theme/chatgpt` first, then `theme/shell`. ChatGPT's round 3 lives on `theme/shell`, because it depends on where the switcher sits.
 
 ## Testing
 
@@ -54,8 +54,8 @@ node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignor
 
 | Theme | Enabled | Status | Branch | Notes |
 | --- | --- | --- | --- | --- |
-| Shell (switcher, chooser, transitions) | — | **Rebuilt, in review** | `theme/shell` | See log below |
-| ChatGPT | ✅ | **Rebuilt (2 rounds), in review** | `theme/chatgpt` | Hosts the switcher in its header |
+| Shell (switcher, chooser, transitions) | — | **Rebuilt (2 rounds), in review** | `theme/shell` | See log below |
+| ChatGPT | ✅ | **Rebuilt (3 rounds), in review** | `theme/chatgpt` + `theme/shell` | Round 3 on `theme/shell` |
 | Model Card | ✅ | Not started | | 465px wide on phones |
 | VSCode | ✅ | Not started | | 594px wide on phones; sidebar takes 2/3 of screen |
 | Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
@@ -96,14 +96,27 @@ node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignor
   - Geist is used for the shell UI.
 - **Code:** removed the loading overlay, the dead commented routing code and the `console.log` noise in `main.js`.
 
+#### Round 2 (owner feedback)
+
+The feedback was: the top-right pill looked bad, the switcher should sit in the same place as in every other theme, there was a box inside a box on load, and visitors should be able to download the résumé.
+
+- **Switcher:** now one round 44px palette button, fixed bottom-right in every theme, with no label, tile or chevron. The `data-theme-slot` mechanism is gone.
+- **No double box:**
+  - On open, focus goes to the chooser window itself instead of the current card. That card already has a white border, and the focus ring was drawing a second box around it.
+  - Keyboard focus rings on cards now sit on the border (`outline-offset: -1px`).
+- **Résumé:** `content.js` `resume` → `docs/Ashutosh_Pandey_Resume.pdf`. The chooser footer has "Download Résumé" ("Résumé" on phones), so it's available in every theme.
+
 #### Verified
 
 Checked with `tests/shell.test.mjs`:
 
 - The chooser asks on first visit with the current theme focused.
+- Focus lands on the window, not a card.
+- The résumé link uses the `content.js` path and downloads.
 - Escape collapses it and returns focus to the switcher.
-- The switcher sits in ChatGPT's slot.
-- Picking Paper updates `#paper` and the switcher floats.
+- The switcher is 16px from the bottom-right corner in ChatGPT and in Paper.
+- Picking Paper updates `#paper`.
+- The switcher never overlaps ChatGPT's composer at 1440, 1100, 1024 or 390px, with the sidebar expanded or collapsed to the rail.
 - Refresh keeps Paper and asks again.
 - A backdrop click collapses the chooser, and Back returns to the previous theme.
 - On phones (390px) there's no overflow, the bottom sheet is full-width and the switcher is at least 44px.
@@ -162,6 +175,22 @@ The feedback was: no gradients, less empty space, shorter skills, use the profil
   - Labels on icon-only buttons.
 - **Deliberate deviation:** Enter sends and Shift+Enter adds a line, as in ChatGPT. The guidelines suggest ⌘+Enter for textareas.
 
+#### Round 3 (owner feedback, on `theme/shell`)
+
+- **Sidebar header:** the brand (photo and name) is now plain text. "New chat" is its own pencil button, so hovering highlights only the pencil.
+- **Collapse → icon rail:**
+  - On desktop the sidebar collapses to a 60px rail, not to nothing.
+  - The rail keeps the expand button, new chat, every topic icon (each with a tooltip), the photo and the links.
+  - The width animates.
+- **Header:** the theme pill was removed from the top-right corner.
+- **Content above the composer:** the fade overlay that dimmed the conversation's last line above the composer was removed.
+- **Résumé:**
+  - A `/resume` command was added to `content.js` `chatCommands`.
+  - Free text such as "can I download your CV?" now maps to it.
+  - The answer is a file card with Open and Download buttons.
+  - The download icon is also in the sidebar links, and "Download Résumé" is on the hire card.
+- **Composer:** a gap keeps it clear of the floating switcher below 1280px.
+
 #### ChatGPT verified
 
 Checked with `tests/chatgpt.test.mjs`:
@@ -172,18 +201,20 @@ Checked with `tests/chatgpt.test.mjs`:
 - `/toString` and "already" fall through to unknown.
 - The slash menu works with arrow keys and Enter.
 - Progress bars fill, and the question scrolls to the top.
-- The desktop sidebar collapses and reopens.
+- The new-chat hover area is only the pencil.
+- The desktop sidebar collapses to a 60px rail with topic icons visible and expands back to 260px.
+- `/resume` and "download your CV?" give a download link with the `content.js` path.
 - Switching theme mid-reply throws no errors.
 - On phones there's no overflow and the drawer works.
 
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
-- [x] ~~Theme button covering content~~ (shell: slot or bottom-right pill)
+- [x] ~~Theme button covering content~~ (shell: one bottom-right button; themes keep that corner clear)
 - [x] ~~Picker hover/click conflict, no Escape/focus/labels~~ (shell)
 - [x] ~~`#themeContainer` transform breaking `position: fixed`~~ (shell)
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
-- [ ] **Each theme should add a `data-theme-slot`** in its header when redesigned, or keep the bottom-right corner clear.
+- [ ] **Each theme keeps the bottom-right 68px × 68px corner clear** of interactive content when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
 - [ ] **Basics:** meta description, Open Graph tags, favicon. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
 - [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.
@@ -192,4 +223,5 @@ Checked with `tests/chatgpt.test.mjs`:
 
 - `summary` says "6+ years"; computed `stats.years` is 8.
 - `coverImage` and `projects[].image` still point at `via.placeholder.com`, which no longer works. Themes should not use them until real images are added. (`picture` now uses `images/profile.jpg`.)
-- The phone number is shown publicly in several themes.
+- The phone number is shown publicly in several themes (and in the résumé PDF).
+- The résumé PDF lives in `docs/` next to this tracker. Consider moving it to `files/` or `assets/` and updating `resume` in `content.js`.
