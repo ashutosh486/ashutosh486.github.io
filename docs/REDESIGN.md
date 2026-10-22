@@ -57,7 +57,7 @@ node tests/modelcard.test.mjs  # desktop + 390px phone
 | --- | --- | --- | --- | --- |
 | Shell (switcher, chooser, transitions) | — | **Rebuilt (3 rounds), merged** | `theme/shell` | Merged to `develop` |
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
-| Model Card | ✅ | **Rebuilt, in review** | `theme/modelcard` | Hugging Face-style card |
+| Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | Not started | | 594px wide on phones; sidebar takes 2/3 of screen |
 | Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
