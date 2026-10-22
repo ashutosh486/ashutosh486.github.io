@@ -128,6 +128,8 @@ const ChatGPTTheme = {
         this.root.addEventListener('click', (e) => {
             const copy = e.target.closest('[data-copy]');
             if (copy) return this.copy(copy);
+            const more = e.target.closest('[data-more]');
+            if (more) return this.toggleMore(more);
             const target = e.target.closest('[data-key]');
             if (target) this.send(`/${target.dataset.key}`, this.menu.contains(target));
         });
@@ -320,7 +322,7 @@ const ChatGPTTheme = {
 
         experience() {
             const c = portfolioContent;
-            const bullet = item => `<li class="flex gap-2.5"><span class="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-[#8e8e8e]"></span><span>${item}</span></li>`;
+            const bullet = (item, i) => `<li class="flex gap-2.5 ${i >= 3 ? 'cg-extra' : ''}" ${i >= 3 ? 'hidden' : ''}><span class="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-[#8e8e8e]"></span><span>${item}</span></li>`;
             return `
                 <p>${c.stats.years}+ years across ${c.stats.companies} companies, most recent first.</p>
                 <ol class="space-y-6 border-l border-white/10 pl-6">
@@ -332,15 +334,11 @@ const ChatGPTTheme = {
                                 <span class="text-xs tabular-nums text-[#8e8e8e]">${exp.period}</span>
                             </div>
                             <p class="text-sm text-[#b4b4b4]">${exp.company} · ${exp.location}</p>
-                            <ul class="mt-2 space-y-1 text-sm leading-6 text-[#d1d1d1]">${exp.achievements.slice(0, 3).map(bullet).join('')}</ul>
+                            <ul class="mt-2 space-y-1 text-sm leading-6 text-[#d1d1d1]">${exp.achievements.map(bullet).join('')}</ul>
                             ${exp.achievements.length > 3 ? `
-                                <details class="group mt-1">
-                                    <summary class="inline-flex min-h-9 cursor-pointer list-none items-center gap-1.5 text-xs text-[#8e8e8e] transition-colors hover:text-white">
-                                        <i class="fas fa-chevron-down text-[10px] transition-transform group-open:rotate-180" aria-hidden="true"></i>
-                                        <span class="group-open:hidden">Show ${exp.achievements.length - 3} more</span><span class="hidden group-open:inline">Show less</span>
-                                    </summary>
-                                    <ul class="space-y-1 text-sm leading-6 text-[#d1d1d1]">${exp.achievements.slice(3).map(bullet).join('')}</ul>
-                                </details>` : ''}
+                                <button type="button" class="group mt-1 inline-flex min-h-9 items-center gap-1.5 text-xs text-[#8e8e8e] transition-colors hover:text-white" data-more="${exp.achievements.length - 3}" aria-expanded="false">
+                                    <i class="fas fa-chevron-down text-[10px] transition-transform group-aria-expanded:rotate-180" aria-hidden="true"></i><span>Show ${exp.achievements.length - 3} more</span>
+                                </button>` : ''}
                             <div class="mt-2 flex flex-wrap gap-1.5">${exp.technologies.map(this.chip).join('')}</div>
                         </li>`).join('')}
                 </ol>
@@ -589,6 +587,14 @@ const ChatGPTTheme = {
         const template = document.createElement('template');
         template.innerHTML = html.trim();
         return template.content.firstElementChild;
+    },
+
+    // "Show N more": hidden items join the same list and the button follows them as "Show less"
+    toggleMore(btn) {
+        const open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', open);
+        btn.previousElementSibling.querySelectorAll('.cg-extra').forEach(li => { li.hidden = !open; });
+        btn.lastElementChild.textContent = open ? 'Show less' : `Show ${btn.dataset.more} more`;
     },
 
     esc(text) {

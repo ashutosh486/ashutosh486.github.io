@@ -20,6 +20,9 @@ assert.match(await ask(b, "what's your tech stack?"), /skills across/, "free tex
 await sleep(500); await b.shot(`${out}-2b-skills.png`);
 assert.match(await ask(b, 'where did you work at Nielsen?'), /companies/, 'company -> experience');
 await b.shot(`${out}-2-experience.png`);
+await b.evaluate(`[...document.querySelectorAll('[data-more]')].at(-1).click()`); await sleep(400);
+assert.ok(await b.evaluate(`(() => { const btn = [...document.querySelectorAll('[data-more]')].at(-1), ul = btn.previousElementSibling;
+    return btn.textContent.trim() === 'Show less' && [...ul.children].every(li => !li.hidden) && ul.lastElementChild.getBoundingClientRect().bottom <= btn.getBoundingClientRect().top; })()`), 'show more expands in place, button below');
 await ask(b, '<img src=x onerror="window.__xss=1">');
 assert.equal(await b.evaluate(`document.querySelectorAll('#cgThread img[src="x"], #cgThread [onerror]').length + (window.__xss || 0)`), 0, 'user text escaped');
 assert.match(await ask(b, '/toString'), /don't have an answer/, 'bogus command -> unknown');

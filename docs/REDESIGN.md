@@ -242,6 +242,18 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Guidelines:** 44px targets on phones, `:focus-visible` rings, `tabular-nums`, labelled icon links, `touch-action: manipulation`, chart has a text `aria-label`. `cleanup()` disconnects the observer and clears the copy-feedback timer.
 - **Dropped:** the phone number (still in `content.js`; see notes below), and the invented status badges and version line.
 
+#### Model Card round 2 (owner feedback)
+
+The feedback was: the Résumé tab looks like it should open in the same tab, the page scrolls too far at the bottom and the sidebar gets pushed up, "Show N more" leaves the toggle stuck between the bullets (ChatGPT too), and add some benchmark graphs.
+
+- **Résumé tab** is a real tab now (`role="tablist"`): it swaps the page for an in-page PDF viewer with Open and Download, and the URL keeps `#modelcard`. The PDF loads only on first open. Phones get the buttons only, because mobile browsers can't reliably show a PDF inside a page.
+- **Bottom of the page:** the trailing space is now just enough to clear the switcher (it was about 150px). On desktop the bottom padding sits inside the README column, so the sticky sidebar is never pushed off the top. The sidebar is capped to the viewport height and scrolls on its own on short screens.
+- **Show N more** (Model Card and ChatGPT): the hidden items join the end of the same list and the button moves below them as "Show less" (`aria-expanded`). They rise in, except under reduced motion.
+- **Graphs** under Evaluation, both computed from `content.js` with no invented scores:
+  - *Technology usage*: ranked bars showing how many of the roles and projects (`experience.technologies` + `projects.tags`) list each technology. Top 8.
+  - *Training curve*: cumulative milestones per year (roles started, degrees, certifications, patents), drawn as a line with an area fill. The current year's point uses the accent.
+  - Both have hover/tap tooltips listing where each value comes from. The curve has a crosshair and a screen-reader data table. The bars grow in and the line wipes in left to right (transform only).
+
 #### Model Card verified
 
 Checked with `tests/modelcard.test.mjs` at 1440px and 390px:
@@ -252,6 +264,7 @@ Checked with `tests/modelcard.test.mjs` at 1440px and 390px:
 - No horizontal overflow at 390px.
 - Every section is revealed after scrolling, and nothing sits under the switcher at the bottom of the page.
 - Switching theme disconnects the observer, with no runtime errors.
+- Round 2: the Python bar count and the curve's final total match `content.js`. Show more expands in place with the button below. The Résumé tab switches in place, embeds the PDF on desktop only and keeps `#modelcard`. The sidebar isn't pushed off the top at the end, and there's no more than 100px of blank space after the content.
 
 ## Shared backlog (shell / cross-theme)
 

@@ -26,20 +26,42 @@ const ModelCardTheme = {
                             ${this.tag('fa-location-dot', c.location)}
                             ${this.tag('fa-clock', `${c.stats.years} years in production`)}
                         </ul>
-                        <nav class="mt-5 flex gap-1 text-sm" aria-label="Model card sections">
-                            <span class="flex min-h-11 items-center gap-2 border-b-2 border-gray-900 px-3 font-medium" aria-current="page"><i class="fas fa-file-lines text-gray-500" aria-hidden="true"></i>Model card</span>
-                            ${c.resume ? `<a ${this.resumeAttrs} class="flex min-h-11 items-center gap-2 border-b-2 border-transparent px-3 text-gray-500 transition-colors hover:text-gray-900"><i class="fas fa-file-pdf" aria-hidden="true"></i>Résumé</a>` : ''}
-                        </nav>
+                        <div class="mt-5 flex gap-1 text-sm" role="tablist" aria-label="Views">
+                            <button type="button" role="tab" id="mcTabCard" class="mc-tab" aria-selected="true" aria-controls="mcCard"><i class="fas fa-file-lines" aria-hidden="true"></i>Model card</button>
+                            ${c.resume ? `<button type="button" role="tab" id="mcTabResume" class="mc-tab" aria-selected="false" aria-controls="mcResume"><i class="fas fa-file-pdf" aria-hidden="true"></i>Résumé</button>` : ''}
+                        </div>
                     </div>
                 </header>
 
-                <div class="mx-auto grid max-w-[1280px] gap-x-12 px-4 pb-28 md:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-                    <article class="min-w-0 py-8 md:py-10">${this.readme()}</article>
-                    <aside class="space-y-4 pb-8 lg:sticky lg:top-0 lg:self-start lg:py-10" aria-label="Model summary">${this.sidebar()}</aside>
+                <!-- Bottom padding sits inside the article on desktop, so the sticky sidebar is never pushed up at the end -->
+                <div id="mcCard" role="tabpanel" aria-labelledby="mcTabCard" class="mx-auto grid max-w-[1280px] gap-x-12 px-4 pb-20 md:px-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-0">
+                    <article class="min-w-0 py-8 md:py-10 lg:pb-20">${this.readme()}</article>
+                    <aside class="mc-scroll space-y-4 lg:sticky lg:top-6 lg:-mx-2 lg:mt-10 lg:max-h-[calc(100dvh-104px)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:px-2 lg:pb-2" aria-label="Model summary">${this.sidebar()}</aside>
                 </div>
+                ${c.resume ? this.resumePanel() : ''}
+                <div id="mcTip" class="mc-tip" role="tooltip" hidden></div>
             </div>
         `;
         this.bind();
+    },
+
+    // Résumé tab: the PDF inline (loaded on first open); phones can't embed PDFs reliably, so they get the buttons only
+    resumePanel() {
+        const c = portfolioContent;
+        return `
+            <section id="mcResume" role="tabpanel" aria-labelledby="mcTabResume" class="mx-auto max-w-[1280px] px-4 pb-20 pt-6 md:px-8" hidden>
+                <div class="mc-card overflow-hidden rounded-xl">
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+                        <p class="mc-mono flex min-w-0 flex-1 items-center gap-2 text-sm"><i class="fas fa-file-pdf text-gray-400" aria-hidden="true"></i><span class="truncate">${c.resume.split('/').pop()}</span></p>
+                        <a href="${c.resume}" target="_blank" rel="noopener" class="${this.btn} border border-gray-200 bg-white text-gray-900 hover:bg-gray-50"><i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>Open</a>
+                        <a ${this.resumeAttrs} class="${this.btn} bg-gray-900 text-white hover:bg-gray-700"><i class="fas fa-arrow-down" aria-hidden="true"></i>Download</a>
+                    </div>
+                    <object id="mcPdf" type="application/pdf" aria-label="Résumé PDF" class="hidden h-[80dvh] min-h-[520px] w-full md:block">
+                        <p class="p-6 text-sm text-gray-500">This browser can't show the PDF here. Use Open or Download above.</p>
+                    </object>
+                    <p class="p-6 text-sm text-gray-500 md:hidden">Open the PDF in your browser's viewer, or download a copy.</p>
+                </div>
+            </section>`;
     },
 
     // ---------- README (main column): the standard model card sections ----------
@@ -72,6 +94,7 @@ const ModelCardTheme = {
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-4 grid gap-4 xl:grid-cols-2">${this.usage()}${this.curve()}</div>
             `)}
 
             ${this.section('Training Details', `
@@ -170,14 +193,82 @@ const ModelCardTheme = {
             </div>`;
     },
 
+    // Chart: how many roles and projects list each technology (top 8), from experience.technologies + projects.tags
+    usage() {
+        const c = portfolioContent, tally = new Map();
+        const sources = [...c.experience.map(e => [`${e.position} · ${e.company.split(' ')[0]}`, e.technologies]), ...c.projects.map(p => [p.title, p.tags])];
+        sources.forEach(([where, list]) => new Set(list).forEach(tech => {
+            const k = tech.toLowerCase();
+            tally.set(k, tally.get(k) || { tech, where: [] });
+            tally.get(k).where.push(where);
+        }));
+        const top = [...tally.values()].sort((a, b) => b.where.length - a.where.length).slice(0, 8);
+        return `
+            <figure class="mc-card rounded-xl p-4">
+                <figcaption><p class="font-medium">Technology usage</p><p class="text-xs text-gray-500">Roles and projects using each, out of ${sources.length}</p></figcaption>
+                <ul class="mt-4 space-y-2">
+                    ${top.map((t, i) => `
+                        <li class="grid grid-cols-[104px_1fr] items-center gap-3 text-sm" data-tip="${this.esc(`${t.tech}: ${t.where.length} of ${sources.length}\n${t.where.join('\n')}`)}">
+                            <span class="truncate text-gray-700">${t.tech}</span>
+                            <span class="flex items-center gap-2">
+                                <span class="mc-bar h-3.5 rounded-r bg-gray-800" style="width:calc((100% - 2rem) * ${t.where.length / sources.length});--i:${i}"></span>
+                                <span class="text-xs font-medium tabular-nums text-gray-600">${t.where.length}</span>
+                            </span>
+                        </li>`).join('')}
+                </ul>
+            </figure>`;
+    },
+
+    // Chart: cumulative milestones per year (roles started, degrees, certifications, patents), drawn like a training curve
+    curve() {
+        const c = portfolioContent, now = new Date().getFullYear();
+        // "2014 - 2018" counts at 2018; an ongoing "2026 - Present" counts at its start
+        const yearOf = s => { const ys = String(s).match(/\d{4}/g) || []; return +(/present/i.test(s) ? ys[0] : ys.at(-1)); };
+        const events = [
+            ...c.experience.map(e => [yearOf(e.period.split(' - ')[0]), `Joined ${e.company.split(' ')[0]} as ${e.position}`]),
+            ...c.education.map(e => [yearOf(e.year), `${/present/i.test(e.year) ? 'Started' : 'Completed'} ${e.degree.split(' (')[0]}`]),
+            ...c.certifications.map(x => [+x.year, `Certified: ${x.title}`]),
+            ...c.patents.map(p => [+p.year, `Patent: ${p.title}`])
+        ].filter(([y]) => y);
+        const first = Math.min(...events.map(([y]) => y));
+        let total = 0;
+        const points = Array.from({ length: now - first + 1 }, (_, i) => {
+            const year = first + i, these = events.filter(([y]) => y === year).map(([, what]) => what);
+            return { year, these, total: (total += these.length) };
+        });
+        const max = Math.ceil(total / 4) * 4, ticks = [0, max / 4, max / 2, (3 * max) / 4, max];
+        const x = i => (points.length > 1 ? (i / (points.length - 1)) * 100 : 50), y = v => 100 - (v / max) * 100;
+        const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.total)}`).join('');
+        return `
+            <figure class="mc-card rounded-xl p-4">
+                <figcaption><p class="font-medium">Training curve</p><p class="text-xs text-gray-500">Cumulative milestones: roles, degrees, certifications, patents</p></figcaption>
+                <div class="relative mb-6 ml-6 mr-2 mt-5 h-40" aria-hidden="true">
+                    ${ticks.map(t => `<div class="absolute inset-x-0 border-t border-gray-100" style="top:${y(t)}%"><span class="absolute -left-6 -top-2 w-4 text-right text-[11px] tabular-nums text-gray-400">${t}</span></div>`).join('')}
+                    <svg class="absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <clipPath id="mcCurveClip"><rect class="mc-bar" x="-1" y="-5" width="102" height="110"/></clipPath>
+                        <g clip-path="url(#mcCurveClip)">
+                            <path d="${line}L100,100L0,100Z" fill="#1f2937" fill-opacity="0.08"/>
+                            <path d="${line}" fill="none" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                        </g>
+                    </svg>
+                    ${points.map((p, i) => `
+                        <span class="mc-dot absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white ${p.year === now ? 'bg-amber-400' : 'bg-gray-800'}" style="left:${x(i)}%;top:${y(p.total)}%;--i:${i}"></span>
+                        <span class="mc-col absolute inset-y-0 -translate-x-1/2" style="left:${x(i)}%;width:${100 / points.length}%" data-tip="${this.esc(`${p.year}: ${p.total} total\n${p.these.join('\n') || 'No new milestones'}`)}"></span>
+                        <span class="absolute top-full mt-1.5 -translate-x-1/2 text-[11px] tabular-nums text-gray-400 ${i % 2 && i !== points.length - 1 ? 'max-sm:hidden' : ''}" style="left:${x(i)}%">${p.year}</span>`).join('')}
+                </div>
+                <div class="sr-only"><table><caption>Cumulative milestones by year</caption><tr><th>Year</th><th>Total</th><th>New</th></tr>
+                    ${points.map(p => `<tr><td>${p.year}</td><td>${p.total}</td><td>${p.these.join('; ')}</td></tr>`).join('')}</table></div>
+            </figure>`;
+    },
+
     duration(ms) {
         const months = Math.round(ms / (30.44 * 24 * 3600 * 1000)), y = Math.floor(months / 12), m = months % 12;
         return [y && `${y} yr`, m && `${m} mo`].filter(Boolean).join(' ');
     },
 
     role(exp) {
-        const [shown, more] = [exp.achievements.slice(0, 3), exp.achievements.slice(3)];
-        const item = a => `<li class="flex gap-2.5"><span class="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-gray-400" aria-hidden="true"></span><span>${a}</span></li>`;
+        const more = exp.achievements.length - 3;
+        const item = (a, i) => `<li class="flex gap-2.5 ${i >= 3 ? 'mc-extra' : ''}" ${i >= 3 ? 'hidden' : ''}><span class="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-gray-400" aria-hidden="true"></span><span>${a}</span></li>`;
         return `
             <li class="mc-card rounded-xl p-4 md:p-5">
                 <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -185,14 +276,11 @@ const ModelCardTheme = {
                     <p class="text-sm tabular-nums text-gray-500">${exp.period}</p>
                 </div>
                 <p class="mt-0.5 text-sm text-gray-500">${exp.location}</p>
-                <ul class="mt-3 space-y-1.5 text-[15px] leading-6 text-gray-700">${shown.map(item).join('')}</ul>
-                ${more.length ? `
-                    <details class="mc-more mt-1.5">
-                        <summary class="inline-flex min-h-11 cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 md:min-h-8">
-                            <i class="fas fa-chevron-down text-[10px] transition-transform" aria-hidden="true"></i><span>Show ${more.length} more</span>
-                        </summary>
-                        <ul class="mt-1 space-y-1.5 text-[15px] leading-6 text-gray-700">${more.map(item).join('')}</ul>
-                    </details>` : ''}
+                <ul class="mt-3 space-y-1.5 text-[15px] leading-6 text-gray-700">${exp.achievements.map(item).join('')}</ul>
+                ${more > 0 ? `
+                    <button type="button" class="mc-more mt-1.5 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 md:min-h-8" data-more="${more}" aria-expanded="false">
+                        <i class="fas fa-chevron-down text-[10px] transition-transform" aria-hidden="true"></i><span>Show ${more} more</span>
+                    </button>` : ''}
                 <div class="mt-3 flex flex-wrap gap-1">${exp.technologies.map(t => `<span class="${this.chip}">${t}</span>`).join('')}</div>
             </li>`;
     },
@@ -294,11 +382,56 @@ const ModelCardTheme = {
             ${c.picture ? `<img src="${c.picture}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">` : ''}</span>`;
     },
 
+    esc(text) {
+        return String(text).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+    },
+
     // ---------- behaviour ----------
+
+    showTab(tab) {
+        document.querySelectorAll('#mcRoot [role="tab"]').forEach(t => {
+            const on = t === tab, panel = document.getElementById(t.getAttribute('aria-controls'));
+            t.setAttribute('aria-selected', on);
+            panel.hidden = !on;
+            if (on) panel.classList.add('mc-panel-in');
+        });
+        const pdf = document.getElementById('mcPdf');
+        if (tab.id === 'mcTabResume' && pdf && !pdf.getAttribute('data') && window.matchMedia('(min-width: 768px)').matches) pdf.setAttribute('data', portfolioContent.resume);
+    },
+
+    // "Show N more": hidden items join the same list and the button follows them as "Show less"
+    toggleMore(btn) {
+        const open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', open);
+        btn.previousElementSibling.querySelectorAll('.mc-extra').forEach(li => { li.hidden = !open; });
+        btn.lastElementChild.textContent = open ? 'Show less' : `Show ${btn.dataset.more} more`;
+    },
+
+    // Chart tooltip follows the pointer; text comes from the mark's data-tip
+    showTip(e) {
+        const mark = e.target.closest?.('[data-tip]');
+        if (!mark) return this.hideTip();
+        this.tip.textContent = mark.dataset.tip;
+        this.tip.hidden = false;
+        const w = this.tip.offsetWidth, h = this.tip.offsetHeight;
+        this.tip.style.left = `${Math.min(Math.max(8, e.clientX - w / 2), innerWidth - w - 8)}px`;
+        this.tip.style.top = `${e.clientY - h - 14 < 8 ? e.clientY + 20 : e.clientY - h - 14}px`;
+    },
 
     bind() {
         const root = document.getElementById('mcRoot');
+        this.tip = document.getElementById('mcTip');
+        this.hideTip = () => { this.tip.hidden = true; };
+        root.addEventListener('pointermove', (e) => this.showTip(e));
+        root.addEventListener('pointerleave', this.hideTip);
+        window.addEventListener('scroll', this.hideTip, { passive: true });
+
         root.addEventListener('click', (e) => {
+            const tab = e.target.closest('[role="tab"]');
+            if (tab) return this.showTab(tab);
+            const more = e.target.closest('.mc-more');
+            if (more) return this.toggleMore(more);
+            if (e.target.closest('[data-tip]')) return this.showTip(e); // taps show the tooltip on touch screens
             const btn = e.target.closest('.mc-copy');
             if (!btn) return;
             const done = (icon) => {
@@ -320,6 +453,7 @@ const ModelCardTheme = {
     },
 
     cleanup() {
+        if (this.hideTip) window.removeEventListener('scroll', this.hideTip);
         this.observer?.disconnect();
         this.observer = null;
         this.timers.forEach(clearTimeout);
