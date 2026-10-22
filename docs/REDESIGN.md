@@ -59,7 +59,7 @@ node tests/vscode.test.mjs     # desktop + 390px phone
 | Shell (switcher, chooser, transitions) | — | **Rebuilt (3 rounds), merged** | `theme/shell` | Merged to `develop` |
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
-| VSCode | ✅ | **Rebuilt, in review** | `theme/vscode` | Cut from `feature/ashutoshcodes` after fast-forwarding it to `develop` |
+| VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
