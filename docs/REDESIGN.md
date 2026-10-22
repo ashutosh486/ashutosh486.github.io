@@ -34,7 +34,7 @@ Goal: every theme should feel smooth and polished, on desktop and phones. We wor
 
 Flow: branch → rebuild → run the tests → update this file → commit on the branch → review → merge into `feature/ashutoshcodes`.
 
-When one branch needs another, cut it from that branch and merge in order. Right now `theme/shell` is stacked on `theme/chatgpt`; merge `theme/chatgpt` first, then `theme/shell`. ChatGPT's round 3 lives on `theme/shell`, because it depends on where the switcher sits.
+When one branch needs another, cut it from that branch and merge in order. `theme/chatgpt` and `theme/shell` were stacked and are both merged. `theme/modelcard` is cut from `feature/ashutoshcodes` after it was fast-forwarded to `develop` (to pick up the M.Tech `content.js` update).
 
 ## Testing
 
@@ -43,6 +43,7 @@ Tests drive the real page in headless Chrome. They need no npm install, only Nod
 ```sh
 node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
 node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignored)
+node tests/modelcard.test.mjs  # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -54,9 +55,9 @@ node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignor
 
 | Theme | Enabled | Status | Branch | Notes |
 | --- | --- | --- | --- | --- |
-| Shell (switcher, chooser, transitions) | — | **Rebuilt (2 rounds), in review** | `theme/shell` | See log below |
-| ChatGPT | ✅ | **Rebuilt (3 rounds), in review** | `theme/chatgpt` + `theme/shell` | Round 3 on `theme/shell` |
-| Model Card | ✅ | Not started | | 465px wide on phones |
+| Shell (switcher, chooser, transitions) | — | **Rebuilt (3 rounds), merged** | `theme/shell` | Merged to `develop` |
+| ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
+| Model Card | ✅ | **Rebuilt, in review** | `theme/modelcard` | Hugging Face-style card |
 | VSCode | ✅ | Not started | | 594px wide on phones; sidebar takes 2/3 of screen |
 | Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
@@ -213,6 +214,45 @@ Checked with `tests/chatgpt.test.mjs`:
 - Switching theme mid-reply throws no errors.
 - On phones there's no overflow and the drawer works.
 
+### Model Card (`theme/modelcard`): rebuilt from scratch
+
+#### Model Card before
+
+- A stack of identical white cards, each with a different coloured icon square (purple, blue, green, orange, indigo, teal), gradient stat tiles and a purple-blue gradient contact card.
+- "Production Ready" / "Open to Opportunities" badges and a "Version 2026.1 · Last Updated: today" line, all made up in the theme.
+- Skills listed per category with heavy duplication (Python under four categories).
+- Only four projects, descriptions cut at 100 characters mid-word.
+- The phone number in a contact tile; 465px wide on phones.
+
+#### Model Card after
+
+- **Looks like a Hugging Face model page:** `user / Model-Name` header (GitHub username from `content.js`), tag pills (specialization, interests, location, years), and a "Model card | Résumé" tab bar where Résumé opens the PDF.
+- **README with the standard model card sections**, all from `content.js`:
+  - *Model Details*: bio and a "Developed by / Model type / …" list.
+  - *Evaluation*: `impact` as a results table.
+  - *Training Details*: a **training schedule** (a Gantt chart of every role on a shared time axis, durations computed from `period`) and each role with three achievements plus a native `<details>` "Show N more", and its technologies.
+  - *Uses*: every project as a card, with its site link when there is one.
+  - *Technical Specifications*: skills as one table, each skill listed once (same dedupe as ChatGPT).
+  - *Training Data*: education and certifications.
+  - *Citation*: the patent as a BibTeX block with a copy button.
+  - *Model Card Contact*: email and links.
+- **Sticky sidebar** (below the README on phones): photo, Hire me (mailto), Download résumé, icon links; "Model size" from `stats`; a "Model tree" from the first degree (base model) through each company (fine-tunes) with the roles held there.
+- **Look:** white and grays, Geist, crisp borders with layered shadows. One accent (amber) used only for the current role's bar and the current node in the model tree. No gradients.
+- **Motion:** sections rise in on scroll (IntersectionObserver, opacity + transform); the schedule bars grow in with a stagger (`scaleX`). Skipped entirely under reduced motion.
+- **Guidelines:** 44px targets on phones, `:focus-visible` rings, `tabular-nums`, labelled icon links, `touch-action: manipulation`, chart has a text `aria-label`. `cleanup()` disconnects the observer and clears the copy-feedback timer.
+- **Dropped:** the phone number (still in `content.js`; see notes below), and the invented status badges and version line.
+
+#### Model Card verified
+
+Checked with `tests/modelcard.test.mjs` at 1440px and 390px:
+
+- Name, bio, first achievement, degree, patent number, impact and `stats.years` come from `content.js`.
+- One schedule bar per role; every skill appears once.
+- Résumé links use the `content.js` path and open in a new tab.
+- No horizontal overflow at 390px.
+- Every section is revealed after scrolling, and nothing sits under the switcher at the bottom of the page.
+- Switching theme disconnects the observer, with no runtime errors.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -230,4 +270,5 @@ Checked with `tests/chatgpt.test.mjs`:
 - `summary` says "6+ years"; computed `stats.years` is 8.
 - `coverImage` and `projects[].image` still point at `via.placeholder.com`, which no longer works. Themes should not use them until real images are added. (`picture` now uses `images/profile.jpg`.)
 - The phone number is shown publicly in several themes (and in the résumé PDF).
+- The Model Card BibTeX lists only `name` as the patent's author. If the patent has co-inventors, add them to `patents[]` in `content.js`.
 - The résumé PDF lives in `docs/` next to this tracker. Consider moving it to `files/` or `assets/` and updating `resume` in `content.js`.
