@@ -722,9 +722,890 @@ button.shell-ui {
     transform: none;
 }
 
-/* VSCode theme specific */
-#editorContent {
-    transition: opacity 0.15s ease-in-out;
+/* VSCode theme: Dark Modern palette; the one accent is VS Code blue */
+#vsRoot {
+    --vs-bg: #1f1f1f;
+    --vs-chrome: #181818;
+    --vs-line: #2b2b2b;
+    --vs-fg: #cccccc;
+    --vs-dim: #9d9d9d;
+    --vs-hover: #2a2d2e;
+    --vs-sel: #37373d;
+    --vs-accent: #0078d4;
+    --vs-mono: "SF Mono", Menlo, Monaco, Consolas, "Cascadia Code", ui-monospace, monospace;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--vs-bg);
+    color: var(--vs-fg);
+    font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, Ubuntu, sans-serif;
+    color-scheme: dark;
+}
+
+#vsRoot button,
+#vsRoot a {
+    color: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#vsRoot :focus-visible {
+    outline: 1px solid var(--vs-accent);
+    outline-offset: -1px;
+}
+
+#vsRoot [hidden] {
+    display: none !important;
+}
+
+.vs-kbd {
+    padding: 0 4px;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    font: 11px/16px var(--vs-mono);
+    color: var(--vs-dim);
+}
+
+/* Title bar with the command center */
+.vs-title {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 35px;
+    padding: 0 8px;
+    background: var(--vs-chrome);
+    border-bottom: 1px solid var(--vs-line);
+}
+
+.vs-menu {
+    display: none;
+}
+
+.vs-cc {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(100%, 520px);
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    background: #1f1f1f;
+    color: var(--vs-dim);
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.vs-cc:hover {
+    background: #2a2a2a;
+    border-color: #4a4a4a;
+    color: var(--vs-fg);
+}
+
+.vs-cc > span {
+    flex: 1;
+    text-align: center;
+}
+
+.vs-body {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Activity bar */
+.vs-activity {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 48px;
+    background: var(--vs-chrome);
+    border-right: 1px solid var(--vs-line);
+}
+
+.vs-act {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    color: #868686 !important;
+    transition: color 0.15s;
+}
+
+.vs-act:hover,
+.vs-act[aria-expanded="true"] {
+    color: #d7d7d7 !important;
+}
+
+.vs-act[aria-expanded="true"] {
+    box-shadow: inset 2px 0 var(--vs-accent);
+}
+
+.vs-act-end {
+    margin-top: auto;
+}
+
+.vs-act-end .vs-act {
+    font-size: 18px;
+}
+
+/* Explorer */
+.vs-side {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 260px;
+    background: var(--vs-chrome);
+    border-right: 1px solid var(--vs-line);
+}
+
+.vs-side-title {
+    display: flex;
+    align-items: center;
+    height: 35px;
+    padding: 0 20px;
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--vs-dim);
+}
+
+.vs-tree {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 12px;
+}
+
+.vs-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    height: 22px;
+    padding: 0 8px 0 calc(var(--d, 0) * 8px + 4px);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.vs-row:hover {
+    background: var(--vs-hover);
+}
+
+.vs-row[aria-current="true"] {
+    background: var(--vs-sel);
+    color: #ffffff;
+}
+
+.vs-row-root {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.vs-row-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vs-twist {
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    width: 16px;
+    font-size: 10px;
+}
+
+.vs-row[aria-expanded="true"] .vs-chev {
+    transform: rotate(90deg);
+}
+
+.vs-ico {
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    width: 16px;
+    margin-right: 2px;
+    font: 700 12px var(--vs-mono);
+}
+
+.vs-scrim {
+    display: none;
+}
+
+/* Editor group: tabs, breadcrumbs, editor */
+.vs-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.vs-tabs {
+    display: flex;
+    flex-shrink: 0;
+    height: 35px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    background: var(--vs-chrome);
+    box-shadow: inset 0 -1px var(--vs-line);
+}
+
+.vs-tab {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    color: var(--vs-dim);
+    border-right: 1px solid var(--vs-line);
+    box-shadow: inset 0 -1px var(--vs-line);
+}
+
+.vs-tab[aria-current] {
+    background: var(--vs-bg);
+    color: #ffffff;
+    box-shadow: inset 0 1px var(--vs-accent);
+}
+
+.vs-tab-open {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    padding: 0 2px 0 12px;
+    white-space: nowrap;
+}
+
+.vs-tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 100%;
+    opacity: 0;
+}
+
+.vs-tab:hover .vs-tab-close,
+.vs-tab[aria-current] .vs-tab-close,
+.vs-tab-close:focus-visible {
+    opacity: 1;
+}
+
+.vs-tab-close i {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+}
+
+.vs-tab-close:hover i {
+    background: rgb(255 255 255 / 0.12);
+}
+
+.vs-crumbs {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 16px;
+    overflow: hidden;
+    color: var(--vs-dim);
+    white-space: nowrap;
+}
+
+.vs-crumb {
+    display: inline-flex;
+    align-items: center;
+}
+
+.vs-crumb-sep {
+    font-size: 8px;
+    opacity: 0.7;
+}
+
+.vs-editor {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(121 121 121 / 0.4) transparent;
+}
+
+.vs-editor:focus {
+    outline: none;
+}
+
+/* Source view: line numbers + wrapped lines; the bottom padding clears the theme switcher */
+.vs-code {
+    padding: 4px 0 96px;
+    font: 13px/20px var(--vs-mono);
+}
+
+.vs-line {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    min-height: 20px;
+    cursor: text;
+}
+
+.vs-ln {
+    padding-right: 26px;
+    color: #6e7681;
+    text-align: right;
+    user-select: none;
+}
+
+.vs-src {
+    padding: 0 24px 0 calc(var(--ind, 0) * 2ch);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.vs-line.is-active .vs-ln {
+    color: #cccccc;
+}
+
+.vs-line.is-active .vs-src {
+    box-shadow: inset 0 0 0 2px #282828;
+}
+
+.vs-t-p { color: #cccccc; }
+.vs-t-key { color: #9cdcfe; }
+.vs-t-ykey { color: #569cd6; }
+.vs-t-str { color: #ce9178; }
+.vs-t-num { color: #b5cea8; }
+.vs-t-cmt { color: #6a9955; }
+
+.vs-url {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.15s;
+}
+
+.vs-url:hover {
+    text-decoration-color: currentColor;
+}
+
+/* Markdown preview, styled like VS Code's */
+.vs-md {
+    max-width: 880px;
+    padding: 20px 26px 96px;
+    font-size: 14px;
+    line-height: 22px;
+    overflow-wrap: break-word;
+}
+
+.vs-md h1 {
+    margin: 0 0 16px;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid rgb(255 255 255 / 0.18);
+    font-size: 2em;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #ffffff;
+}
+
+.vs-md h2 {
+    margin: 28px 0 12px;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid rgb(255 255 255 / 0.18);
+    font-size: 1.5em;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #ffffff;
+}
+
+.vs-md p,
+.vs-md ul,
+.vs-md table,
+.vs-md blockquote {
+    margin: 0 0 16px;
+}
+
+.vs-md ul {
+    padding-left: 2em;
+    list-style: disc;
+}
+
+.vs-md li + li {
+    margin-top: 4px;
+}
+
+.vs-md strong {
+    font-weight: 600;
+    color: #e5e5e5;
+}
+
+.vs-md a {
+    color: #4daafc !important;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.vs-md a:hover {
+    text-decoration: underline;
+}
+
+.vs-md code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.09);
+    font: 0.92em var(--vs-mono);
+    color: #d7ba7d;
+}
+
+.vs-chips {
+    line-height: 26px;
+}
+
+.vs-md blockquote {
+    padding: 2px 16px;
+    border-left: 5px solid rgb(0 120 212 / 0.5);
+    background: rgb(127 127 127 / 0.1);
+}
+
+.vs-md blockquote p {
+    margin: 6px 0;
+}
+
+.vs-md hr {
+    margin: 24px 0;
+    border: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.vs-md table {
+    border-collapse: collapse;
+}
+
+.vs-md th,
+.vs-md td {
+    padding: 5px 12px;
+    text-align: left;
+}
+
+.vs-md th {
+    border-bottom: 2px solid rgb(255 255 255 / 0.25);
+    font-weight: 600;
+}
+
+.vs-md td {
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.vs-md .vs-num {
+    font-variant-numeric: tabular-nums;
+}
+
+.vs-md th.vs-num,
+.vs-md td.vs-num {
+    text-align: right;
+}
+
+.vs-md-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.vs-md-head h1 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.vs-md-head p {
+    margin: 2px 0 0;
+    color: var(--vs-dim);
+}
+
+.vs-md-avatar {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.vs-md-dim {
+    color: var(--vs-dim);
+}
+
+/* Binary file notice (the résumé PDF) and the empty editor */
+.vs-binary {
+    max-width: 560px;
+    padding: 32px 26px 96px;
+}
+
+.vs-binary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.vs-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 4px 14px;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 4px;
+    background: #313131;
+    transition: background-color 0.15s;
+}
+
+.vs-btn:hover {
+    background: #3c3c3c;
+}
+
+.vs-btn-primary {
+    border-color: transparent;
+    background: var(--vs-accent);
+    color: #ffffff !important;
+}
+
+.vs-btn-primary:hover {
+    background: #026ec1;
+}
+
+.vs-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 100%;
+    padding: 24px 24px 96px;
+    color: var(--vs-dim);
+}
+
+.vs-empty-logo {
+    margin-bottom: 24px;
+    font-size: 120px;
+    color: rgb(255 255 255 / 0.05);
+}
+
+.vs-empty button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    min-width: 240px;
+    min-height: 28px;
+    padding: 0 8px;
+    border-radius: 4px;
+}
+
+.vs-empty button:hover {
+    background: var(--vs-hover);
+    color: var(--vs-fg);
+}
+
+/* Status bar: right side stops short of the theme switcher */
+.vs-status {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: 22px;
+    padding-right: calc(var(--theme-dock-w, 44px) + 24px);
+    background: var(--vs-chrome);
+    border-top: 1px solid var(--vs-line);
+    color: var(--vs-dim);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.vs-status > span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    padding: 0 8px;
+}
+
+.vs-status .vs-grow {
+    flex: 1;
+    padding: 0;
+}
+
+.vs-status .vs-remote {
+    padding: 0 10px;
+    background: var(--vs-accent);
+    color: #ffffff;
+}
+
+.vs-status #vsPos:empty {
+    display: none;
+}
+
+/* Quick open (⌘P) */
+.vs-quick {
+    width: min(600px, calc(100vw - 32px));
+    margin: 40px auto auto;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #3c3c3c;
+    border-radius: 8px;
+    background: #222222;
+    color: var(--vs-fg);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.vs-quick::backdrop {
+    background: transparent;
+}
+
+.vs-quick input {
+    display: block;
+    width: calc(100% - 12px);
+    height: 28px;
+    margin: 6px;
+    padding: 0 8px;
+    border: 1px solid var(--vs-accent);
+    border-radius: 4px;
+    outline: none;
+    background: #313131;
+    color: var(--vs-fg);
+    font: inherit;
+}
+
+.vs-quick ul {
+    max-height: min(50vh, 420px);
+    overflow-y: auto;
+    padding: 0 6px 6px;
+}
+
+.vs-q-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.vs-q-item:hover {
+    background: var(--vs-hover);
+}
+
+.vs-q-item[aria-selected="true"] {
+    background: #04395e;
+    color: #ffffff;
+}
+
+.vs-q-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vs-q-dir,
+.vs-q-none {
+    color: var(--vs-dim);
+    font-size: 12px;
+}
+
+.vs-q-dir {
+    margin-left: 4px;
+}
+
+.vs-q-none {
+    padding: 4px 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .vs-view {
+        animation: vs-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .vs-quick[open] {
+        animation: vs-pop 0.16s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .vs-chev {
+        transition: transform 0.15s;
+    }
+}
+
+@keyframes vs-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+@keyframes vs-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+}
+
+@media (min-width: 768px) {
+    #vsRoot:not(.side-open) .vs-side {
+        display: none;
+    }
+}
+
+/* Phones: explorer becomes a drawer, 44px targets, 16px input */
+@media (max-width: 767px) {
+    .vs-title {
+        justify-content: flex-start;
+        height: 52px;
+        padding: 0 8px 0 4px;
+    }
+
+    .vs-menu {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    .vs-cc {
+        flex: 1;
+        height: 36px;
+    }
+
+    .vs-cc .vs-kbd,
+    .vs-activity,
+    .vs-wide {
+        display: none !important;
+    }
+
+    .vs-side {
+        position: absolute;
+        inset: 0 auto 0 0;
+        z-index: 20;
+        width: min(300px, 85vw);
+        transform: translateX(-100%);
+        visibility: hidden;
+        box-shadow: 8px 0 24px rgb(0 0 0 / 0.4);
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s 0.25s;
+    }
+
+    .side-open .vs-side {
+        transform: none;
+        visibility: visible;
+        transition-delay: 0s;
+    }
+
+    .vs-scrim {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 19;
+        background: rgb(0 0 0 / 0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+    }
+
+    .side-open .vs-scrim {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .vs-row {
+        height: 44px;
+    }
+
+    .vs-tabs {
+        height: 44px;
+    }
+
+    .vs-tab-open {
+        padding-right: 12px;
+    }
+
+    .vs-tab:not([aria-current]) .vs-tab-close {
+        display: none;
+    }
+
+    .vs-tab[aria-current] .vs-tab-open {
+        padding-right: 0;
+    }
+
+    .vs-tab-close {
+        width: 44px;
+    }
+
+    .vs-code {
+        font-size: 12.5px;
+    }
+
+    .vs-line {
+        grid-template-columns: 40px 1fr;
+    }
+
+    .vs-ln {
+        padding-right: 12px;
+    }
+
+    .vs-src {
+        padding-right: 16px;
+    }
+
+    .vs-md {
+        padding: 16px 16px 96px;
+    }
+
+    .vs-md-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .vs-md h1 {
+        font-size: 1.7em;
+    }
+
+    .vs-btn,
+    .vs-empty button {
+        min-height: 44px;
+    }
+
+    .vs-quick {
+        margin-top: 8px;
+    }
+
+    .vs-quick input {
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .vs-q-item {
+        height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vs-side,
+    .vs-scrim {
+        transition: none !important;
+    }
 }
 
 /* Terminal theme text colors */
