@@ -654,34 +654,6 @@ button.shell-ui {
     font-weight: 500;
 }
 
-.mc-tip {
-    position: fixed;
-    z-index: 50;
-    max-width: 260px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: #111827;
-    color: #fff;
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: pre-line;
-    pointer-events: none;
-    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.25);
-}
-
-.mc-tip::first-line {
-    font-weight: 600;
-}
-
-/* Crosshair on the training curve's hovered year */
-.mc-col:hover::after {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 50%;
-    width: 1px;
-    background: rgb(17 24 39 / 0.15);
-}
-
 .mc-scroll {
     scrollbar-width: thin;
     scrollbar-color: rgb(0 0 0 / 0.15) transparent;
@@ -738,17 +710,6 @@ button.shell-ui {
 
 .mc-bar {
     transform-origin: left;
-    transform-box: fill-box;
-}
-
-.mc-anim .mc-dot {
-    opacity: 0;
-    transition: opacity 0.3s;
-    transition-delay: calc(var(--i, 0) * 70ms + 300ms);
-}
-
-.mc-anim .is-in .mc-dot {
-    opacity: 1;
 }
 
 .mc-anim .mc-bar {
