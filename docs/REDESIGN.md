@@ -320,7 +320,8 @@ Checked with `tests/vscode.test.mjs` at 1440px and 390px:
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
 - [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
-- [ ] **Basics:** meta description, Open Graph tags, favicon. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
+- [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)
+- [ ] **Basics:** meta description, Open Graph tags. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
 - [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.
 
 ## content.js notes (for the owner to decide)
