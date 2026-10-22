@@ -90,8 +90,37 @@ node tests/chatgpt.test.mjs            # screenshots go to tests/screenshots/ (g
 - Switching theme mid-reply throws no errors.
 - The phone layout has no overflow, and the drawer closes after picking a topic.
 
+**Round 2 (owner feedback: no gradients, less empty space, shorter skills, use profile photo, content.js only)**
+- **Monochrome:** every gradient is gone (avatar, hire card, book covers) and so is the green accent. The look now follows ChatGPT's grayscale UI.
+- **Photo:** `content.js` `picture` → `images/profile.jpg`, used for the assistant avatar, sidebar profile, welcome screen and hire card. Initials are the fallback.
+- **Less empty space:**
+  - The chat column is `max-w-4xl` (was 3xl), with tighter vertical spacing.
+  - The welcome screen is a left-aligned profile row, a 4-up stats strip and four suggestion cards. The cards are the first four non-help `chatCommands`, so `content.js` controls them.
+  - The sidebar collapses on desktop.
+- **Skills:**
+  - One compact table, one row per category.
+  - Each skill appears once, under its first category.
+  - Labels come from the new `content.js` `skillLabels`. `languages` moved to the top of `skills`; only the order changed.
+- **Experience:** shows three achievements per role, with a native `<details>` "Show N more".
+- **Facts:** the hardcoded `nit` keyword was removed. School names are now read from `content.js` (the short name in brackets).
+- **Vercel Web Interface Guidelines applied:**
+  - 16px composer text, so iOS doesn't zoom.
+  - 44px tap targets on mobile.
+  - 2px `:focus-visible` rings.
+  - `touch-action: manipulation`.
+  - `overscroll-behavior: contain` on the scroll areas.
+  - `color-scheme: dark`.
+  - Progress animates with `transform` instead of `width`.
+  - No `transition-all`.
+  - Placeholder ends with `…`.
+  - The send button isn't pre-disabled.
+  - `tabular-nums` on numbers.
+  - `aria-live` on answers.
+  - Labels on icon-only buttons.
+- **Deliberate deviation:** Enter sends and Shift+Enter adds a line, as in ChatGPT. The guidelines suggest ⌘+Enter for textareas.
+
 **Follow-ups**
-- The extra space under the composer on phones exists only to clear the global theme button. Remove it once the shell moves that button.
+- The extra space under the composer on phones exists only to clear the global theme button. The shell branch removes it.
 
 ## Shared backlog (shell / cross-theme)
 

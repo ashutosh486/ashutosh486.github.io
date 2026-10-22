@@ -38,17 +38,23 @@ const portfolioContent = {
 
     // Skills
     skills: {
+        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         backend: ["Python", "Flask", "Jinja2", "psycopg2", "pandas", "numpy", "Streamlit"],
         frontend: ["HTML", "CSS", "JavaScript", "Angular", "Tailwind CSS"],
         database: ["PostgreSQL", "SQLite", "MongoDB"],
         ml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4", "TensorFlow", "PyTorch"],
-        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         frameworks: ["Flask", "Angular", "Tailwind CSS", "Streamlit", "LangChain", "pandas", "numpy"],
         cloud: ["AWS", "Azure", "Databricks"],
         aiml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4"],
         mlops: ["mlflow", "PySpark", "Databricks", "CVAT", "Docker"],
         databases: ["PostgreSQL", "SQLite", "MongoDB"],
         tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence", "Docker", "mlflow"]
+    },
+    
+    // Display names for the skill categories above
+    skillLabels: {
+        languages: "Languages", backend: "Backend", frontend: "Frontend", database: "Databases", ml: "Machine Learning",
+        frameworks: "Frameworks", cloud: "Cloud", aiml: "AI / ML", mlops: "MLOps", databases: "Databases", tools: "Tools"
     },
     
     // Projects
@@ -263,7 +269,7 @@ const portfolioContent = {
     hobbies: ["Traveling and exploring places", "Listening to music", "Playing Chess", "Badminton", "Table Tennis"],
     
     // Picture placeholder
-    picture: "https://via.placeholder.com/200x200/667eea/ffffff?text=AP",
+    picture: "images/profile.jpg",
     
     // Chat Commands (for ChatGPT theme)
     chatCommands: [
