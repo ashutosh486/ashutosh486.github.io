@@ -19,7 +19,7 @@ Goal: every theme should feel smooth and polished, on desktop and phones. We wor
   - Theme kept in the URL.
   - No `transition: all`.
   - `…` in placeholders.
-- **Works at 390px wide**, with no horizontal scroll. The theme switcher is a 44px round button fixed bottom-right (16px inset) in **every** theme. Each theme keeps that corner clear (ChatGPT adds a gap beside its composer below 1280px).
+- **Works at 390px wide**, with no horizontal scroll. The theme switcher is a pill (current theme's tile and name) fixed bottom-right (16px inset) in **every** theme, and a 44px icon button on phones. Its live width is published as `--theme-dock-w`, which themes use to keep that corner clear (ChatGPT sizes a gap beside its composer with it below 1440px).
 - **Theme hygiene:** escape anything the visitor types, use no dead image/placeholder URLs, and have `cleanup()` clear every timer and global listener the theme creates.
 - Keep all theme files, including the disabled ones (neural, api, prompt, gitdiff, json, training) and the unused ones (agent, aiplayground).
 
@@ -106,13 +106,18 @@ The feedback was: the top-right pill looked bad, the switcher should sit in the 
   - Keyboard focus rings on cards now sit on the border (`outline-offset: -1px`).
 - **Résumé:** `content.js` `resume` → `docs/Ashutosh_Pandey_Resume.pdf`. The chooser footer has "Download Résumé" ("Résumé" on phones), so it's available in every theme.
 
+#### Round 3 (owner feedback)
+
+- The owner preferred the earlier pill. The tile, name and chevron are restored, now always fixed bottom-right. A `ResizeObserver` publishes the pill's width as `--theme-dock-w`.
+- **Résumé links:** browsers ignore `download` for some origins (e.g. a local `file://` copy), so the PDF replaced the portfolio page. Every résumé download link now also has `target="_blank"`: it downloads where allowed, otherwise it opens in a new tab.
+
 #### Verified
 
 Checked with `tests/shell.test.mjs`:
 
 - The chooser asks on first visit with the current theme focused.
 - Focus lands on the window, not a card.
-- The résumé link uses the `content.js` path and downloads.
+- The résumé link uses the `content.js` path, downloads, and opens in a new tab as a fallback.
 - Escape collapses it and returns focus to the switcher.
 - The switcher is 16px from the bottom-right corner in ChatGPT and in Paper.
 - Picking Paper updates `#paper`.
@@ -204,6 +209,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - The new-chat hover area is only the pencil.
 - The desktop sidebar collapses to a 60px rail with topic icons visible and expands back to 260px.
 - `/resume` and "download your CV?" give a download link with the `content.js` path.
+- Every résumé download link opens in a new tab rather than replacing the page.
 - Switching theme mid-reply throws no errors.
 - On phones there's no overflow and the drawer works.
 
@@ -214,7 +220,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - [x] ~~Picker hover/click conflict, no Escape/focus/labels~~ (shell)
 - [x] ~~`#themeContainer` transform breaking `position: fixed`~~ (shell)
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
-- [ ] **Each theme keeps the bottom-right 68px × 68px corner clear** of interactive content when redesigned.
+- [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
 - [ ] **Basics:** meta description, Open Graph tags, favicon. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
 - [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.

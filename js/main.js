@@ -41,6 +41,9 @@ class PortfolioController {
         this.buildChooser();
         this.bindChooser();
 
+        // Themes read --theme-dock-w to keep their bottom-right corner clear of the switcher
+        new ResizeObserver(() => document.documentElement.style.setProperty('--theme-dock-w', `${this.dock.offsetWidth}px`)).observe(this.dock);
+
         // URL first (shareable links), then this browser's last pick, then the first theme
         const initial = [location.hash.slice(1), this.readSaved()].find(key => this.themes[key]) || Object.keys(this.themes)[0];
         this.loadTheme(initial, { animate: false });
@@ -76,7 +79,7 @@ class PortfolioController {
                 console.error(`Error rendering theme ${themeName}:`, error);
             }
             this.currentTheme = themeName;
-            this.dock.setAttribute('aria-label', `Change theme, current theme ${theme.name}`);
+            this.paintDock();
             this.syncPage();
         };
 
@@ -90,6 +93,17 @@ class PortfolioController {
             history[pushHistory ? 'pushState' : 'replaceState'](null, '', `#${themeName}`);
         }
         this.save(themeName);
+    }
+
+    // Switcher shows the current theme's tile and short name
+    paintDock() {
+        const meta = this.metaFor(this.currentTheme);
+        const tile = document.getElementById('themeDockTile');
+        tile.style.background = meta.bg;
+        tile.style.color = meta.fg;
+        tile.innerHTML = `<i class="${meta.icon}"></i>`;
+        document.getElementById('themeDockLabel').textContent = meta.label;
+        this.dock.setAttribute('aria-label', `Change theme, current theme ${this.themes[this.currentTheme].name}`);
     }
 
     // Title, browser UI colour and scrollbar/form colour scheme follow the active theme
@@ -112,6 +126,9 @@ class PortfolioController {
             const link = document.getElementById('themeChooserResume');
             link.href = resume;
             link.download = resume.split('/').pop();
+            // download is ignored on some origins (e.g. file://); a new tab keeps the portfolio open either way
+            link.target = '_blank';
+            link.rel = 'noopener';
             link.hidden = false;
         }
         this.list.innerHTML = Object.entries(this.themes).map(([key, theme]) => {

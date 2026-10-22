@@ -13,6 +13,7 @@ assert.equal(await b.evaluate(`document.querySelectorAll('#cgWelcome [data-key]'
 assert.ok(await b.evaluate(`(() => { const r = document.getElementById('cgNewChat').getBoundingClientRect(); return r.width <= 44 && !document.getElementById('cgNewChat').innerText.trim(); })()`), 'new chat hover area is just the pencil');
 assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'free text -> résumé');
 assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-body')].at(-1).querySelector('a[download]').getAttribute('href')`), await b.evaluate('portfolioContent.resume'), 'résumé download uses content.js path');
+assert.ok(await b.evaluate(`[...document.querySelectorAll('#cgRoot a[download]')].every(a => a.target === '_blank')`), 'résumé downloads never replace the page');
 await b.shot(`${out}-1-welcome.png`);
 assert.ok((await ask(b, '/about')).includes(await b.evaluate('portfolioContent.about.bio.slice(0, 40)')), 'about shows bio from content.js');
 assert.match(await ask(b, "what's your tech stack?"), /skills across/, "free text -> skills");

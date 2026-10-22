@@ -20,8 +20,10 @@
     <div id="themeContainer" tabindex="-1"></div>
 
     <!-- Theme switcher: same spot (bottom-right) in every theme; themes keep that corner clear -->
-    <button id="themeDock" type="button" class="theme-dock shell-ui" aria-haspopup="dialog" aria-controls="themeChooser" aria-label="Change theme" title="Change theme">
-        <i class="fas fa-palette" aria-hidden="true"></i>
+    <button id="themeDock" type="button" class="theme-dock shell-ui" aria-haspopup="dialog" aria-controls="themeChooser" aria-label="Change theme">
+        <span id="themeDockTile" class="theme-tile theme-tile--sm" aria-hidden="true"></span>
+        <span id="themeDockLabel" class="theme-dock-label"></span>
+        <i class="fas fa-chevron-up theme-dock-chevron" aria-hidden="true"></i>
     </button>
 
     <!-- Theme chooser: opens on every visit with the current theme preselected; collapses into the switcher -->

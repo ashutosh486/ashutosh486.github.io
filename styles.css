@@ -96,7 +96,14 @@ button.shell-ui {
     box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-/* Switcher: one round button, bottom-right in every theme */
+.theme-tile--sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    font-size: 10px;
+}
+
+/* Switcher pill: current theme's tile and name, bottom-right in every theme */
 .theme-dock {
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
@@ -104,18 +111,20 @@ button.shell-ui {
     z-index: 60;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px 0 5px;
     border: 1px solid var(--shell-border-strong);
     border-radius: 999px;
-    background: rgba(10, 10, 10, 0.9);
+    background: rgba(10, 10, 10, 0.88);
     color: var(--shell-text);
-    font-size: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
+    transition: background-color 0.15s, border-color 0.15s;
 }
 
 .theme-dock:hover {
@@ -123,8 +132,9 @@ button.shell-ui {
     background: var(--shell-hover);
 }
 
-.theme-dock:active {
-    transform: scale(0.96);
+.theme-dock-chevron {
+    font-size: 9px;
+    color: var(--shell-muted);
 }
 
 /* Chooser dialog */
@@ -371,6 +381,14 @@ button.shell-ui {
 
 /* Phones: bottom sheet with 44px targets */
 @media (max-width: 639px) {
+    .theme-dock {
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 9px;
+    }
+    .theme-dock-label,
+    .theme-dock-chevron,
     .chooser-foot-hint,
     .chooser-wide-only {
         display: none;
@@ -496,16 +514,23 @@ button.shell-ui {
     }
 }
 
-/* Leaves room for the page's floating theme switcher where the composer would run under it */
+/* Leaves room for the page's theme switcher (width from --theme-dock-w) where the composer would run under it:
+   the switcher sits 16px from the right edge, the composer row is inset 12px (32px from md up) */
 .cg-dock-gap {
     display: none;
     flex-shrink: 0;
-    width: 48px;
+    width: calc(var(--theme-dock-w, 44px) + 4px);
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 1439px) {
     .cg-dock-gap {
         display: block;
+    }
+}
+
+@media (min-width: 768px) {
+    .cg-dock-gap {
+        width: calc(var(--theme-dock-w, 44px) - 16px);
     }
 }
 

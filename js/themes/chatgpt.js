@@ -75,7 +75,7 @@ const ChatGPTTheme = {
                         <div class="cg-links flex items-center gap-1">
                             ${[[c.social.github, 'fab fa-github', 'GitHub'], [c.social.linkedin, 'fab fa-linkedin-in', 'LinkedIn'], [`mailto:${c.email}`, 'fas fa-envelope', 'Email']]
                                 .map(([href, icon, label]) => `<a href="${href}" ${href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''} aria-label="${label}" title="${label}" class="${this.iconBtn}"><i class="${icon}" aria-hidden="true"></i></a>`).join('')}
-                            ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" aria-label="Download résumé" title="Download résumé" class="${this.iconBtn}"><i class="fas fa-file-arrow-down" aria-hidden="true"></i></a>` : ''}
+                            ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" target="_blank" rel="noopener" aria-label="Download résumé" title="Download résumé" class="${this.iconBtn}"><i class="fas fa-file-arrow-down" aria-hidden="true"></i></a>` : ''}
                         </div>
                     </div>
                 </aside>
@@ -469,7 +469,7 @@ const ChatGPTTheme = {
                     <div class="mt-5 flex flex-wrap gap-2">
                         <a href="mailto:${c.email}" class="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-white/85"><i class="fas fa-envelope mr-2" aria-hidden="true"></i>Email Me</a>
                         <a href="${c.social.linkedin}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/5"><i class="fab fa-linkedin-in mr-2" aria-hidden="true"></i>LinkedIn</a>
-                        ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/5"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download Résumé</a>` : ''}
+                        ${c.resume ? `<a href="${c.resume}" download="${c.resume.split('/').pop()}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors hover:bg-white/5"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download Résumé</a>` : ''}
                     </div>
                 </div>
             `;
@@ -488,7 +488,7 @@ const ChatGPTTheme = {
                         <p class="text-xs text-[#8e8e8e]">PDF · ${c.name}</p>
                     </div>
                     <a href="${c.resume}" target="_blank" rel="noopener" class="hidden min-h-11 items-center rounded-full px-4 text-sm font-medium text-white ring-1 ring-white/20 transition-colors hover:bg-white/5 sm:inline-flex">Open</a>
-                    <a href="${c.resume}" download="${file}" class="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-black transition-colors hover:bg-white/85"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download</a>
+                    <a href="${c.resume}" download="${file}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-black transition-colors hover:bg-white/85"><i class="fas fa-arrow-down mr-2" aria-hidden="true"></i>Download</a>
                 </div>
             `;
         },

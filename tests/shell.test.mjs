@@ -27,7 +27,7 @@ assert.equal(s.open, true, 'chooser asks on first visit');
 assert.equal(s.current, s.theme, 'current theme preselected');
 assert.equal(s.panelFocused, true, 'focus starts on the window, not a card (no double box)');
 assert.equal(await b.evaluate(`document.getElementById('themeChooserResume').getAttribute('href')`), await b.evaluate('portfolioContent.resume'), 'chooser offers the résumé from content.js');
-assert.ok(await b.evaluate(`document.getElementById('themeChooserResume').hasAttribute('download')`), 'résumé link downloads');
+assert.ok(await b.evaluate(`(l => l.hasAttribute('download') && l.target === '_blank')(document.getElementById('themeChooserResume'))`), 'résumé link downloads, or opens in a new tab where download is blocked');
 assert.equal(s.title, `${await b.evaluate('portfolioContent.name')} · ${await b.evaluate('ChatGPTTheme.name')}`, 'title reflects theme');
 await b.shot(`${out}-1-chooser.png`);
 
