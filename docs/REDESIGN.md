@@ -61,7 +61,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | **Rebuilt (5 rounds), in review** | `theme/terminal` | |
+| Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -423,7 +423,7 @@ The feedback was: the lips don't move, the coffee looks like it's floating, the 
 
 The feedback was: on phones every clickable command is a bordered tile; it should look the same as on desktop.
 
-- **Phones match desktop:** commands are the same dotted-underlined green words (menu, `help`, suggestions, scheme list), and Open / Download / Write to me are the same small buttons. Each keeps a 44px tap area through an invisible `::after` hit zone, and the rows are spaced so neighbouring hit zones barely overlap. Checked by `tests/terminal.test.mjs`: no tile border, and a tap area of at least 44px.
+- **Phones match desktop:** commands are the same dotted-underlined green words (menu, `help`, suggestions, scheme list), and Open / Download / Write to me are the same small buttons. The phone prompt shows `guest@ashutosh:~$` like the desktop ones. Each keeps a 44px tap area through an invisible `::after` hit zone, and the rows are spaced so neighbouring hit zones barely overlap. Checked by `tests/terminal.test.mjs`: no tile border, and a tap area of at least 44px.
 
 ## Shared backlog (shell / cross-theme)
 

@@ -35,6 +35,7 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await b.evaluate(`dispatchEvent(new KeyboardEvent('keydown', { key: 'x' }))`); await sleep(400);
     assert.ok(await b.evaluate(`!TerminalTheme.booting && !document.querySelector('.tm-entry-line').hidden && !!document.querySelector('.tm-menu')`), `${label}: a key press skips to the finished boot`);
     assert.equal(await b.evaluate(`document.getElementById('tmRoot').dataset.os`), phone ? 'phone' : 'mac', `${label}: terminal matches the device`);
+    assert.equal(await b.evaluate(`document.querySelector('.tm-entry-line .tm-prompt').textContent`), phone ? 'guest@ashutosh:~$' : 'guest@ashutosh ~ %', `${label}: prompt shows guest@host`);
 
     // Boot header from content.js: caricature, name banner and facts, and a clickable menu built from chatCommands
     const login = await b.evaluate(screen);

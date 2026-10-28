@@ -29,7 +29,7 @@ const TerminalTheme = {
         },
         phone: {
             shell: 'sh', script: './portfolio',
-            prompt: () => '<span class="tm-acc">~</span> $',
+            prompt: h => `<span class="tm-acc">guest@${h}</span>:<span class="tm-key">~</span>$`,
             greeting: () => [`Welcome to ${portfolioContent.name}'s portfolio!`, 'Tap a command below, or type one.'],
             notFound: (w, near) => `<p>${w}: command not found</p>${near ? `<p class="tm-dim">Did you mean ${near}?</p>` : ''}`
         }
