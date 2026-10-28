@@ -445,7 +445,7 @@ The feedback was: on phones every clickable command is a bordered tile; it shoul
   - The page is white on grey with Jupyter's blue selection bar, `[n]:` prompts (blue for input, orange-red for output) and Jupyter's Python syntax colours.
 - **Opening (after the theme chooser closes):** the first cell types itself in edit mode, then the whole notebook runs. Every prompt shows `[*]:`, the kernel goes busy, and the outputs appear one by one, numbered in order. A key press or a click skips to the finished notebook. With reduced motion, everything shows at once.
 - **Short code, real outputs:** cells read like real notebook code (`pd.DataFrame(me.projects)`, `display(Markdown(...))`, `print(...)`). Every output is built from `content.js`:
-  - **Profile:** photo, tagline, bio, stats and interests.
+  - **Profile:** the caricature (`js/caricature.js`, code glyphs in Jupyter orange), tagline, bio, stats and interests.
   - **Impact, Projects and Education:** pandas DataFrame tables.
   - **Experience:** rendered Markdown per role.
   - **Skills:** aligned stdout, each skill once.
@@ -463,7 +463,7 @@ Checked with `tests/notebook.test.mjs` at 1440px and 390px:
 - With the chooser open nothing runs and the first cell is empty. Closing the chooser types it, shows `[*]:` while the kernel is busy, then numbers every cell 1…n in order.
 - A key press skips straight to the finished run.
 - The facts come from `content.js`: name, bio, stats, impact, every role's last achievement, every project, degree, patent number, certificates, books and email. Each skill is listed once and all of them are listed.
-- The résumé link uses the `content.js` path and opens in a new tab, and the photo loads.
+- The résumé link uses the `content.js` path and opens in a new tab, and the profile shows the caricature rather than the photo.
 - The header takes at most 20% of the screen. There's no horizontal overflow, and toolbar buttons are 44px on phones.
 - Click selects a cell and ↓ moves the selection. Shift+Enter runs the cell with the next count and advances; Ctrl+Enter runs it in place.
 - Interrupt stops a run with no `[*]` left. Restart & Run All renumbers from 1.

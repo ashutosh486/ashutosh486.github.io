@@ -2763,20 +2763,17 @@ button.shell-ui {
     text-decoration: underline;
 }
 
-/* Profile output: photo beside the bio */
+/* Profile output: the caricature beside the bio, its code glyphs in Jupyter orange */
 .nb-profile {
     display: flex;
     gap: 16px;
     align-items: flex-start;
 }
 
-.nb-avatar {
+.nb-profile .cc {
+    --cc-code: #f37726;
     flex: none;
-    width: 104px;
-    height: 104px;
-    border-radius: 4px;
-    object-fit: cover;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+    width: 140px;
 }
 
 /* pandas DataFrame */
@@ -2899,9 +2896,8 @@ button.shell-ui {
         flex-direction: column;
     }
 
-    .nb-avatar {
-        width: 88px;
-        height: 88px;
+    .nb-profile .cc {
+        width: 120px;
     }
     /* Cell max-width is ignored in table layout; width hints are honoured */
     .nb-df td {

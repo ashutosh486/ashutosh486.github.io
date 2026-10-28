@@ -80,7 +80,7 @@ const NotebookTheme = {
         const c = portfolioContent, s = c.stats;
         return `
             <div class="nb-profile">
-                ${c.picture ? `<img src="${c.picture}" alt="" class="nb-avatar" onerror="this.remove()">` : ''}
+                ${caricatureSVG()}
                 <div class="nb-rendered">
                     <p><strong>${c.tagline}</strong></p>
                     <p>${c.about.bio}</p>

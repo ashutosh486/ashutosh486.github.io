@@ -48,7 +48,7 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     assert.equal(listed.length, new Set(listed).size, `${label}: each skill listed once`);
     assert.equal(listed.length, c.stats.skills, `${label}: every skill listed`);
     assert.ok(await b.evaluate(`[...document.querySelectorAll('#nbCells a[download]')].some(a => a.getAttribute('href') === portfolioContent.resume && a.target === '_blank')`), `${label}: résumé link uses content.js path and opens in a new tab`);
-    assert.ok(await b.evaluate(`document.querySelector('.nb-avatar')?.naturalWidth > 0`), `${label}: profile photo loads`);
+    assert.ok(await b.evaluate(`!!document.querySelector('.nb-profile svg.cc') && !document.querySelector('#nbCells img')`), `${label}: profile shows the caricature, not the photo`);
     // The sticky header stays small
     assert.ok(await b.evaluate(`document.querySelector('.nb-head').offsetHeight <= innerHeight * 0.2`), `${label}: header takes at most 20% of the screen`);
     if (phone) assert.ok(await b.evaluate(`[...document.querySelectorAll('.nb-tool')].every(t => t.offsetWidth >= 44 && t.offsetHeight >= 44)`), 'm: 44px toolbar buttons');
