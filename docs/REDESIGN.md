@@ -63,7 +63,7 @@ node tests/notebook.test.mjs   # desktop + 390px phone
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
-| Notebook | ✅ | **Rebuilt (2 rounds), in review** | `theme/notebook` | |
+| Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
