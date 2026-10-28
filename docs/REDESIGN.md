@@ -45,6 +45,7 @@ node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
 node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignored)
 node tests/modelcard.test.mjs  # desktop + 390px phone
 node tests/vscode.test.mjs     # desktop + 390px phone
+node tests/terminal.test.mjs   # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -60,7 +61,7 @@ node tests/vscode.test.mjs     # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
+| Terminal | ✅ | **Rebuilt, in review** | `theme/terminal` | |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -311,6 +312,44 @@ Checked with `tests/vscode.test.mjs` at 1440px and 390px:
 - No horizontal overflow; nothing under the switcher at the end of a file.
 - Switching theme removes the key listener, with no runtime errors.
 
+### Terminal (`theme/terminal`): rebuilt from scratch
+
+#### Terminal before
+
+- A 76-column ASCII "ASHUTOSH" banner and fixed-width box tables (skills), too wide for phones. The banner hardcoded the name.
+- Typed commands were echoed as HTML (XSS). `education` was defined twice. The help list was hardcoded.
+- A 500ms startup timer ran `help` even after you switched theme, and a `document` click listener was never removed.
+- Showed the phone number twice. The "I'm available for…" list and "Response time: 24 hours" were made up in the theme.
+- Experience showed two achievements per role; green, cyan, yellow and magenta all used as accents.
+
+#### Terminal after
+
+- **Looks like a zsh session:** a slim title bar (`guest@ashutosh: ~ — zsh`, host from the first name in `content.js`), a `guest@ashutosh ~ %` prompt, Geist Mono, near-black with one accent (terminal green).
+- **Login is `neofetch`:** the profile photo next to Title, Focus, Location, Uptime (`stats.years`), companies, projects and skills from `stats`, then a clickable menu of every command.
+- **Commands come from `content.js` `chatCommands`** (names and descriptions), plus shell built-ins `neofetch`, `history`, `clear`, and aliases `ls`/`man` → help, `whoami` → about, `cv` → resume. All from `content.js`:
+  - `experience`: every role and every achievement as a `git log --graph` (a `*` per role, joined by a rail).
+  - `projects`, `skills` (each skill once, same dedupe as VS Code), `education`, `certifications` (with the patent), `reading` (an ASCII progress bar), `contact`, `hire` (impact numbers and links), `resume` (Open / Download).
+- **Behaves like a terminal:** Tab completes (common prefix, or lists the matches), ↑/↓ history, Ctrl+L clears, Ctrl+C cancels the line. Unknown commands print `zsh: command not found` with a "Did you mean …?" (typos within two edits, or a 3+ letter prefix). `sudo` has an answer.
+- **Clickable:** every command name in the output is a button. A clicked command types itself at the prompt, then runs.
+- **Scrolling:** a long answer starts at its command line; a short one keeps the prompt in view. Clicking the screen focuses the prompt on desktop, but not when you're selecting text or clicking a link.
+- **Motion:** output streams in block by block (opacity + transform, staggered); typing and smooth scroll are skipped under reduced motion.
+- **Phones:** the photo sits above the details, command buttons are 44px, the prompt input is 16px. The screen's bottom padding keeps the prompt clear of the switcher.
+- **Code:** typed text is escaped; no global listeners; `cleanup()` clears the typing timer. The old `.text-magenta-400` helper is gone. Geist Mono added to the font link in `index.html`; the chooser tile uses the new background.
+- **Dropped:** the ASCII banner, the phone number, the invented availability list and response time, "Last login".
+
+#### Terminal verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The login shows name, title, `stats.years`, location and the photo from `content.js`; the menu lists every `chatCommand`.
+- `experience` shows every role with every achievement, and the answer starts at its command line.
+- A clicked command types itself, then runs; `skills` lists each skill once (`stats.skills`).
+- `help` shows every `chatCommands` description; `whoami` gives the bio; on phones command targets are at least 44px.
+- Typed HTML is escaped; "projcts" suggests `projects`; Tab completes "cert"; ↑/↓ walk the history.
+- Résumé links use the `content.js` path and open in a new tab; no phone number anywhere.
+- No horizontal overflow; nothing under the switcher at the end; Ctrl+L clears.
+- Switching theme mid-typing clears the timer, with no runtime errors.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -322,7 +361,7 @@ Checked with `tests/vscode.test.mjs` at 1440px and 390px:
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
 - [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)
 - [ ] **Basics:** meta description, Open Graph tags. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
-- [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.
+- [x] ~~Terminal timers~~ (terminal: no startup timer; `cleanup()` clears the typing timer)
 
 ## content.js notes (for the owner to decide)
 

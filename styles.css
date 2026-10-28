@@ -1608,9 +1608,308 @@ button.shell-ui {
     }
 }
 
-/* Terminal theme text colors */
-.text-magenta-400 {
-    color: #f472b6;
+/* Terminal theme: near-black, Geist Mono, the one accent is terminal green */
+#tmRoot {
+    --tm-bg: #0c0c0c;
+    --tm-fg: #d4d4d4;
+    --tm-bright: #fafafa;
+    --tm-dim: #8b8b8b;
+    --tm-line: rgba(255, 255, 255, 0.08);
+    --tm-acc: #4ade80;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--tm-bg);
+    color: var(--tm-fg);
+    font: 14px/1.6 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color-scheme: dark;
+}
+
+#tmRoot b {
+    font-weight: 600;
+    color: var(--tm-bright);
+}
+
+#tmRoot .tm-acc {
+    color: var(--tm-acc);
+}
+
+#tmRoot .tm-dim {
+    color: var(--tm-dim);
+}
+
+#tmRoot a,
+#tmRoot button {
+    color: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#tmRoot a {
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.3);
+    text-underline-offset: 3px;
+    transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+#tmRoot a:hover {
+    color: var(--tm-acc);
+    text-decoration-color: currentColor;
+}
+
+#tmRoot :focus-visible {
+    outline: 1px solid var(--tm-acc);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.tm-bar {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    border-bottom: 1px solid var(--tm-line);
+    background: #161616;
+    color: var(--tm-dim);
+    font-size: 12px;
+}
+
+.tm-dots {
+    position: absolute;
+    left: 14px;
+    display: flex;
+    gap: 8px;
+}
+
+.tm-dots i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #3a3a3a;
+}
+
+.tm-title {
+    overflow: hidden;
+    padding: 0 72px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The bottom padding keeps the prompt clear of the theme switcher */
+.tm-screen {
+    position: relative;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 20px 80px;
+    overflow-wrap: anywhere;
+}
+
+.tm-entry + .tm-entry {
+    margin-top: 14px;
+}
+
+.tm-line {
+    display: flex;
+    gap: 1ch;
+    align-items: baseline;
+}
+
+.tm-prompt {
+    flex: none;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.tm-cmd {
+    color: var(--tm-bright);
+    white-space: pre-wrap;
+}
+
+.tm-entry-line {
+    margin-top: 14px;
+    cursor: text;
+}
+
+#tmInput {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--tm-bright);
+    font: inherit;
+    caret-color: var(--tm-acc);
+}
+
+.tm-out {
+    max-width: 96ch;
+    margin-top: 4px;
+}
+
+.tm-out :is(p, ul, dl, section, div) + :is(p, ul, dl, section, div) {
+    margin-top: 8px;
+}
+
+.tm-out section + section {
+    margin-top: 18px;
+}
+
+.tm-kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 2ch;
+}
+
+.tm-list {
+    list-style: none;
+}
+
+.tm-list li {
+    position: relative;
+    padding-left: 2ch;
+}
+
+.tm-list li::before {
+    content: "-";
+    position: absolute;
+    left: 0;
+    color: var(--tm-dim);
+}
+
+/* git log --graph: a * per role, joined by a rail */
+.tm-log section {
+    position: relative;
+    padding-left: 3ch;
+}
+
+.tm-log section::before {
+    content: "*";
+    position: absolute;
+    left: 0;
+    color: var(--tm-acc);
+}
+
+.tm-log section:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 1.6em;
+    bottom: -14px;
+    left: 0.5ch;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.tm-fetch {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.tm-photo {
+    width: 132px;
+    height: 132px;
+    flex: none;
+    border: 1px solid var(--tm-line);
+    border-radius: 6px;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+}
+
+.tm-run {
+    padding: 0 2px;
+    border-radius: 3px;
+    color: var(--tm-acc) !important;
+    font: inherit;
+    text-decoration: underline dotted rgba(74, 222, 128, 0.5);
+    text-underline-offset: 3px;
+    transition: background-color 0.15s;
+}
+
+.tm-run:hover {
+    background: rgba(74, 222, 128, 0.12);
+}
+
+.tm-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    text-decoration: none !important;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.tm-btn:hover {
+    border-color: var(--tm-acc);
+}
+
+#tmRoot kbd {
+    padding: 0 4px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 3px;
+    font: inherit;
+    font-size: 12px;
+}
+
+/* Output streams in line by line; --i is set per block in terminal.js */
+@media (prefers-reduced-motion: no-preference) {
+    .tm-out > * {
+        animation: tm-in 0.26s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(var(--i, 0) * 28ms);
+    }
+}
+
+@keyframes tm-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+/* Phones: photo above the details, 44px command targets, 16px input (no zoom on focus) */
+@media (max-width: 767px) {
+    #tmRoot {
+        font-size: 13px;
+    }
+
+    .tm-screen {
+        padding: 12px 16px 80px;
+    }
+
+    .tm-fetch {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .tm-photo {
+        width: 88px;
+        height: 88px;
+    }
+
+    .tm-run,
+    .tm-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .tm-help {
+        align-items: center;
+        row-gap: 0;
+    }
+
+    #tmInput {
+        font-size: 16px;
+    }
+
+    .tm-entry-line {
+        align-items: center;
+        min-height: 44px;
+    }
 }
 
 /* Notebook cell styling */
