@@ -61,7 +61,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | **Rebuilt (4 rounds), in review** | `theme/terminal` | |
+| Terminal | ✅ | **Rebuilt (5 rounds), in review** | `theme/terminal` | |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -398,7 +398,7 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 The feedback was: `clear` wipes the boot header too, but that top section should stay; and draw a caricature of a plus-size person working on a laptop.
 
 - **`clear` and Ctrl+L keep the boot header:** everything else goes, and the header stays at the top without replaying its entrance animation.
-- **Caricature (`js/caricature.js`, shared by every theme):** a hand-drawn SVG of a plus-size developer behind a laptop: round full-cheeked face, short side-swept black hair, light stubble, big smile, light-blue collared shirt, laptop with stickers, a coffee mug. It's animated: it blinks, the arms move as it types, the head nods slightly, the screen glow flickers on the face, steam rises from the mug, and bits of code (`</>`, `01`, `{ }`) float up. Everything is off under reduced motion.
+- **Caricature (`js/caricature.js`, shared by every theme):** a hand-drawn SVG of a plus-size developer behind a laptop: round full-cheeked face, short side-swept black hair, light stubble, big smile, light-blue collared shirt, laptop with stickers, a coffee mug. It's animated: the screen glow flickers on the face, steam rises from the mug, and bits of code (`</>`, `01`, `{ }`) float up. (Round 1 also had blinking, typing arms and a nod; see caricature round 2 for the current motion.) Everything is off under reduced motion.
   - `caricatureSVG(label)` returns the inline SVG; each copy gets its own clip-path id. Colours are `--cc-*` variables (skin, hair, shirt, laptop, mug, glow, code), so each theme can recolour it; the styles live under `.cc` in `styles.css`.
   - In Terminal it replaces the small portrait in the boot header. The floating code takes the terminal's green and the glow its cyan, so it follows the colour scheme. The pixel photo portrait is still under `neofetch`.
 
@@ -410,6 +410,14 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 - Ctrl+L and `clear` leave exactly the header (with the caricature) on screen.
 - `neofetch` still draws the pixel portrait.
 - All earlier checks still pass.
+
+#### Caricature round 2 (owner feedback)
+
+The feedback was: the lips don't move, the coffee looks like it's floating, the hand motion isn't visible (eye movement would be enough, as if reading), and people who code look serious, with changing expressions.
+
+- **Reading eyes:** eye whites with pupils that scan three lines left to right, then glance up to think; half-lidded upper lids give a focused look; it still blinks. The typing-arm motion is gone.
+- **Expressions on a 12s working cycle:** focused (brows drawn in, flat mouth, lips muttering now and then), thinking (one brow up, pursed mouth, head tilted), focused again, puzzled (frown, brows knitted), then a small "got it" smile. Mouths cross-fade (opacity) and brows and head move with transforms, so it works in every browser. Under reduced motion it rests on the focused face.
+- **Grounded:** a solid desk; the laptop and the mug (with a contact shadow) stand on it.
 
 ## Shared backlog (shell / cross-theme)
 

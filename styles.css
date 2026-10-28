@@ -1623,7 +1623,7 @@ button.shell-ui {
     --cc-blush: #f0857a;
     --cc-laptop: #d3d8df;
     --cc-laptop-shade: #9aa2ad;
-    --cc-desk: rgba(127, 127, 127, 0.25);
+    --cc-desk: #6b7280;
     --cc-mug: #e07a5f;
     --cc-steam: rgba(200, 204, 210, 0.7);
     --cc-glow: #9fd3ff;
@@ -1643,16 +1643,19 @@ button.shell-ui {
 .cc-shirt-shade { fill: var(--cc-shirt-shade); }
 .cc-collar { fill: var(--cc-collar); }
 .cc-placket { stroke: var(--cc-shirt-shade); }
+.cc-eye-white { fill: #fff; }
 .cc-eye { fill: var(--cc-eye); }
 .cc-eye-shine { fill: #fff; }
+.cc-lash { stroke: var(--cc-eye); }
 .cc-nose { stroke: var(--cc-skin-shade); }
-.cc-mouth { fill: var(--cc-mouth); }
-.cc-teeth { fill: var(--cc-teeth); }
-.cc-blush { fill: var(--cc-blush); opacity: 0.35; }
+.cc-lips { stroke: var(--cc-mouth); }
+.cc-m-think { fill: var(--cc-mouth); stroke: none; }
+.cc-blush { fill: var(--cc-blush); opacity: 0.3; }
 .cc-laptop { fill: var(--cc-laptop); }
 .cc-laptop-shade { fill: var(--cc-laptop-shade); }
 .cc-logo { stroke: var(--cc-laptop-shade); }
 .cc-desk { fill: var(--cc-desk); }
+.cc-contact { fill: rgba(0, 0, 0, 0.3); }
 .cc-mug { fill: var(--cc-mug); }
 .cc-mug-handle { stroke: var(--cc-mug); }
 .cc-steam { stroke: var(--cc-steam); }
@@ -1662,19 +1665,35 @@ button.shell-ui {
 .cc-code { fill: var(--cc-code); opacity: 0; }
 
 .cc-eyes,
-.cc-arm,
 .cc-head,
+.cc-brow,
+.cc-mumble,
 .cc-code text,
 .cc-steam {
     transform-box: fill-box;
     transform-origin: center;
 }
 
+/* Resting face (also the one shown under reduced motion): focused, brows drawn in, eyes on the screen */
+.cc-brow-l { transform: translateY(1px) rotate(6deg); }
+.cc-brow-r { transform: translateY(1px) rotate(-6deg); }
+.cc-pupils { transform: translate(0, 1px); }
+.cc-m-think,
+.cc-m-frown,
+.cc-m-smile { opacity: 0; }
+
+/* One 12s working cycle: focused (muttering) → thinking → focused → puzzled → got it */
 @media (prefers-reduced-motion: no-preference) {
-    .cc-eyes { animation: cc-blink 4.5s infinite; }
-    .cc-arm-l { animation: cc-type 0.32s ease-in-out infinite alternate; }
-    .cc-arm-r { animation: cc-type 0.32s ease-in-out -0.16s infinite alternate; }
-    .cc-head { animation: cc-nod 3.2s ease-in-out infinite; }
+    .cc-eyes { animation: cc-blink 5s infinite; }
+    .cc-pupils { animation: cc-read 6s linear infinite; }
+    .cc-head { animation: cc-head 12s ease-in-out infinite; }
+    .cc-brow-l { animation: cc-brow-l 12s ease-in-out infinite; }
+    .cc-brow-r { animation: cc-brow-r 12s ease-in-out infinite; }
+    .cc-m-focus { animation: cc-m-focus 12s infinite; }
+    .cc-m-think { animation: cc-m-think 12s infinite; }
+    .cc-m-frown { animation: cc-m-frown 12s infinite; }
+    .cc-m-smile { animation: cc-m-smile 12s infinite; }
+    .cc-mumble { animation: cc-mumble 3s ease-in-out infinite; }
     .cc-glow { animation: cc-glow 2.6s ease-in-out infinite; }
     .cc-steam { animation: cc-steam 2.8s ease-in-out infinite; }
     .cc-code { opacity: 1; }
@@ -1688,13 +1707,65 @@ button.shell-ui {
     96% { transform: scaleY(0.1); }
 }
 
-@keyframes cc-type {
-    to { transform: translateY(-2.5px); }
+/* Reads three lines left to right, then glances up to think */
+@keyframes cc-read {
+    0% { transform: translate(-2.2px, 0.4px); }
+    22% { transform: translate(2.2px, 0.4px); }
+    25% { transform: translate(-2.2px, 1.2px); }
+    47% { transform: translate(2.2px, 1.2px); }
+    50% { transform: translate(-2.2px, 2px); }
+    72% { transform: translate(1.6px, 2px); }
+    76%, 92% { transform: translate(0.6px, -1.4px); }
+    100% { transform: translate(-2.2px, 0.4px); }
 }
 
-@keyframes cc-nod {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(1.5px) rotate(-1.5deg); }
+@keyframes cc-head {
+    0%, 33%, 51%, 69%, 96%, 100% { transform: none; }
+    36%, 48% { transform: rotate(-3deg) translateY(-1px); }
+    72%, 80% { transform: rotate(1.5deg) translateY(1px); }
+    84%, 93% { transform: translateY(-1px); }
+}
+
+@keyframes cc-brow-l {
+    0%, 69%, 96%, 100% { transform: translateY(1px) rotate(6deg); }
+    72%, 81% { transform: translateY(1.6px) rotate(12deg); }
+    84%, 93% { transform: translateY(-0.5px) rotate(0); }
+}
+
+@keyframes cc-brow-r {
+    0%, 33%, 51%, 69%, 96%, 100% { transform: translateY(1px) rotate(-6deg); }
+    36%, 48% { transform: translateY(-3.2px) rotate(3deg); }
+    72%, 81% { transform: translateY(1.6px) rotate(-12deg); }
+    84%, 93% { transform: translateY(-0.5px) rotate(0); }
+}
+
+@keyframes cc-m-focus {
+    0%, 34%, 51%, 69%, 96%, 100% { opacity: 1; }
+    35.5%, 49.5%, 70.5%, 94.5% { opacity: 0; }
+}
+
+@keyframes cc-m-think {
+    0%, 34%, 51%, 100% { opacity: 0; }
+    35.5%, 49.5% { opacity: 1; }
+}
+
+@keyframes cc-m-frown {
+    0%, 69%, 83%, 100% { opacity: 0; }
+    70.5%, 81.5% { opacity: 1; }
+}
+
+@keyframes cc-m-smile {
+    0%, 82%, 96%, 100% { opacity: 0; }
+    83.5%, 94.5% { opacity: 1; }
+}
+
+/* Lips move now and then, muttering through the code */
+@keyframes cc-mumble {
+    0%, 55%, 100% { transform: none; }
+    62% { transform: scale(0.78, 2.2); }
+    69% { transform: scale(1.05, 0.8); }
+    76% { transform: scale(0.85, 1.8); }
+    84% { transform: none; }
 }
 
 @keyframes cc-glow {
