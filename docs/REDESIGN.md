@@ -360,7 +360,7 @@ The feedback was: it isn't true to a real terminal (it should match the visitor'
 - **Portrait instead of the photo:** your photo is drawn as a half-block pixel portrait in the terminal's green, the way terminal image viewers (`chafa`, `viu`) do it. It's a head-and-shoulders crop faded at the edges, and it prints row by row. An ASCII-character version was tried and dropped because it didn't read as a face. If the canvas can't read the image (a local `file://` copy), the photo is shown instead.
 - **Colour like the earlier version:** each OS's real ANSI palette. Titles are yellow, labels and links cyan, prompt, bullets and banner green, and errors red, and neofetch ends with the palette's colour swatches. *Deliberate deviation from the one-accent rule:* terminals are ANSI-coloured, and the owner preferred the earlier multi-colour look.
 - **Real cursor:** a block cursor that blinks when focused and turns hollow when not (a bar on Windows). The input sits transparent over the echoed text.
-- **Phones:** commands are 44px bordered buttons in a wrapping grid (not underlined words with big gaps).
+- **Phones:** commands are 44px bordered buttons in a wrapping grid (not underlined words with big gaps). (Round 5 went back to the desktop look with hidden 44px tap areas.)
 - **Code:** `cleanup()` also removes the skip listener and the window-size observer. Boot waits are cancellable, so switching theme mid-boot stops it.
 
 #### Terminal round 2 verified
@@ -418,6 +418,12 @@ The feedback was: the lips don't move, the coffee looks like it's floating, the 
 - **Reading eyes:** eye whites with pupils that scan three lines left to right, then glance up to think; half-lidded upper lids give a focused look; it still blinks. The typing-arm motion is gone.
 - **Expressions on a 12s working cycle:** focused (brows drawn in, flat mouth, lips muttering now and then), thinking (one brow up, pursed mouth, head tilted), focused again, puzzled (frown, brows knitted), then a small "got it" smile. Mouths cross-fade (opacity) and brows and head move with transforms, so it works in every browser. Under reduced motion it rests on the focused face.
 - **Grounded:** a solid desk; the laptop and the mug (with a contact shadow) stand on it.
+
+#### Terminal round 5 (owner feedback)
+
+The feedback was: on phones every clickable command is a bordered tile; it should look the same as on desktop.
+
+- **Phones match desktop:** commands are the same dotted-underlined green words (menu, `help`, suggestions, scheme list), and Open / Download / Write to me are the same small buttons. Each keeps a 44px tap area through an invisible `::after` hit zone, and the rows are spaced so neighbouring hit zones barely overlap. Checked by `tests/terminal.test.mjs`: no tile border, and a tap area of at least 44px.
 
 ## Shared backlog (shell / cross-theme)
 

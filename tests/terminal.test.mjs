@@ -75,7 +75,9 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await enter(b, 'help');
     const help = await b.evaluate(last);
     for (const x of c.chatCommands) assert.ok(help.includes(x.description), `${label}: help shows "${x.description}"`);
-    if (phone) assert.ok(await b.evaluate(`[...document.querySelectorAll('#tmOut .tm-entry:last-child [data-run]')].every(el => el.getBoundingClientRect().height >= 44)`), 'm: 44px command targets');
+    // Phones: commands look as on desktop (no tiles) but keep a 44px tap area through an invisible ::after
+    if (phone) assert.ok(await b.evaluate(`[...document.querySelectorAll('#tmOut .tm-entry:last-child [data-run]')].every(el => getComputedStyle(el).borderTopWidth === '0px'
+        && el.getBoundingClientRect().height - 2 * parseFloat(getComputedStyle(el, '::after').top) >= 44)`), 'm: commands look as on desktop with 44px tap areas');
     await b.shot(`${out}-${label}-3-help.png`);
     await enter(b, 'whoami');
     assert.ok((await b.evaluate(last)).includes(c.about.bio.slice(0, 60)), `${label}: whoami is about`);

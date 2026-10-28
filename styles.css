@@ -2427,7 +2427,7 @@ button.shell-ui {
     }
 }
 
-/* Phones: plain full-screen terminal, photo above the details, 44px command buttons, 16px input (no zoom on focus) */
+/* Phones: plain full-screen terminal, photo above the details, commands look as on desktop with a 44px tap area, 16px input (no zoom on focus) */
 @media (max-width: 767px) {
     #tmRoot[data-os="phone"] .tm-screen {
         padding: max(14px, env(safe-area-inset-top)) 16px 80px;
@@ -2447,29 +2447,25 @@ button.shell-ui {
         width: 96px;
     }
 
+    /* Rows spaced so each command's invisible 44px tap area barely overlaps the next */
     .tm-menu {
-        gap: 8px;
-        align-items: center;
+        row-gap: 14px;
     }
 
-    .tm-menu > span {
-        flex-basis: 100%;
+    .tm-help {
+        row-gap: 12px;
     }
 
     .tm-run,
     .tm-btn {
-        display: inline-flex;
-        align-items: center;
-        min-height: 44px;
-        padding: 0 12px;
-        border: 1px solid color-mix(in srgb, var(--tm-green) 35%, transparent);
-        border-radius: 6px;
-        text-decoration: none;
+        position: relative;
     }
 
-    .tm-help {
-        align-items: center;
-        row-gap: 6px;
+    .tm-run::after,
+    .tm-btn::after {
+        content: "";
+        position: absolute;
+        inset: -12px -4px;
     }
 
     #tmInput {
