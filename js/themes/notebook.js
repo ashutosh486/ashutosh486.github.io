@@ -4,6 +4,7 @@ const NotebookTheme = {
     name: "Interactive Notebook",
     token: 0,
     batch: 0,
+    mod: /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+',
 
     render() {
         const c = portfolioContent;
@@ -13,7 +14,9 @@ const NotebookTheme = {
         this.pending = [];
         this.draining = null;
         this.active = 0;
+        this.openMenu = null;
         this.fast = this.calm();
+        this.file = `${c.name.replace(/\s+/g, '_')}.ipynb`;
         const first = this.cells.findIndex(cell => cell.src);
 
         document.getElementById('themeContainer').innerHTML = `
@@ -21,12 +24,13 @@ const NotebookTheme = {
                 <header class="nb-head">
                     <div class="nb-top">
                         <i class="fas fa-book nb-logo" aria-hidden="true"></i>
-                        <span class="nb-file">${c.name.replace(/\s+/g, '_')}.ipynb</span>
+                        <span class="nb-file">${this.file}</span>
                         <span class="nb-check nb-wide">Last Checkpoint: just now</span>
                     </div>
+                    <nav class="nb-menubar" role="menubar" aria-label="Notebook menu">${this.menubar()}</nav>
                     <div class="nb-tools" role="toolbar" aria-label="Notebook">
                         <button type="button" class="nb-tool" data-action="advance" aria-label="Run this cell and advance" title="Run this cell and advance (Shift+Enter)"><i class="fas fa-play" aria-hidden="true"></i></button>
-                        <button type="button" class="nb-tool" data-action="interrupt" aria-label="Interrupt the kernel" title="Interrupt the kernel"><i class="fas fa-stop" aria-hidden="true"></i></button>
+                        <button type="button" class="nb-tool" data-action="interrupt" aria-label="Interrupt the kernel" title="Interrupt the kernel (I, I)"><i class="fas fa-stop" aria-hidden="true"></i></button>
                         <button type="button" class="nb-tool" data-action="restart" aria-label="Restart the kernel and run all cells" title="Restart the kernel and run all cells"><i class="fas fa-forward" aria-hidden="true"></i></button>
                         <span class="nb-grow"></span>
                         <span id="nbKernel" class="nb-kernel" role="status" aria-label="Kernel idle"><span>Python 3<span class="nb-wide"> (ipykernel)</span></span><span class="nb-dot" aria-hidden="true"></span></span>
@@ -35,13 +39,15 @@ const NotebookTheme = {
                 <main id="nbCells" class="nb-page">
                     ${this.cells.map((cell, i) => this.cellHtml(cell, i, i === first && !this.fast)).join('')}
                 </main>
+                <dialog id="nbDialog" class="nb-dialog" aria-labelledby="nbDialogTitle"></dialog>
             </div>`;
         this.select(0);
         this.bind();
         this.intro(this.token);
     },
 
-    // ---------- the notebook: markdown cells ({ md }) and code cells ({ src, kind, out }) ----------
+    // ---------- the notebook: markdown cells ({ md }) and code cells ({ src, kind, out, text? }) ----------
+    // kind 'result' gets an Out prompt, 'display' and 'stream' don't; text outputs render as preformatted text
 
     notebook() {
         const c = portfolioContent, md = html => ({ md: html }), esc = s => this.esc(s);
@@ -60,17 +66,21 @@ const NotebookTheme = {
                     <p>${e.technologies.map(t => `<code>${t}</code>`).join(' ')}</p>
                 </div>`).join('') },
             md('<h2>Skills</h2>'),
-            { src: `for area, tools in me.skills.items():\n    print(f"{area:<${pad}}{', '.join(tools)}")`, kind: 'stream', out: () => skills.map(([label, list]) => label.padEnd(pad) + list.join(', ')).join('\n') },
+            { src: `for area, tools in me.skills.items():\n    print(f"{area:<${pad}}{', '.join(tools)}")`, kind: 'stream', text: true, out: () => skills.map(([label, list]) => label.padEnd(pad) + list.join(', ')).join('\n') },
             md('<h2>Projects</h2>'),
-            { src: 'pd.DataFrame(me.projects)[["title", "description", "stack"]]', kind: 'result', out: () => this.frame(['title', 'description', 'stack'], c.projects.map(p => [
-                p.site ? `<a href="https://${p.site}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title), esc(p.description), esc(p.tags.join(', '))])) },
+            { src: 'pd.DataFrame(me.projects)[["title", "description", "highlights", "stack"]]', kind: 'result', out: () => this.frame(['title', 'description', 'highlights', 'stack'], c.projects.map(p => [
+                p.site ? `<a href="https://${p.site}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title), esc(p.description), esc(p.highlights.join('; ')), esc(p.tags.join(', '))])) },
             md('<h2>Education</h2>'),
-            { src: 'pd.DataFrame(me.education)[["degree", "institution", "years", "gpa"]]', kind: 'result', out: () => this.frame(['degree', 'institution', 'years', 'gpa'], c.education.map(e => [e.degree, e.institution, e.year, e.gpa].map(esc))) },
+            { src: 'pd.DataFrame(me.education)[["degree", "institution", "years", "gpa", "highlights"]]', kind: 'result', out: () => this.frame(['degree', 'institution', 'years', 'gpa', 'highlights'],
+                c.education.map(e => [e.degree, e.institution, e.year, e.gpa, e.achievements.join('; ')].map(esc))) },
             { src: 'Markdown(me.credentials())', kind: 'result', out: () => this.credentials() },
             ...(c.currentlyReading.length ? [
                 md('<h2>Reading</h2>'),
-                { src: 'for book in me.reading:\n    print(f"{book.title} ({book.author})")\n    print(f"  {book.bar()} {book.progress}%")', kind: 'stream', out: () => c.currentlyReading
-                    .map(b => `${b.title} (${b.author})\n  ${'█'.repeat(Math.round(b.progress / 5)).padEnd(20, '░')} ${b.progress}%`).join('\n') }] : []),
+                { src: 'for book in me.reading:\n    print(f"{book.title} ({book.author})")\n    print(f"  {book.bar()} {book.progress}%")\n    print(f"  {book.notes}\\n  {book.link}\\n")', kind: 'stream', text: true, out: () => c.currentlyReading
+                    .map(b => [`${b.title} (${b.author})`, `  ${'█'.repeat(Math.round(b.progress / 5)).padEnd(20, '░')} ${b.progress}%`, b.notes && `  ${b.notes}`, b.link && `  ${b.link}`].filter(Boolean).join('\n')).join('\n\n') }] : []),
+            ...(c.hobbies?.length ? [
+                md('<h2>Outside work</h2>'),
+                { src: 'me.hobbies', kind: 'result', text: true, out: () => this.repr(c.hobbies) }] : []),
             md('<h2>Contact</h2>'),
             { src: 'me.contact()', kind: 'result', out: () => this.contact() }
         ];
@@ -103,12 +113,17 @@ const NotebookTheme = {
     contact() {
         const c = portfolioContent;
         const links = [['Email', c.email && `mailto:${c.email}`], ['LinkedIn', c.social.linkedin], ['GitHub', c.social.github], ['Website', c.social.portfolio]].filter(([, href]) => href);
-        // download is ignored on some origins (e.g. file://); a new tab keeps the portfolio open either way
         return `
             <div class="nb-rendered"><ul>
                 ${links.map(([label, href]) => `<li><strong>${label}:</strong> <a href="${href}" ${href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${href.replace(/^(mailto:|https?:\/\/(www\.)?)/, '')}</a></li>`).join('')}
-                ${c.resume ? `<li><strong>Résumé:</strong> <a href="${c.resume}" download="${c.resume.split('/').pop()}" target="_blank" rel="noopener">${c.resume}</a></li>` : ''}
+                ${c.resume ? `<li><strong>Résumé:</strong> <a ${this.resumeAttrs()}>${c.resume}</a></li>` : ''}
             </ul></div>`;
+    },
+
+    // download is ignored on some origins (e.g. file://); a new tab keeps the portfolio open either way
+    resumeAttrs() {
+        const r = portfolioContent.resume;
+        return `href="${r}" download="${r.split('/').pop()}" target="_blank" rel="noopener"`;
     },
 
     // A pandas DataFrame as Jupyter renders it: index column, header rule, striped rows; numbers right-aligned, long text kept readable
@@ -118,6 +133,13 @@ const NotebookTheme = {
                 <thead><tr><th></th>${cols.map(col => `<th>${col}</th>`).join('')}</tr></thead>
                 <tbody>${rows.map((row, i) => `<tr><th>${i}</th>${row.map(v => `<td${/^\d/.test(v) ? ' class="nb-num"' : v.replace(/<[^>]+>/g, '').length > 80 ? ' class="nb-long"' : ''}>${v}</td>`).join('')}</tr>`).join('')}</tbody>
             </table></div>`;
+    },
+
+    // A list of strings as IPython prints it: one line when short, one item per line otherwise
+    repr(list) {
+        const items = list.map(s => s.includes("'") && !s.includes('"') ? `"${s}"` : `'${s.replace(/'/g, "\\'")}'`);
+        const flat = `[${items.join(', ')}]`;
+        return flat.length <= 79 ? flat : `[${items.join(',\n ')}]`;
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
@@ -132,9 +154,19 @@ const NotebookTheme = {
         if (cell.md) return `<div class="nb-cell nb-md" data-i="${i}" tabindex="-1"><div class="nb-row"><div class="nb-prompt"></div><div class="nb-rendered">${cell.md}</div></div></div>`;
         return `
             <div class="nb-cell" data-i="${i}" tabindex="-1">
-                <div class="nb-row"><div class="nb-prompt">[ ]:</div><pre class="nb-editor"><code>${blank ? '' : this.py(cell.src)}</code></pre></div>
+                <div class="nb-row nb-in">
+                    <div class="nb-prompt">[ ]:</div>
+                    <pre class="nb-editor"><code>${this.code(blank ? '' : cell.src)}</code></pre>
+                    <button type="button" class="nb-ph" data-expand="in" aria-label="Expand code">···</button>
+                </div>
                 <div class="nb-row nb-out" hidden></div>
+                <div class="nb-row nb-ph-out"><div class="nb-prompt"></div><button type="button" class="nb-ph" data-expand="out" aria-label="Expand output">···</button></div>
             </div>`;
+    },
+
+    // One block per source line, so View › Show Line Numbers can number them
+    code(src) {
+        return src.split('\n').map(line => `<span class="nb-line">${this.py(line)}</span>`).join('');
     },
 
     // Python highlighting in Jupyter's light colours: comments, strings, keywords, builtins, numbers, operators
@@ -155,6 +187,187 @@ const NotebookTheme = {
 
     calm() {
         return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    },
+
+    // ---------- menu bar: Notebook 7's menus, keeping only the items that do something here ----------
+
+    menus() {
+        return [
+            ['File', [['Download', 'download'], portfolioContent.resume && ['Download Résumé (PDF)', 'resume']]],
+            ['Edit', [['Clear Cell Output', 'clearOne'], ['Clear Outputs of All Cells', 'clearAll']]],
+            ['View', [['Collapse All Code', 'collapseCode'], ['Expand All Code', 'expandCode'], '-', ['Collapse All Outputs', 'collapseOutput'], ['Expand All Outputs', 'expandOutput'], '-', ['Show Line Numbers', 'lineNumbers', 'Shift+L', 'check']]],
+            ['Run', [['Run Selected Cell', 'advance', 'Shift+Enter'], ['Run Selected Cell and Do not Advance', 'runHere', `${this.mod}Enter`], '-', ['Run All Above Selected Cell', 'runAbove'], ['Run Selected Cell and All Below', 'runBelow'], '-', ['Run All Cells', 'runAll']]],
+            ['Kernel', [['Interrupt Kernel', 'interrupt', 'I, I'], '-', ['Restart Kernel', 'restartKernel', '0, 0'], ['Restart Kernel and Clear Outputs of All Cells', 'restartClear'], ['Restart Kernel and Run All Cells', 'restart']]],
+            ['Help', [['Keyboard Shortcuts', 'shortcuts', 'H']]]
+        ];
+    },
+
+    menubar() {
+        return this.menus().map(([label, items], m) => `
+            <div class="nb-menu-wrap">
+                <button type="button" class="nb-menu-btn" role="menuitem" aria-haspopup="menu" aria-expanded="false" data-menu="${m}">${label}</button>
+                <div class="nb-menu" role="menu" aria-label="${label}" hidden>
+                    ${items.filter(Boolean).map(item => {
+                        if (item === '-') return '<div class="nb-menu-sep" role="separator"></div>';
+                        const [text, action, keys = '', check] = item;
+                        if (action === 'resume') return `<a class="nb-menu-item" role="menuitem" tabindex="-1" ${this.resumeAttrs()}><span>${text}</span></a>`;
+                        return `<button type="button" class="nb-menu-item" role="${check ? 'menuitemcheckbox' : 'menuitem'}" ${check ? 'aria-checked="false"' : ''} tabindex="-1" data-action="${action}"><span>${text}</span>${keys ? `<kbd>${keys}</kbd>` : ''}</button>`;
+                    }).join('')}
+                </div>
+            </div>`).join('');
+    },
+
+    showMenu(m, focusFirst = false) {
+        this.hideMenu();
+        const btn = document.querySelector(`#nbRoot [data-menu="${m}"]`);
+        btn.setAttribute('aria-expanded', 'true');
+        btn.nextElementSibling.hidden = false;
+        this.openMenu = m;
+        if (focusFirst) btn.nextElementSibling.querySelector('.nb-menu-item').focus();
+    },
+
+    hideMenu(refocus = false) {
+        if (this.openMenu === null) return;
+        const btn = document.querySelector(`#nbRoot [data-menu="${this.openMenu}"]`);
+        btn.setAttribute('aria-expanded', 'false');
+        btn.nextElementSibling.hidden = true;
+        this.openMenu = null;
+        if (refocus) btn.focus();
+    },
+
+    // Menu keys: ←/→ between menus, ↑/↓ within one, Escape closes back to its title
+    menuKey(e) {
+        const btns = [...document.querySelectorAll('#nbRoot .nb-menu-btn')];
+        const m = +e.target.closest('.nb-menu-wrap').querySelector('.nb-menu-btn').dataset.menu;
+        const inMenu = !!e.target.closest('.nb-menu');
+        if (e.key === 'Escape' || e.key === 'Tab') {
+            if (e.key === 'Escape') e.preventDefault();
+            return this.hideMenu(e.key === 'Escape');
+        }
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const next = (m + (e.key === 'ArrowRight' ? 1 : -1) + btns.length) % btns.length;
+            if (this.openMenu !== null) return this.showMenu(next, true);
+            return btns[next].focus();
+        }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        e.preventDefault();
+        if (!inMenu) return this.showMenu(m, true);
+        const items = [...e.target.closest('.nb-menu').querySelectorAll('.nb-menu-item')];
+        items[(items.indexOf(e.target.closest('.nb-menu-item')) + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+    },
+
+    // ---------- menu and toolbar actions ----------
+
+    codeCells() {
+        return this.cells.flatMap((cell, i) => cell.src ? [i] : []);
+    },
+
+    runHere() {
+        this.enqueue([this.active]);
+    },
+
+    runAll() {
+        this.enqueue(this.codeCells());
+    },
+
+    runAbove() {
+        this.enqueue(this.codeCells().filter(i => i < this.active));
+    },
+
+    runBelow() {
+        this.enqueue(this.codeCells().filter(i => i >= this.active));
+    },
+
+    // Clearing an output also clears its execution count, as in Jupyter
+    clear(list) {
+        for (const i of list) {
+            if (!this.cells[i].src) continue;
+            delete this.cells[i].n;
+            const out = this.cellEl(i).querySelector('.nb-out');
+            out.hidden = true;
+            out.innerHTML = '';
+            if (!this.pending.includes(i)) this.prompt(i);
+        }
+    },
+
+    clearOne() {
+        this.clear([this.active]);
+    },
+
+    clearAll() {
+        this.clear(this.codeCells());
+    },
+
+    collapse(part, on) {
+        document.querySelectorAll('#nbCells .nb-cell:not(.nb-md)').forEach(el => el.classList.toggle(`${part}-collapsed`, on));
+    },
+
+    collapseCode() { this.collapse('in', true); },
+    expandCode() { this.collapse('in', false); },
+    collapseOutput() { this.collapse('out', true); },
+    expandOutput() { this.collapse('out', false); },
+
+    lineNumbers() {
+        const on = document.getElementById('nbRoot').classList.toggle('show-ln');
+        document.querySelector('#nbRoot [data-action="lineNumbers"]').setAttribute('aria-checked', on);
+    },
+
+    restartKernel() {
+        this.interrupt();
+        this.count = 0;
+    },
+
+    restartClear() {
+        this.restartKernel();
+        this.clearAll();
+    },
+
+    // Help › Keyboard Shortcuts: Jupyter's command-mode keys that work here
+    shortcuts() {
+        const keys = [['Shift+Enter', 'Run the selected cell and select the next'], [`${this.mod}Enter`, 'Run the selected cell'], ['↑ / K', 'Select the cell above'], ['↓ / J', 'Select the cell below'],
+            ['I, I', 'Interrupt the kernel'], ['0, 0', 'Restart the kernel'], ['Shift+L', 'Show or hide line numbers'], ['H', 'Show keyboard shortcuts']];
+        const dialog = document.getElementById('nbDialog');
+        dialog.innerHTML = `
+            <form method="dialog">
+                <h2 id="nbDialogTitle">Keyboard Shortcuts</h2>
+                <table class="nb-keys">${keys.map(([k, what]) => `<tr><td><kbd>${k}</kbd></td><td>${what}</td></tr>`).join('')}</table>
+                <div class="nb-dialog-actions"><button type="submit" class="nb-btn" autofocus>Close</button></div>
+            </form>`;
+        dialog.showModal();
+    },
+
+    // File › Download: the notebook as a real .ipynb (nbformat 4), with the outputs as they are now
+    ipynb() {
+        const lines = s => s.split(/(?<=\n)/);
+        const plain = html => { const t = document.createElement('template'); t.innerHTML = html; return t.content.textContent.replace(/\s+/g, ' ').trim(); };
+        const output = cell => {
+            const body = cell.out();
+            if (cell.kind === 'stream') return { output_type: 'stream', name: 'stdout', text: lines(`${body}\n`) };
+            // The caricature is styled by this page's CSS, so it would render as blank shapes in Jupyter
+            const data = cell.text ? { 'text/plain': lines(body) } : { 'text/html': lines(body.replace(/<svg[\s\S]*?<\/svg>/g, '').trim()), 'text/plain': [plain(body)] };
+            return cell.kind === 'result' ? { output_type: 'execute_result', execution_count: cell.n, metadata: {}, data } : { output_type: 'display_data', metadata: {}, data };
+        };
+        return {
+            cells: this.cells.map((cell, i) => cell.md
+                ? { cell_type: 'markdown', id: `cell-${i}`, metadata: {}, source: lines(cell.md) }
+                : { cell_type: 'code', id: `cell-${i}`, execution_count: cell.n ?? null, metadata: {}, outputs: cell.n ? [output(cell)] : [], source: lines(cell.src) }),
+            metadata: {
+                kernelspec: { display_name: 'Python 3 (ipykernel)', language: 'python', name: 'python3' },
+                language_info: { name: 'python' }
+            },
+            nbformat: 4,
+            nbformat_minor: 5
+        };
+    },
+
+    download() {
+        URL.revokeObjectURL(this.blobUrl);
+        this.blobUrl = URL.createObjectURL(new Blob([JSON.stringify(this.ipynb(), null, 1)], { type: 'application/x-ipynb+json' }));
+        const a = document.createElement('a');
+        a.href = this.blobUrl;
+        a.download = this.file;
+        a.click();
     },
 
     // ---------- opening: type the first cell, then run them all ----------
@@ -180,11 +393,11 @@ const NotebookTheme = {
                 await this.wait(k ? 22 : 350);
                 if (!live()) return;
                 k = this.fast ? src.length : k + 1;
-                code.innerHTML = this.py(src.slice(0, k));
+                code.innerHTML = this.code(src.slice(0, k));
             }
             el.classList.remove('is-editing');
         }
-        code.innerHTML = this.py(src);
+        code.innerHTML = this.code(src);
         await this.enqueue(this.codeCells());
         if (!live()) return;
         this.endIntro();
@@ -209,10 +422,6 @@ const NotebookTheme = {
     },
 
     // ---------- kernel: a queue of cells, run one after another like Jupyter does ----------
-
-    codeCells() {
-        return this.cells.flatMap((cell, i) => cell.src ? [i] : []);
-    },
 
     enqueue(list) {
         list = list.filter(i => this.cells[i].src);
@@ -246,8 +455,7 @@ const NotebookTheme = {
     },
 
     restart() {
-        this.interrupt();
-        this.count = 0;
+        this.restartKernel();
         this.cells.forEach(cell => { delete cell.n; });
         this.enqueue(this.codeCells());
     },
@@ -262,7 +470,8 @@ const NotebookTheme = {
         const cell = this.cells[i], out = this.cellEl(i).querySelector('.nb-out');
         cell.n = ++this.count;
         this.prompt(i);
-        const body = cell.kind === 'stream' ? `<pre class="nb-stream">${this.esc(cell.out())}</pre>` : cell.out();
+        // Jupyter turns URLs in text output into links
+        const body = cell.text ? `<pre class="nb-stream">${this.esc(cell.out()).replace(/https?:\/\/[^\s<]+/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`)}</pre>` : cell.out();
         out.innerHTML = `<div class="nb-prompt nb-prompt-out">${cell.kind === 'result' ? `[${cell.n}]:` : ''}</div><div class="nb-out-body">${body}</div>`;
         out.hidden = false;
         if (!this.fast) out.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 280, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
@@ -295,14 +504,34 @@ const NotebookTheme = {
     },
 
     bind() {
-        document.getElementById('nbRoot').addEventListener('click', (e) => {
-            const tool = e.target.closest('[data-action]');
-            if (tool) return this[tool.dataset.action]();
+        const root = document.getElementById('nbRoot');
+        root.addEventListener('click', (e) => {
+            const menuBtn = e.target.closest('[data-menu]');
+            if (menuBtn) return this.openMenu === +menuBtn.dataset.menu ? this.hideMenu() : this.showMenu(+menuBtn.dataset.menu);
+            if (e.target.closest('.nb-menu-item')) this.hideMenu();
+            const action = e.target.closest('[data-action]');
+            if (action) return this[action.dataset.action]();
+            const expand = e.target.closest('[data-expand]');
+            if (expand) expand.closest('.nb-cell').classList.remove(`${expand.dataset.expand}-collapsed`);
             const cell = e.target.closest('.nb-cell');
             if (cell) this.select(+cell.dataset.i);
         });
+        // With a menu open, hovering another title switches to it, as in a desktop menu bar
+        root.querySelector('.nb-menubar').addEventListener('mouseover', (e) => {
+            const btn = e.target.closest('[data-menu]');
+            if (btn && this.openMenu !== null && this.openMenu !== +btn.dataset.menu) this.showMenu(+btn.dataset.menu);
+        });
+        root.querySelector('.nb-menubar').addEventListener('keydown', (e) => this.menuKey(e));
+        // Backdrop click closes the shortcuts dialog
+        root.querySelector('#nbDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 
-        // Jupyter's command mode: Shift+Enter runs and advances, Ctrl/⌘+Enter runs in place, ↑/↓ or k/j move
+        this.onDown = (e) => {
+            if (this.openMenu !== null && !e.target.closest?.('.nb-menubar')) this.hideMenu();
+        };
+        window.addEventListener('pointerdown', this.onDown);
+
+        // Jupyter's command mode: Shift+Enter runs and advances, Ctrl/⌘+Enter runs in place, ↑/↓ or k/j move,
+        // I,I interrupts, 0,0 restarts, Shift+L toggles line numbers, H lists the shortcuts
         this.onKey = (e) => {
             if (document.querySelector('dialog[open]') || e.target.closest?.('a, button, input, textarea, select')) return;
             if (e.key === 'Enter' && e.shiftKey) {
@@ -311,13 +540,24 @@ const NotebookTheme = {
             }
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
-                return this.enqueue([this.active]);
+                return this.runHere();
             }
-            if (!e.target.closest?.('.nb-cell') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || !(e.target === document.body || e.target.closest?.('#nbCells'))) return;
+            if (e.key === 'L' && e.shiftKey) return this.lineNumbers();
+            if (e.shiftKey) return;
             const step = { ArrowDown: 1, j: 1, ArrowUp: -1, k: -1 }[e.key];
-            if (!step) return;
-            e.preventDefault();
-            this.select(Math.max(0, Math.min(this.active + step, this.cells.length - 1)), true);
+            if (step) {
+                e.preventDefault();
+                return this.select(Math.max(0, Math.min(this.active + step, this.cells.length - 1)), true);
+            }
+            if (e.key === 'h') return this.shortcuts();
+            if (e.key !== 'i' && e.key !== '0') return;
+            if (this.lastKey === e.key && e.timeStamp - this.lastAt < 600) {
+                this.lastKey = null;
+                return e.key === 'i' ? this.interrupt() : this.restartKernel();
+            }
+            this.lastKey = e.key;
+            this.lastAt = e.timeStamp;
         };
         window.addEventListener('keydown', this.onKey);
     },
@@ -330,8 +570,12 @@ const NotebookTheme = {
         this.endIntro();
         window.removeEventListener('keydown', this.onKey);
         this.onKey = null;
+        window.removeEventListener('pointerdown', this.onDown);
+        this.onDown = null;
         document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
         this.onChooser = null;
+        URL.revokeObjectURL(this.blobUrl);
+        this.blobUrl = null;
     }
 };
 

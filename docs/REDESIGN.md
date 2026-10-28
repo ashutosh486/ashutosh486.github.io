@@ -63,7 +63,7 @@ node tests/notebook.test.mjs   # desktop + 390px phone
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
-| Notebook | ✅ | **Rebuilt, in review** | `theme/notebook` | |
+| Notebook | ✅ | **Rebuilt (2 rounds), in review** | `theme/notebook` | |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
@@ -468,6 +468,36 @@ Checked with `tests/notebook.test.mjs` at 1440px and 390px:
 - Click selects a cell and ↓ moves the selection. Shift+Enter runs the cell with the next count and advances; Ctrl+Enter runs it in place.
 - Interrupt stops a run with no `[*]` left. Restart & Run All renumbers from 1.
 - The switcher corner is clear at the end of the notebook. Cleanup removes the listeners, and there are no runtime errors.
+
+#### Notebook round 2 (owner feedback)
+
+The feedback was that the notebook should have Jupyter's other options and didn't show everything. Of the options offered (menu bar, table of contents, dark theme, cells visitors can type in), the owner picked the menu bar.
+
+- **Menu bar:** Notebook 7's File, Edit, View, Run, Kernel and Help menus, keeping only items that work here. Settings is left out because none of its real options would do anything.
+  - **File:** Download saves a real `.ipynb` (nbformat 4) with the current outputs and execution counts, so it opens in Jupyter. The caricature is left out of the file because it needs this page's CSS. Download Résumé (PDF) is also here.
+  - **Edit:** Clear Cell Output, or Clear Outputs of All Cells. As in Jupyter, clearing also clears the execution count.
+  - **View:** Collapse or Expand All Code, and Collapse or Expand All Outputs. Collapsed parts show Jupyter's `···` placeholder, which expands that cell when clicked. Show Line Numbers is ticked when on.
+  - **Run:** Run Selected Cell, Run Selected Cell and Do not Advance, Run All Above Selected Cell, Run Selected Cell and All Below, and Run All Cells.
+  - **Kernel:** Interrupt, Restart (counts start from 1 again), Restart and Clear Outputs, and Restart and Run All.
+  - **Help:** a Keyboard Shortcuts dialog.
+  - Menus open on click. With one open, hovering another title switches to it. ↓ opens a menu on its first item, ←/→ move between menus, and Escape returns to the title. A click outside closes it. On phones the titles and items are 44px and a menu spans the screen.
+- **More of Jupyter's keys:** `I, I` interrupts, `0, 0` restarts the kernel, `Shift+L` toggles line numbers and `H` opens the shortcuts.
+- **Content that was missing:**
+  - Project highlights and degree highlights are now table columns.
+  - Each book shows its notes and a link (URLs in text output become links, as in Jupyter).
+  - A new "Outside work" cell prints `me.hobbies` as IPython shows a list.
+
+#### Notebook round 2 verified
+
+Checked with `tests/notebook.test.mjs` at 1440px and 390px:
+
+- The menu bar reads File, Edit, View, Run, Kernel, Help. Each menu opens on screen, with 44px items on phones. A click outside closes it, and ↓, → and Escape behave as described.
+- File › Download saves `Ashutosh_Pandey.ipynb`. The file is nbformat 4 with every cell, the same execution counts as the page, and every output, without the caricature.
+- Clear Outputs of All Cells empties every output and count, and Run All Cells brings them back. Run Selected Cell and All Below, from the last cell, runs only that cell.
+- Collapse All Code shows placeholders, and clicking one expands that cell. Collapse All Outputs works. Show Line Numbers is ticked, and Shift+L turns it off.
+- Help › Keyboard Shortcuts and `H` open the dialog, and Escape closes it. `0, 0` restarts the counts.
+- Project highlights, degree highlights, book notes and every hobby come from `content.js`.
+- All round 1 checks still pass.
 
 ## Shared backlog (shell / cross-theme)
 
