@@ -1,30 +1,232 @@
-// Terminal theme - a zsh session: type (or click) a command, every answer comes from portfolioContent
+// Terminal theme - the visitor's own terminal (macOS Terminal, Windows PowerShell, Ubuntu, or a plain phone terminal).
+// It boots with a loader, then type (or click) a command; every answer comes from portfolioContent
 const TerminalTheme = {
     name: "Terminal",
 
+    // One per device: window chrome, prompt, greeting and error wording follow the real thing
+    profiles: {
+        mac: {
+            shell: 'zsh 5.9', script: './portfolio',
+            prompt: h => `<span class="tm-acc">guest@${h}</span> <span class="tm-key">~</span> %`,
+            greeting: () => {
+                const d = new Date();
+                return [`Last login: ${d.toDateString().slice(0, 10)} ${d.toTimeString().slice(0, 8)} on ttys000`];
+            },
+            notFound: (w, near) => `<p>zsh: command not found: ${w}</p>${near ? `<p class="tm-dim">Did you mean ${near}?</p>` : ''}`
+        },
+        windows: {
+            shell: 'PowerShell 5.1', script: '.\\portfolio.ps1',
+            prompt: () => 'PS C:\\Users\\guest&gt;',
+            greeting: () => ['Windows PowerShell', 'Copyright (C) Microsoft Corporation. All rights reserved.', '',
+                'Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows'],
+            notFound: (w, near) => `<p class="tm-err">${w} : The term '${w}' is not recognized as the name of a cmdlet, function, script file, or operable program.</p>${near ? `<p class="tm-dim">Did you mean ${near}?</p>` : ''}`
+        },
+        linux: {
+            shell: 'bash 5.2', script: './portfolio',
+            prompt: h => `<b class="tm-acc">guest@${h}</b>:<b class="tm-blue">~</b>$`,
+            greeting: () => ['Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-48-generic x86_64)', '', ' * Documentation:  https://help.ubuntu.com'],
+            notFound: (w, near) => near ? `<p>Command '${w}' not found, did you mean:</p><p>&nbsp;&nbsp;command ${near} from portfolio</p>` : `<p>${w}: command not found</p>`
+        },
+        phone: {
+            shell: 'sh', script: './portfolio',
+            prompt: () => '<span class="tm-acc">~</span> $',
+            greeting: () => [`Welcome to ${portfolioContent.name}'s portfolio!`, 'Tap a command below, or type one.'],
+            notFound: (w, near) => `<p>${w}: command not found</p>${near ? `<p class="tm-dim">Did you mean ${near}?</p>` : ''}`
+        }
+    },
+
+    // Phones (and narrow windows) get the plain terminal; desktops get their own OS's
+    detect() {
+        const ua = navigator.userAgent, platform = navigator.userAgentData?.platform || navigator.platform || '';
+        if (navigator.userAgentData?.mobile || /Android|iPhone|iPod|Mobile/i.test(ua) || matchMedia('(max-width: 767px)').matches) return 'phone';
+        if (/Win/i.test(platform)) return 'windows';
+        if (/Mac/i.test(platform)) return 'mac';
+        return 'linux'; // Linux, ChromeOS and the rest get Ubuntu's terminal
+    },
+
     render() {
         const c = portfolioContent;
+        this.os = this.detect();
+        this.p = this.profiles[this.os];
         this.host = c.name.split(' ')[0].toLowerCase();
         this.history = [];
         this.at = 0;
         this.commands = this.registry();
+        this.token = (this.token || 0) + 1;
+        this.art = this.pixelArt(this.os === 'phone' ? 44 : 60);
 
         document.getElementById('themeContainer').innerHTML = `
-            <div id="tmRoot">
-                <header class="tm-bar"><span class="tm-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="tm-title">guest@${this.host}: ~ — zsh</span></header>
-                <div id="tmScreen" class="tm-screen">
-                    <div id="tmOut" role="log" aria-live="polite" aria-label="Terminal output"></div>
-                    <label class="tm-line tm-entry-line">${this.prompt()}<input id="tmInput" type="text" aria-label="Command" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"></label>
+            <div id="tmRoot" data-os="${this.os}">
+                <div class="tm-win">
+                    ${this.chrome()}
+                    <div id="tmScreen" class="tm-screen">
+                        <div id="tmOut" role="log" aria-live="polite" aria-label="Terminal output"></div>
+                        <label class="tm-line tm-entry-line" hidden>${this.prompt()}<span class="tm-field"><span id="tmEcho" aria-hidden="true"></span><input id="tmInput" type="text" aria-label="Command" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"></span></label>
+                    </div>
                 </div>
             </div>`;
+        this.root = document.getElementById('tmRoot');
         this.screen = document.getElementById('tmScreen');
         this.out = document.getElementById('tmOut');
         this.input = document.getElementById('tmInput');
+        this.echo = document.getElementById('tmEcho');
         this.bind();
+        this.sync();
+        this.boot(this.token);
+    },
 
-        // Login: neofetch, then the menu
-        this.print('neofetch', this.commands.neofetch.view());
-        this.print(null, `<p>Type a command, or click one: ${Object.keys(this.commands).filter(n => !this.builtins[n]).map(n => this.chip(n)).join(' ')}</p>`);
+    chrome() {
+        const ico = list => list.map(i => `<i class="fas fa-${i}"></i>`).join('');
+        if (this.os === 'mac') return `<header class="tm-bar" aria-hidden="true"><span class="tm-dots"><i></i><i></i><i></i></span><span id="tmTitle" class="tm-title">guest — -zsh</span></header>`;
+        if (this.os === 'windows') return `
+            <header class="tm-bar" aria-hidden="true">
+                <span class="tm-tab"><span class="tm-ps">&gt;_</span>Windows PowerShell<i class="fas fa-xmark"></i></span>
+                <span class="tm-tabs-add">${ico(['plus', 'chevron-down'])}</span>
+                <span class="tm-ctl">${ico(['minus'])}<i class="far fa-square"></i>${ico(['xmark'])}</span>
+            </header>`;
+        if (this.os === 'linux') return `
+            <header class="tm-bar" aria-hidden="true">
+                <span class="tm-gbtn">${ico(['plus'])}</span>
+                <span class="tm-title">guest@${this.host}: ~</span>
+                <span class="tm-gbtn">${ico(['magnifying-glass'])}</span><span class="tm-gbtn">${ico(['bars'])}</span>
+                <span class="tm-ctl">${ico(['minus'])}<i class="far fa-square"></i>${ico(['xmark'])}</span>
+            </header>`;
+        return '';
+    },
+
+    // ---------- boot: greeting, a loader, the name banner, then neofetch ----------
+
+    // Waits resolve at once after a skip (any key, click or tap) or under reduced motion
+    wait(ms) {
+        if (this.fast) return Promise.resolve();
+        return new Promise(r => { this.wake = r; this.timer = setTimeout(r, ms); });
+    },
+
+    skip() {
+        this.fast = true;
+        clearTimeout(this.timer);
+        this.wake?.();
+    },
+
+    async boot(t) {
+        const c = portfolioContent, s = c.stats, live = () => t === this.token;
+        this.busy = this.booting = true;
+        this.fast = this.calm();
+        this.onSkip = () => this.skip();
+        window.addEventListener('keydown', this.onSkip);
+        const line = this.root.querySelector('.tm-entry-line');
+        const add = (parent, html, cls = '') => {
+            parent.insertAdjacentHTML('beforeend', `<div class="${cls}">${html}</div>`);
+            this.screen.scrollTop = this.screen.scrollHeight;
+            return parent.lastElementChild;
+        };
+
+        for (const g of this.p.greeting()) {
+            add(this.out, g ? this.esc(g) : '&nbsp;', 'tm-sys');
+            await this.wait(70); if (!live()) return;
+        }
+        line.hidden = false;
+        await this.wait(380); if (!live()) return;
+        await this.type(this.p.script); if (!live()) return;
+        const entry = this.print(this.p.script);
+        line.hidden = true;
+        this.input.value = '';
+        this.sync();
+
+        // Loader: each module from content.js spins, then ticks; a bar fills; it all folds into one line
+        const steps = [['experience', `${c.experience.length} roles`], ['projects', s.projects], ['skills', s.skills],
+            ['education', c.education.length], ['certifications', c.certifications.length + c.patents.length]];
+        const width = this.os === 'phone' ? 18 : 30, started = performance.now();
+        const box = add(entry, '', 'tm-out tm-load');
+        box.setAttribute('aria-hidden', 'true');
+        const bar = n => `[<span class="tm-acc">${'█'.repeat(Math.round(n * width))}</span><span class="tm-dim">${'░'.repeat(width - Math.round(n * width))}</span>] ${String(Math.round(n * 100)).padStart(3)}%`;
+        const rows = add(box, ''), meter = add(box, bar(0));
+        const hint = add(box, this.os === 'phone' ? 'tap to skip' : 'press any key to skip', 'tm-dim');
+        for (const [i, [name, n]] of steps.entries()) {
+            const row = add(rows, '');
+            for (const f of '⠋⠙⠹⠸') {
+                row.innerHTML = `<span class="tm-key">${f}</span> loading ${name}…`;
+                await this.wait(55); if (!live()) return;
+            }
+            row.innerHTML = `<span class="tm-acc">✔</span> ${name} <span class="tm-dim">${'.'.repeat(16 - name.length)}</span> ${n}`;
+            meter.innerHTML = bar((i + 1) / steps.length);
+        }
+        hint.remove();
+        await this.wait(260); if (!live()) return;
+        box.innerHTML = `<span class="tm-acc">✔</span> loaded ${steps.length} modules <span class="tm-dim">in ${((performance.now() - started) / 1000).toFixed(1)}s</span>`;
+        box.removeAttribute('aria-hidden');
+
+        const out = add(entry, '', 'tm-out');
+        add(out, this.banner(c.name.split(' ')[0]), 'tm-banner');
+        await this.wait(380); if (!live()) return;
+        this.artLines = await this.art; if (!live()) return;
+        add(out, this.neofetch());
+        await this.wait(700); if (!live()) return;
+        add(out, this.menu());
+        line.hidden = false;
+        this.done();
+    },
+
+    done() {
+        window.removeEventListener('keydown', this.onSkip);
+        this.busy = this.booting = false;
+        this.fast = false;
+        this.screen.scrollTop = this.screen.scrollHeight;
+        if (matchMedia('(pointer: fine)').matches) this.input.focus({ preventScroll: true });
+    },
+
+    // The first name in 5x5 block letters with a drop shadow, built from the name in content.js
+    font: {
+        A: '.###. #...# ##### #...# #...#', B: '####. #...# ####. #...# ####.', C: '.#### #.... #.... #.... .####', D: '####. #...# #...# #...# ####.',
+        E: '##### #.... ####. #.... #####', F: '##### #.... ####. #.... #....', G: '.#### #.... #..## #...# .####', H: '#...# #...# ##### #...# #...#',
+        I: '##### ..#.. ..#.. ..#.. #####', J: '..### ...#. ...#. #..#. .##..', K: '#...# #..#. ###.. #..#. #...#', L: '#.... #.... #.... #.... #####',
+        M: '#...# ##.## #.#.# #...# #...#', N: '#...# ##..# #.#.# #..## #...#', O: '.###. #...# #...# #...# .###.', P: '####. #...# ####. #.... #....',
+        Q: '.###. #...# #.#.# #..#. .##.#', R: '####. #...# ####. #..#. #...#', S: '.#### #.... .###. ....# ####.', T: '##### ..#.. ..#.. ..#.. ..#..',
+        U: '#...# #...# #...# #...# .###.', V: '#...# #...# #...# .#.#. ..#..', W: '#...# #...# #.#.# ##.## #...#', X: '#...# .#.#. ..#.. .#.#. #...#',
+        Y: '#...# .#.#. ..#.. ..#.. ..#..', Z: '##### ...#. ..#.. .#... #####', '-': '..... ..... .###. ..... .....', ' ': '... ... ... ... ...'
+    },
+
+    banner(word) {
+        // One pixel is two characters wide, so the letters keep their shape
+        const glyphs = [...word.toUpperCase()].map(ch => this.font[ch]?.split(' ')).filter(Boolean);
+        const px = [0, 1, 2, 3, 4].map(r => glyphs.map(g => g[r]).join('.')).map(row => [...row].flatMap(b => [b, b]));
+        const on = (r, c) => px[r]?.[c] === '#';
+        const cols = px[0].length + 1;
+        const rows = [0, 1, 2, 3, 4, 5].map(r => Array.from({ length: cols }, (_, c) => on(r, c) ? '█' : on(r - 1, c - 1) ? '<span class="tm-shade">░</span>' : ' ').join(''));
+        return `<pre aria-label="${this.esc(word)}" style="--cols:${cols}">${rows.map((r, i) => `<span style="--i:${i}">${r}</span>`).join('')}</pre>`;
+    },
+
+    // The profile photo as a half-block portrait (how terminal image viewers draw): each character is two pixels,
+    // ▀ in the top one's shade on the bottom one's, in the theme's green. A centred head-and-shoulders crop,
+    // contrast-stretched and faded out at the edges. Resolves to null when the canvas can't read the image
+    // (e.g. a local file:// copy); the photo is shown instead
+    pixelArt(cols) {
+        const src = portfolioContent.picture;
+        if (!src) return Promise.resolve(null);
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                try {
+                    // A character is 0.6em wide and each half 0.5em tall, so 1.2 pixel rows per column keeps the aspect
+                    const rows = Math.round(cols * 1.2 / 2) * 2, size = Math.min(img.naturalWidth, img.naturalHeight) * 0.64;
+                    const cv = Object.assign(document.createElement('canvas'), { width: cols, height: rows });
+                    const g = cv.getContext('2d', { willReadFrequently: true });
+                    g.drawImage(img, (img.naturalWidth - size) / 2, img.naturalHeight * 0.17, size, size, 0, 0, cols, rows);
+                    const d = g.getImageData(0, 0, cols, rows).data;
+                    const lum = Array.from({ length: cols * rows }, (_, i) => 0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]);
+                    const sorted = [...lum].sort((a, b) => a - b), lo = sorted[Math.floor(lum.length * 0.03)], hi = sorted[Math.floor(lum.length * 0.97)];
+                    const level = (x, y) => {
+                        const fade = Math.min(1, Math.max(0, (1.1 - Math.hypot(((x + 0.5) / cols - 0.5) / 0.34, ((y + 0.5) / rows - 0.47) / 0.52)) / 0.25));
+                        return Math.round(Math.min(1, Math.max(0, (lum[y * cols + x] - lo) / (hi - lo))) * fade * 20) * 5;
+                    };
+                    resolve(Array.from({ length: rows / 2 }, (_, r) => Array.from({ length: cols }, (_, x) => `<i style="--a:${level(x, r * 2)};--b:${level(x, r * 2 + 1)}">▀</i>`).join('')));
+                } catch {
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(null);
+            img.src = src;
+        });
     },
 
     // ---------- commands: chatCommands from content.js, plus a few shell built-ins ----------
@@ -34,14 +236,14 @@ const TerminalTheme = {
         history: 'Commands you ran',
         clear: 'Clear the screen'
     },
-    aliases: { ls: 'help', man: 'help', whoami: 'about', cv: 'resume', cls: 'clear' },
+    aliases: { ls: 'help', dir: 'help', man: 'help', whoami: 'about', cv: 'resume', cls: 'clear' },
 
     registry() {
         const views = {
             help: () => this.help(), about: () => this.about(), skills: () => this.skills(), experience: () => this.experience(),
             education: () => this.education(), certifications: () => this.certifications(), projects: () => this.projects(),
             reading: () => this.reading(), contact: () => this.contact(), hire: () => this.hire(), resume: () => this.resume(),
-            neofetch: () => this.neofetch(), history: () => this.list(this.history)
+            neofetch: () => this.neofetch(), history: () => this.list(this.history.map(h => this.esc(h)))
         };
         const cmds = {};
         portfolioContent.chatCommands.forEach(({ command, description }) => {
@@ -52,18 +254,26 @@ const TerminalTheme = {
         return cmds;
     },
 
+    menu() {
+        return `<p class="tm-menu"><span>Type a command, or ${this.os === 'phone' ? 'tap' : 'click'} one:</span> ${Object.keys(this.commands).filter(n => !this.builtins[n]).map(n => this.chip(n)).join(' ')}</p>`;
+    },
+
     neofetch() {
         const c = portfolioContent, s = c.stats;
-        const rows = [['Title', c.title], ['Focus', c.specialization], ['Location', c.location], ['Uptime', `${s.years} years`],
-            ['Companies', s.companies], ['Projects', s.projects], ['Skills', s.skills]];
+        const rows = [['Role', c.title], ['Focus', c.specialization], ['Location', c.location], ['Uptime', `${s.years} years`],
+            ['Companies', s.companies], ['Projects', s.projects], ['Skills', s.skills], ['Shell', this.p.shell]];
+        const art = this.artLines
+            ? `<pre class="tm-art" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`
+            : c.picture ? `<img src="${c.picture}" alt="" class="tm-photo" onerror="this.remove()">` : '';
         return `
             <div class="tm-fetch">
-                ${c.picture ? `<img src="${c.picture}" alt="" class="tm-photo" onerror="this.remove()">` : ''}
-                <div>
+                ${art}
+                <div class="tm-info">
                     <p><b class="tm-acc">${c.name}</b></p>
                     <p class="tm-dim" aria-hidden="true">${'-'.repeat(c.name.length)}</p>
-                    ${this.kv(rows)}
+                    <dl class="tm-kv">${rows.map(([k, v]) => `<dt class="tm-acc">${k}</dt><dd>${v}</dd>`).join('')}</dl>
                     <p class="tm-dim">${c.tagline}</p>
+                    <p class="tm-swatch" aria-hidden="true">${['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'].map(n => `<i style="background:var(--tm-${n})"></i>`).join('')}</p>
                 </div>
             </div>`;
     },
@@ -80,7 +290,7 @@ const TerminalTheme = {
             <p><b>${c.name}</b> <span class="tm-dim">· ${c.title} · ${c.location}</span></p>
             <p>${c.about.bio}</p>
             ${this.kv(c.impact.map(m => [m.value, m.label]), 'tm-acc')}
-            <p><span class="tm-dim">interests</span> ${c.about.interests.join(' · ')}</p>
+            <p><span class="tm-key">interests</span> ${c.about.interests.join(' · ')}</p>
             ${c.about.funFact ? `<p class="tm-dim">${c.about.funFact}</p>` : ''}`;
     },
 
@@ -88,7 +298,7 @@ const TerminalTheme = {
     experience() {
         return `<div class="tm-log">${portfolioContent.experience.map(e => `
             <section>
-                <p><b>${e.position}</b> <span class="tm-dim">@</span> ${e.company}</p>
+                <p><b>${e.position}</b> <span class="tm-dim">@</span> <span class="tm-key">${e.company}</span></p>
                 <p class="tm-dim">${e.period} · ${e.location}</p>
                 ${this.list(e.achievements)}
                 <p class="tm-dim">${e.technologies.join(' · ')}</p>
@@ -101,7 +311,7 @@ const TerminalTheme = {
                 <p><span class="tm-dim">[${i + 1}]</span> <b>${p.title}</b></p>
                 <p>${p.description}</p>
                 ${this.list(p.highlights)}
-                <p class="tm-dim">${p.tags.join(' · ')}</p>
+                <p class="tm-key">${p.tags.join(' · ')}</p>
                 ${p.site ? `<p>${this.link(`https://${p.site}`)}</p>` : ''}
             </section>`).join('');
     },
@@ -120,7 +330,7 @@ const TerminalTheme = {
             <section>
                 <p><b>${e.degree}</b></p>
                 <p>${e.institution}</p>
-                <p class="tm-dim">${e.year} · GPA ${e.gpa}</p>
+                <p class="tm-dim">${e.year} · GPA <span class="tm-acc">${e.gpa}</span></p>
             </section>`).join('');
     },
 
@@ -160,7 +370,7 @@ const TerminalTheme = {
 
     resume() {
         const r = portfolioContent.resume;
-        if (!r) return '<p>zsh: no such file: résumé</p>';
+        if (!r) return '<p>no such file: résumé</p>';
         return `
             <p>${r.split('/').pop()} <span class="tm-dim">· PDF</span></p>
             <p><a href="${r}" target="_blank" rel="noopener" class="tm-btn">Open</a> <a ${this.resumeAttrs()} class="tm-btn">Download</a></p>`;
@@ -169,14 +379,14 @@ const TerminalTheme = {
     // ---------- small pieces ----------
 
     prompt() {
-        return `<span class="tm-prompt" aria-hidden="true"><span class="tm-acc">guest@${this.host}</span> <b>~</b> <span class="tm-dim">%</span></span>`;
+        return `<span class="tm-prompt" aria-hidden="true">${this.p.prompt(this.host)}</span>`;
     },
 
     chip(name) {
         return `<button type="button" class="tm-run" data-run="${name}">${name}</button>`;
     },
 
-    kv(rows, keyClass = 'tm-dim') {
+    kv(rows, keyClass = 'tm-key') {
         return `<dl class="tm-kv">${rows.map(([k, v]) => `<dt class="${keyClass}">${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
     },
 
@@ -241,13 +451,15 @@ const TerminalTheme = {
     run(raw) {
         const line = raw.trim(), word = line.split(/\s+/)[0], name = word.toLowerCase();
         this.input.value = '';
+        this.sync();
         if (line && line !== this.history.at(-1)) this.history.push(line);
         this.at = this.history.length;
         const cmd = this.commands[this.aliases[name] || name];
         if (cmd === this.commands.clear) return this.clear();
+        const near = !cmd && this.closest(name);
         const html = !line ? '' : cmd ? cmd.view()
             : name === 'sudo' ? '<p>guest is not in the sudoers file. This incident will be reported.</p>'
-            : `<p>zsh: command not found: ${this.esc(word)}</p><p class="tm-dim">${(near => near ? `Did you mean ${this.chip(near)}?` : `Type ${this.chip('help')} to see what's here.`)(this.closest(name))}</p>`;
+            : this.p.notFound(this.esc(word), near && this.chip(near)) + (near ? '' : `<p class="tm-dim">Type ${this.chip('help')} to see what's here.</p>`);
         this.follow(this.print(line, html));
     },
 
@@ -262,16 +474,34 @@ const TerminalTheme = {
         this.screen.scrollTop = 0;
     },
 
-    // A clicked command types itself at the prompt, then runs
-    type(cmd) {
-        clearTimeout(this.timer);
-        if (this.calm()) return this.run(cmd);
-        let i = 0;
-        const step = () => {
-            this.input.value = cmd.slice(0, ++i);
-            this.timer = setTimeout(i < cmd.length ? step : () => this.run(cmd), i < cmd.length ? 35 : 140);
-        };
-        step();
+    // Types a command at the prompt, a key at a time
+    async type(cmd) {
+        this.root.classList.add('is-typing');
+        for (let i = 1; i <= cmd.length; i++) {
+            this.input.value = cmd.slice(0, i);
+            this.sync(i);
+            await this.wait(38 + Math.random() * 30);
+        }
+        await this.wait(160);
+        this.root.classList.remove('is-typing');
+    },
+
+    // A clicked command types itself, then runs
+    async click(cmd) {
+        if (this.busy) return;
+        const t = this.token;
+        this.busy = true;
+        this.fast = this.calm();
+        await this.type(cmd);
+        if (t !== this.token) return;
+        this.busy = this.fast = false;
+        this.run(cmd);
+    },
+
+    // The visible prompt text with a block cursor (the real input sits on top, transparent)
+    sync(at = this.input.selectionStart ?? this.input.value.length) {
+        const v = this.input.value;
+        this.echo.innerHTML = `${this.esc(v.slice(0, at))}<span class="tm-cursor">${this.esc(v[at] || ' ')}</span>${this.esc(v.slice(at + 1))}`;
     },
 
     complete() {
@@ -283,23 +513,28 @@ const TerminalTheme = {
         if (names.length === 1) this.input.value = names[0];
         else if (common.length > v.length) this.input.value = common;
         else this.follow(this.print(this.input.value, `<p>${names.map(n => this.chip(n)).join(' ')}</p>`));
+        this.sync(this.input.value.length);
     },
 
     recall(step) {
         this.at = Math.max(0, Math.min(this.history.length, this.at + step));
         this.input.value = this.history[this.at] || '';
-        requestAnimationFrame(() => this.input.setSelectionRange(this.input.value.length, this.input.value.length));
+        this.input.setSelectionRange(this.input.value.length, this.input.value.length);
+        this.sync();
     },
 
     bind() {
         this.screen.addEventListener('click', (e) => {
+            if (this.booting) return this.skip();
             const run = e.target.closest('[data-run]');
-            if (run) return this.type(run.dataset.run);
+            if (run) return this.click(run.dataset.run);
             // Clicking the screen focuses the prompt, unless it ends a text selection or hits a link (desktop only: on phones it would pop the keyboard)
             if (!e.target.closest('a, input') && !getSelection().toString() && matchMedia('(pointer: fine)').matches) this.input.focus({ preventScroll: true });
         });
 
+        ['input', 'keyup', 'click', 'select', 'focus', 'blur'].forEach(ev => this.input.addEventListener(ev, () => this.sync()));
         this.input.addEventListener('keydown', (e) => {
+            if (this.busy) return e.preventDefault();
             if (e.key === 'Enter') return this.run(this.input.value);
             if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); return this.complete(); }
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); return this.recall(e.key === 'ArrowUp' ? -1 : 1); }
@@ -308,16 +543,31 @@ const TerminalTheme = {
             if (k === 'l') { e.preventDefault(); return this.clear(); }
             // Ctrl+C cancels the line, unless text is selected (copy on Windows/Linux)
             if (k === 'c' && this.input.selectionStart === this.input.selectionEnd) {
-                clearTimeout(this.timer);
                 this.follow(this.print(`${this.input.value}^C`));
                 this.input.value = '';
+                this.sync();
             }
         });
+
+        // macOS Terminal shows the window size in its title
+        const title = document.getElementById('tmTitle');
+        if (title) {
+            this.sizer = new ResizeObserver(() => {
+                const ch = this.echo.querySelector('.tm-cursor')?.getBoundingClientRect().width || 8.4;
+                title.textContent = `guest — -zsh — ${Math.floor((this.screen.clientWidth - 40) / ch)}×${Math.floor(this.screen.clientHeight / (ch / 0.6 * 1.6))}`;
+            });
+            this.sizer.observe(this.screen);
+        }
     },
 
     cleanup() {
+        this.token++;
         clearTimeout(this.timer);
         this.timer = null;
+        window.removeEventListener('keydown', this.onSkip);
+        this.onSkip = null;
+        this.sizer?.disconnect();
+        this.sizer = null;
     }
 };
 

@@ -61,7 +61,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | **Rebuilt, in review** | `theme/terminal` | |
+| Terminal | ✅ | **Rebuilt (2 rounds), in review** | `theme/terminal` | |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -349,6 +349,29 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 - Résumé links use the `content.js` path and open in a new tab; no phone number anywhere.
 - No horizontal overflow; nothing under the switcher at the end; Ctrl+L clears.
 - Switching theme mid-typing clears the timer, with no runtime errors.
+
+#### Terminal round 2 (owner feedback)
+
+The feedback was: it isn't true to a real terminal (it should match the visitor's device, and be a plain terminal on phones), the earlier version looked better, and it needs a beautiful opening animation like a loading screen instead of looking bland.
+
+- **Matches the device** (`detect()`): macOS gets macOS Terminal (traffic lights, `guest — -zsh — 138×34` title with the live window size, zsh prompt, `Last login: …`). Windows gets Windows Terminal running PowerShell (tab strip, window controls, `PS C:\Users\guest>`, the real PowerShell banner and "is not recognized as the name of a cmdlet" error, a bar cursor). Linux and the rest get Ubuntu's GNOME Terminal (header bar, aubergine background, Tango colours, `guest@ashutosh:~$`, Ubuntu's "Command 'x' not found, did you mean:"). Phones and narrow windows get a plain full-screen terminal with no chrome. Each uses its OS's terminal font where installed (SF Mono, Cascadia Mono, Ubuntu Mono), with Geist Mono as the fallback.
+- **Window on the desk:** on desktop the terminal is a window with layered shadows that zooms open, and the switcher sits on the desk below it.
+- **Boot sequence:** the greeting prints, `./portfolio` types itself, and a loader spins through each module from `content.js` (experience, projects, skills, education, certifications) with a filling progress bar. It folds into one `✔ loaded 5 modules in 1.4s` line, then the first name prints as a block-letter banner (built from `content.js` with a 5×5 pixel font and a drop shadow, scaled to fit any width) and neofetch draws in. Any key, click or tap skips it, and reduced motion shows it all at once. It takes about 3.5s.
+- **Portrait instead of the photo:** your photo is drawn as a half-block pixel portrait in the terminal's green, the way terminal image viewers (`chafa`, `viu`) do it. It's a head-and-shoulders crop faded at the edges, and it prints row by row. An ASCII-character version was tried and dropped because it didn't read as a face. If the canvas can't read the image (a local `file://` copy), the photo is shown instead.
+- **Colour like the earlier version:** each OS's real ANSI palette. Titles are yellow, labels and links cyan, prompt, bullets and banner green, and errors red, and neofetch ends with the palette's colour swatches. *Deliberate deviation from the one-accent rule:* terminals are ANSI-coloured, and the owner preferred the earlier multi-colour look.
+- **Real cursor:** a block cursor that blinks when focused and turns hollow when not (a bar on Windows). The input sits transparent over the echoed text.
+- **Phones:** commands are 44px bordered buttons in a wrapping grid (not underlined words with big gaps).
+- **Code:** `cleanup()` also removes the skip listener and the window-size observer. Boot waits are cancellable, so switching theme mid-boot stops it.
+
+#### Terminal round 2 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The boot shows the loader before the prompt; a key press skips straight to the finished boot.
+- macOS on desktop and the phone terminal on phones; forcing Windows and Linux gives their prompts and not-found wording.
+- The banner spells the first name from `content.js`; the portrait is drawn; the menu lists every `chatCommand`.
+- The prompt echo shows typed text with the cursor after it.
+- All round 1 checks still pass.
 
 ## Shared backlog (shell / cross-theme)
 

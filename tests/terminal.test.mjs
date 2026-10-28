@@ -22,17 +22,31 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     const c = await b.evaluate('JSON.stringify(portfolioContent)').then(JSON.parse);
     const noOverflow = async what => assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), `${opts.width || 1440}x${opts.width || 1440}`, `${label}: no horizontal overflow (${what})`);
 
-    // Login: neofetch from content.js and a clickable menu built from chatCommands
+    // Boot: greeting, a loader, then the banner and neofetch; any key skips it
+    await b.evaluate(`portfolioController.loadTheme('paper', { animate: false }); portfolioController.loadTheme('terminal', { animate: false })`);
+    await sleep(1300);
+    assert.ok(await b.evaluate(`!!document.querySelector('#tmOut .tm-load') && document.querySelector('.tm-entry-line').hidden && TerminalTheme.booting`), `${label}: boot shows the loader before the prompt`);
+    await b.shot(`${out}-${label}-0-boot.png`);
+    await b.evaluate(`dispatchEvent(new KeyboardEvent('keydown', { key: 'x' }))`); await sleep(400);
+    assert.ok(await b.evaluate(`!TerminalTheme.booting && !document.querySelector('.tm-entry-line').hidden && !!document.querySelector('.tm-menu')`), `${label}: a key press skips to the finished boot`);
+    assert.equal(await b.evaluate(`document.getElementById('tmRoot').dataset.os`), phone ? 'phone' : 'mac', `${label}: terminal matches the device`);
+
+    // neofetch from content.js, the name banner and the portrait, and a clickable menu built from chatCommands
     const login = await b.evaluate(screen);
-    for (const fact of [c.name, c.title, `${c.stats.years} years`, c.location]) assert.ok(login.includes(fact), `${label}: login shows "${fact}" from content.js`);
-    assert.ok(await b.evaluate(`!!document.querySelector('#tmOut .tm-photo[src="${c.picture}"]')`), `${label}: login shows the profile photo`);
-    const menu = await b.evaluate(`[...document.querySelectorAll('#tmOut .tm-entry:last-child [data-run]')].map(e => e.dataset.run).join()`);
+    for (const fact of [c.name, c.title, `${c.stats.years} years`, c.location]) assert.ok(login.includes(fact), `${label}: boot shows "${fact}" from content.js`);
+    assert.equal(await b.evaluate(`document.querySelector('.tm-banner pre').getAttribute('aria-label')`), c.name.split(' ')[0], `${label}: banner spells the first name`);
+    assert.ok(await b.evaluate(`document.querySelectorAll('.tm-art > span').length > 20 || !!document.querySelector('.tm-photo')`), `${label}: portrait is drawn`);
+    const menu = await b.evaluate(`[...document.querySelectorAll('.tm-menu [data-run]')].map(e => e.dataset.run).join()`);
     assert.equal(menu, c.chatCommands.map(x => x.command.slice(1)).join(), `${label}: menu lists every chatCommand`);
-    await noOverflow('login');
+    await noOverflow('boot');
     await b.shot(`${out}-${label}-1-login.png`);
 
+    // Prompt echo with a block cursor follows the input
+    await b.evaluate(`(() => { const i = document.getElementById('tmInput'); i.value = 'abc'; i.dispatchEvent(new Event('input')); })()`);
+    assert.equal(await b.evaluate(`document.getElementById('tmEcho').textContent`), 'abc ', `${label}: typed text is echoed with the cursor after it`);
+
     // Typed command, from content.js
-    await enter(b, 'experience');
+    await enter(b, 'experience'); await sleep(600); // smooth scroll
     const exp = await b.evaluate(last);
     for (const e of c.experience) assert.ok(exp.includes(e.position) && exp.includes(e.achievements.at(-1)), `${label}: experience shows ${e.position} with every achievement`);
     assert.ok(await b.evaluate(`(() => { const s = document.getElementById('tmScreen'), e = document.querySelector('#tmOut .tm-entry:last-child');
@@ -89,8 +103,19 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await b.evaluate(press('l', 'ctrlKey: true,'));
     assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length`), 0, `${label}: Ctrl+L clears the screen`);
 
+    // Desktop: Windows gets PowerShell and Linux gets Ubuntu's terminal, each with its own wording
+    if (!phone) for (const [os, prompt, err] of [['windows', 'PS C:\\Users\\guest>', "is not recognized as the name of a cmdlet"], ['linux', 'guest@ashutosh:~$', "Command 'projcts' not found, did you mean:"]]) {
+        await b.evaluate(`TerminalTheme.detect = () => '${os}'; portfolioController.loadTheme('paper', { animate: false }); portfolioController.loadTheme('terminal', { animate: false }); TerminalTheme.skip()`);
+        await sleep(500);
+        assert.equal(await b.evaluate(`document.getElementById('tmRoot').dataset.os`), os, `desk: ${os} profile`);
+        assert.equal(await b.evaluate(`document.querySelector('.tm-entry-line .tm-prompt').textContent`), prompt, `desk: ${os} prompt`);
+        await enter(b, 'projcts');
+        assert.ok((await b.evaluate(last)).includes(err), `desk: ${os} not-found wording`);
+        await b.shot(`${out}-desk-${os}.png`);
+    }
+
     // Switching theme mid-typing: the timer is cleared, no errors
-    await b.evaluate(`document.querySelector('#tmRoot') && TerminalTheme.type('projects')`);
+    await b.evaluate(`TerminalTheme.click('projects')`);
     await b.evaluate(`portfolioController.loadTheme('paper')`); await sleep(800);
     assert.equal(await b.evaluate(`TerminalTheme.timer`), null, `${label}: cleanup clears the typing timer`);
     assert.deepEqual(b.errors.filter(e => e.includes('terminal.js')), [], `${label}: no runtime errors`);
