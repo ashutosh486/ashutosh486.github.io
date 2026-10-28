@@ -46,6 +46,7 @@ node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignor
 node tests/modelcard.test.mjs  # desktop + 390px phone
 node tests/vscode.test.mjs     # desktop + 390px phone
 node tests/terminal.test.mjs   # desktop + 390px phone
+node tests/notebook.test.mjs   # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -62,7 +63,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
-| Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
+| Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
@@ -424,6 +425,79 @@ The feedback was: the lips don't move, the coffee looks like it's floating, the 
 The feedback was: on phones every clickable command is a bordered tile; it should look the same as on desktop.
 
 - **Phones match desktop:** commands are the same dotted-underlined green words (menu, `help`, suggestions, scheme list), and Open / Download / Write to me are the same small buttons. The phone prompt shows `guest@ashutosh:~$` like the desktop ones. Each keeps a 44px tap area through an invisible `::after` hit zone, and the rows are spaced so neighbouring hit zones barely overlap. Checked by `tests/terminal.test.mjs`: no tile border, and a tap area of at least 44px.
+
+### Notebook (`theme/notebook`): rebuilt from scratch
+
+#### Notebook before
+
+- A generic white page with an orange "Run All" button and a green gradient "Hire Me" button. It didn't look like Jupyter.
+- Only the second cell had run; every other cell waited for a click. Each run replaced the cell's HTML and re-bound every listener on the page.
+- The cells pasted `content.js` into Python source as `JSON.stringify` dumps, so the code was mostly data. The output showed the phone number and a fixed "featured projects: 3".
+- 491px wide on phones, with the header buttons pushed off to the top-right.
+- Timers from Run All were never cleared, and `transition: all` was used on every cell.
+
+#### Notebook after
+
+- **Jupyter Notebook 7 (light):**
+  - The header has the logo, `Ashutosh_Pandey.ipynb` and "Last Checkpoint".
+  - The toolbar has only buttons that work: Run (and advance), Interrupt, and Restart & Run All.
+  - The kernel indicator reads "Python 3 (ipykernel)", with a hollow circle when idle and a filled one when busy.
+  - The page is white on grey with Jupyter's blue selection bar, `[n]:` prompts (blue for input, orange-red for output) and Jupyter's Python syntax colours.
+- **Opening (after the theme chooser closes):** the first cell types itself in edit mode, then the whole notebook runs. Every prompt shows `[*]:`, the kernel goes busy, and the outputs appear one by one, numbered in order. A key press or a click skips to the finished notebook. With reduced motion, everything shows at once.
+- **Short code, real outputs:** cells read like real notebook code (`pd.DataFrame(me.projects)`, `display(Markdown(...))`, `print(...)`). Every output is built from `content.js`:
+  - **Profile:** the caricature (`js/caricature.js`, code glyphs in Jupyter orange), tagline, bio, stats and interests.
+  - **Impact, Projects and Education:** pandas DataFrame tables.
+  - **Experience:** rendered Markdown per role.
+  - **Skills:** aligned stdout, each skill once.
+  - **Patents and certificates:** links.
+  - **Reading:** text progress bars.
+  - **Contact:** links plus the résumé download.
+  - There are no charts, and the phone number is not shown.
+- **Command mode:** click a cell to select it. Shift+Enter runs it and selects the next cell; Ctrl/⌘+Enter runs it in place; ↑/↓ or k/j move the selection. Cells queue like a real kernel: each run takes the next execution count, and Interrupt resets queued cells to their last count.
+- **Phones:** full-width page with prompts above their cells (as JupyterLab does on narrow screens) and 44px toolbar buttons. Wide DataFrames scroll sideways inside their output, and long text keeps a readable column width.
+
+#### Notebook verified
+
+Checked with `tests/notebook.test.mjs` at 1440px and 390px:
+
+- With the chooser open nothing runs and the first cell is empty. Closing the chooser types it, shows `[*]:` while the kernel is busy, then numbers every cell 1…n in order.
+- A key press skips straight to the finished run.
+- The facts come from `content.js`: name, bio, stats, impact, every role's last achievement, every project, degree, patent number, certificates, books and email. Each skill is listed once and all of them are listed.
+- The résumé link uses the `content.js` path and opens in a new tab, and the profile shows the caricature rather than the photo.
+- The header takes at most 20% of the screen. There's no horizontal overflow, and toolbar buttons are 44px on phones.
+- Click selects a cell and ↓ moves the selection. Shift+Enter runs the cell with the next count and advances; Ctrl+Enter runs it in place.
+- Interrupt stops a run with no `[*]` left. Restart & Run All renumbers from 1.
+- The switcher corner is clear at the end of the notebook. Cleanup removes the listeners, and there are no runtime errors.
+
+#### Notebook round 2 (owner feedback)
+
+The feedback was that the notebook should have Jupyter's other options and didn't show everything. Of the options offered (menu bar, table of contents, dark theme, cells visitors can type in), the owner picked the menu bar.
+
+- **Menu bar:** Notebook 7's File, Edit, View, Run, Kernel and Help menus, keeping only items that work here. Settings is left out because none of its real options would do anything.
+  - **File:** Download saves a real `.ipynb` (nbformat 4) with the current outputs and execution counts, so it opens in Jupyter. The caricature is left out of the file because it needs this page's CSS. Download Résumé (PDF) is also here.
+  - **Edit:** Clear Cell Output, or Clear Outputs of All Cells. As in Jupyter, clearing also clears the execution count.
+  - **View:** Collapse or Expand All Code, and Collapse or Expand All Outputs. Collapsed parts show Jupyter's `···` placeholder, which expands that cell when clicked. Show Line Numbers is ticked when on.
+  - **Run:** Run Selected Cell, Run Selected Cell and Do not Advance, Run All Above Selected Cell, Run Selected Cell and All Below, and Run All Cells.
+  - **Kernel:** Interrupt, Restart (counts start from 1 again), Restart and Clear Outputs, and Restart and Run All.
+  - **Help:** a Keyboard Shortcuts dialog.
+  - Menus open on click. With one open, hovering another title switches to it. ↓ opens a menu on its first item, ←/→ move between menus, and Escape returns to the title. A click outside closes it. On phones the titles and items are 44px and a menu spans the screen.
+- **More of Jupyter's keys:** `I, I` interrupts, `0, 0` restarts the kernel, `Shift+L` toggles line numbers and `H` opens the shortcuts.
+- **Content that was missing:**
+  - Project highlights and degree highlights are now table columns.
+  - Each book shows its notes and a link (URLs in text output become links, as in Jupyter).
+  - A new "Outside work" cell prints `me.hobbies` as IPython shows a list.
+
+#### Notebook round 2 verified
+
+Checked with `tests/notebook.test.mjs` at 1440px and 390px:
+
+- The menu bar reads File, Edit, View, Run, Kernel, Help. Each menu opens on screen, with 44px items on phones. A click outside closes it, and ↓, → and Escape behave as described.
+- File › Download saves `Ashutosh_Pandey.ipynb`. The file is nbformat 4 with every cell, the same execution counts as the page, and every output, without the caricature.
+- Clear Outputs of All Cells empties every output and count, and Run All Cells brings them back. Run Selected Cell and All Below, from the last cell, runs only that cell.
+- Collapse All Code shows placeholders, and clicking one expands that cell. Collapse All Outputs works. Show Line Numbers is ticked, and Shift+L turns it off.
+- Help › Keyboard Shortcuts and `H` open the dialog, and Escape closes it. `0, 0` restarts the counts.
+- Project highlights, degree highlights, book notes and every hobby come from `content.js`.
+- All round 1 checks still pass.
 
 ## Shared backlog (shell / cross-theme)
 

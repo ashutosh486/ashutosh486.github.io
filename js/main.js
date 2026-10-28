@@ -25,7 +25,7 @@ class PortfolioController {
             modelcard: { label: 'Model Card', blurb: 'My career as an ML model card', icon: 'fas fa-id-card', bg: '#ffffff', fg: '#111827' },
             vscode: { label: 'VS Code', blurb: 'Browse my résumé as source files', icon: 'fas fa-code', bg: '#181818', fg: '#4fc1ff' },
             terminal: { label: 'Terminal', blurb: 'Type commands, get answers', icon: 'fas fa-terminal', bg: '#0c0c0c', fg: '#4ade80' },
-            notebook: { label: 'Notebook', blurb: 'A Jupyter notebook you can run', icon: 'fas fa-book', bg: '#ffffff', fg: '#f97316' },
+            notebook: { label: 'Notebook', blurb: 'A Jupyter notebook you can run', icon: 'fas fa-book', bg: '#ffffff', fg: '#f37726' },
             paper: { label: 'Paper', blurb: 'Typeset like a research paper', icon: 'fas fa-file-lines', bg: '#ffffff', fg: '#111111' },
             book: { label: 'Book', blurb: 'Read it chapter by chapter', icon: 'fas fa-book-open', bg: '#ffffff', fg: '#2563eb' },
             apple: { label: 'Persona Card', blurb: 'One clean profile card', icon: 'fas fa-address-card', bg: '#ffffff', fg: '#1d1d1f' },
