@@ -1608,9 +1608,874 @@ button.shell-ui {
     }
 }
 
-/* Terminal theme text colors */
-.text-magenta-400 {
-    color: #f472b6;
+/* ---------- Caricature (js/caricature.js): themes recolour it through the --cc-* variables ---------- */
+.cc {
+    --cc-skin: #d9966a;
+    --cc-skin-shade: #b9764d;
+    --cc-hair: #241e1b;
+    --cc-hair-shine: #4a3f39;
+    --cc-shirt: #a9c9f1;
+    --cc-shirt-shade: #8aaedd;
+    --cc-collar: #c8ddf8;
+    --cc-eye: #241e1b;
+    --cc-mouth: #7a2e2a;
+    --cc-teeth: #ffffff;
+    --cc-blush: #f0857a;
+    --cc-laptop: #d3d8df;
+    --cc-laptop-shade: #9aa2ad;
+    --cc-desk: #6b7280;
+    --cc-mug: #e07a5f;
+    --cc-steam: rgba(200, 204, 210, 0.7);
+    --cc-glow: #9fd3ff;
+    --cc-code: #4ade80;
+    --cc-sticker: #f2c14e;
+    display: block;
+    overflow: visible;
+}
+
+.cc-skin { fill: var(--cc-skin); }
+.cc-skin-shade { fill: var(--cc-skin-shade); }
+.cc-hair { fill: var(--cc-hair); }
+.cc-hair-shine { fill: var(--cc-hair-shine); }
+.cc-brow { stroke: var(--cc-hair); }
+.cc-stubble { fill: var(--cc-hair); opacity: 0.16; }
+.cc-shirt { fill: var(--cc-shirt); }
+.cc-shirt-shade { fill: var(--cc-shirt-shade); }
+.cc-collar { fill: var(--cc-collar); }
+.cc-placket { stroke: var(--cc-shirt-shade); }
+.cc-eye-white { fill: #fff; }
+.cc-eye { fill: var(--cc-eye); }
+.cc-eye-shine { fill: #fff; }
+.cc-lash { stroke: var(--cc-eye); }
+.cc-nose { stroke: var(--cc-skin-shade); }
+.cc-lips { stroke: var(--cc-mouth); }
+.cc-m-think { fill: var(--cc-mouth); stroke: none; }
+.cc-blush { fill: var(--cc-blush); opacity: 0.3; }
+.cc-laptop { fill: var(--cc-laptop); }
+.cc-laptop-shade { fill: var(--cc-laptop-shade); }
+.cc-logo { stroke: var(--cc-laptop-shade); }
+.cc-desk { fill: var(--cc-desk); }
+.cc-contact { fill: rgba(0, 0, 0, 0.3); }
+.cc-mug { fill: var(--cc-mug); }
+.cc-mug-handle { stroke: var(--cc-mug); }
+.cc-steam { stroke: var(--cc-steam); }
+.cc-glow { fill: var(--cc-glow); opacity: 0.08; }
+.cc-sticker-a { fill: var(--cc-code); }
+.cc-sticker-b { fill: var(--cc-sticker); }
+.cc-code { fill: var(--cc-code); opacity: 0; }
+
+.cc-eyes,
+.cc-head,
+.cc-brow,
+.cc-mumble,
+.cc-code text,
+.cc-steam {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+/* Resting face (also the one shown under reduced motion): focused, brows drawn in, eyes on the screen */
+.cc-brow-l { transform: translateY(1px) rotate(6deg); }
+.cc-brow-r { transform: translateY(1px) rotate(-6deg); }
+.cc-pupils { transform: translate(0, 1px); }
+.cc-m-think,
+.cc-m-frown,
+.cc-m-smile { opacity: 0; }
+
+/* One 12s working cycle: focused (muttering) → thinking → focused → puzzled → got it */
+@media (prefers-reduced-motion: no-preference) {
+    .cc-eyes { animation: cc-blink 5s infinite; }
+    .cc-pupils { animation: cc-read 6s linear infinite; }
+    .cc-head { animation: cc-head 12s ease-in-out infinite; }
+    .cc-brow-l { animation: cc-brow-l 12s ease-in-out infinite; }
+    .cc-brow-r { animation: cc-brow-r 12s ease-in-out infinite; }
+    .cc-m-focus { animation: cc-m-focus 12s infinite; }
+    .cc-m-think { animation: cc-m-think 12s infinite; }
+    .cc-m-frown { animation: cc-m-frown 12s infinite; }
+    .cc-m-smile { animation: cc-m-smile 12s infinite; }
+    .cc-mumble { animation: cc-mumble 3s ease-in-out infinite; }
+    .cc-glow { animation: cc-glow 2.6s ease-in-out infinite; }
+    .cc-steam { animation: cc-steam 2.8s ease-in-out infinite; }
+    .cc-code { opacity: 1; }
+    .cc-code text { opacity: 0; animation: cc-code 3.6s ease-out infinite; }
+    .cc-code text:nth-child(2) { animation-delay: 1.2s; }
+    .cc-code text:nth-child(3) { animation-delay: 2.4s; }
+}
+
+@keyframes cc-blink {
+    0%, 93%, 100% { transform: scaleY(1); }
+    96% { transform: scaleY(0.1); }
+}
+
+/* Reads three lines left to right, then glances up to think */
+@keyframes cc-read {
+    0% { transform: translate(-2.2px, 0.4px); }
+    22% { transform: translate(2.2px, 0.4px); }
+    25% { transform: translate(-2.2px, 1.2px); }
+    47% { transform: translate(2.2px, 1.2px); }
+    50% { transform: translate(-2.2px, 2px); }
+    72% { transform: translate(1.6px, 2px); }
+    76%, 92% { transform: translate(0.6px, -1.4px); }
+    100% { transform: translate(-2.2px, 0.4px); }
+}
+
+@keyframes cc-head {
+    0%, 33%, 51%, 69%, 96%, 100% { transform: none; }
+    36%, 48% { transform: rotate(-3deg) translateY(-1px); }
+    72%, 80% { transform: rotate(1.5deg) translateY(1px); }
+    84%, 93% { transform: translateY(-1px); }
+}
+
+@keyframes cc-brow-l {
+    0%, 69%, 96%, 100% { transform: translateY(1px) rotate(6deg); }
+    72%, 81% { transform: translateY(1.6px) rotate(12deg); }
+    84%, 93% { transform: translateY(-0.5px) rotate(0); }
+}
+
+@keyframes cc-brow-r {
+    0%, 33%, 51%, 69%, 96%, 100% { transform: translateY(1px) rotate(-6deg); }
+    36%, 48% { transform: translateY(-3.2px) rotate(3deg); }
+    72%, 81% { transform: translateY(1.6px) rotate(-12deg); }
+    84%, 93% { transform: translateY(-0.5px) rotate(0); }
+}
+
+@keyframes cc-m-focus {
+    0%, 34%, 51%, 69%, 96%, 100% { opacity: 1; }
+    35.5%, 49.5%, 70.5%, 94.5% { opacity: 0; }
+}
+
+@keyframes cc-m-think {
+    0%, 34%, 51%, 100% { opacity: 0; }
+    35.5%, 49.5% { opacity: 1; }
+}
+
+@keyframes cc-m-frown {
+    0%, 69%, 83%, 100% { opacity: 0; }
+    70.5%, 81.5% { opacity: 1; }
+}
+
+@keyframes cc-m-smile {
+    0%, 82%, 96%, 100% { opacity: 0; }
+    83.5%, 94.5% { opacity: 1; }
+}
+
+/* Lips move now and then, muttering through the code */
+@keyframes cc-mumble {
+    0%, 55%, 100% { transform: none; }
+    62% { transform: scale(0.78, 2.2); }
+    69% { transform: scale(1.05, 0.8); }
+    76% { transform: scale(0.85, 1.8); }
+    84% { transform: none; }
+}
+
+@keyframes cc-glow {
+    0%, 100% { opacity: 0.04; }
+    50% { opacity: 0.12; }
+}
+
+@keyframes cc-steam {
+    0% { opacity: 0; transform: translateY(6px); }
+    40% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes cc-code {
+    0% { opacity: 0; transform: translateY(0) scale(0.8); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-56px) scale(1); }
+}
+
+/* Terminal theme: each OS gets its own terminal's palette and font (ANSI colours, like the real thing) */
+#tmRoot {
+    --tm-bg: #0c0c0c;
+    --tm-fg: #d4d4d4;
+    --tm-bright: #fafafa;
+    --tm-dim: #8b8b8b;
+    --tm-red: #f87171;
+    --tm-green: #4ade80;
+    --tm-yellow: #fde68a;
+    --tm-blue: #60a5fa;
+    --tm-magenta: #e879f9;
+    --tm-cyan: #67e8f9;
+    --tm-white: #e5e5e5;
+    --tm-font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #0e0e0e;
+    color: var(--tm-fg);
+    color-scheme: dark;
+}
+
+/* macOS Terminal (dark) */
+#tmRoot[data-os="mac"],
+#tmRoot [data-os="mac"] {
+    --tm-bg: #1e1e1e;
+    --tm-fg: #e5e5ea;
+    --tm-bright: #ffffff;
+    --tm-dim: #8e8e93;
+    --tm-red: #ff453a;
+    --tm-green: #30d158;
+    --tm-yellow: #ffd60a;
+    --tm-blue: #0a84ff;
+    --tm-magenta: #bf5af2;
+    --tm-cyan: #64d2ff;
+    --tm-white: #e5e5ea;
+    --tm-font: "SF Mono", Menlo, "Geist Mono", monospace;
+}
+
+/* Windows Terminal, Campbell scheme */
+#tmRoot[data-os="windows"],
+#tmRoot [data-os="windows"] {
+    --tm-bg: #0c0c0c;
+    --tm-fg: #cccccc;
+    --tm-bright: #f2f2f2;
+    --tm-dim: #8a8a8a;
+    --tm-red: #e74856;
+    --tm-green: #16c60c;
+    --tm-yellow: #f9f1a5;
+    --tm-blue: #3b78ff;
+    --tm-magenta: #b4009e;
+    --tm-cyan: #61d6d6;
+    --tm-white: #f2f2f2;
+    --tm-font: "Cascadia Mono", Consolas, "Geist Mono", monospace;
+}
+
+/* Ubuntu's GNOME Terminal: aubergine with Tango colours */
+#tmRoot[data-os="linux"],
+#tmRoot [data-os="linux"] {
+    --tm-bg: #300a24;
+    --tm-fg: #eeeeec;
+    --tm-bright: #ffffff;
+    --tm-dim: #b19aa9;
+    --tm-red: #ef2929;
+    --tm-green: #8ae234;
+    --tm-yellow: #fce94f;
+    --tm-blue: #729fcf;
+    --tm-magenta: #ad7fa8;
+    --tm-cyan: #34e2e2;
+    --tm-white: #eeeeec;
+    --tm-font: "Ubuntu Mono", "Ubuntu Sans Mono", "DejaVu Sans Mono", "Geist Mono", monospace;
+}
+
+/* Colour schemes (the theme command); they come after the OS palettes so they win */
+#tmRoot[data-scheme="homebrew"],
+#tmRoot [data-scheme="homebrew"] {
+    --tm-bg: #000000;
+    --tm-fg: #28fe14;
+    --tm-bright: #7dff6e;
+    --tm-dim: #1d9e12;
+    --tm-red: #e50000;
+    --tm-green: #28fe14;
+    --tm-yellow: #e5e500;
+    --tm-blue: #6e6eff;
+    --tm-magenta: #e500e5;
+    --tm-cyan: #00e5e5;
+    --tm-white: #e5e5e5;
+}
+
+#tmRoot[data-scheme="dracula"],
+#tmRoot [data-scheme="dracula"] {
+    --tm-bg: #282a36;
+    --tm-fg: #f8f8f2;
+    --tm-bright: #ffffff;
+    --tm-dim: #7a86b8;
+    --tm-red: #ff5555;
+    --tm-green: #50fa7b;
+    --tm-yellow: #f1fa8c;
+    --tm-blue: #bd93f9;
+    --tm-magenta: #ff79c6;
+    --tm-cyan: #8be9fd;
+    --tm-white: #f8f8f2;
+}
+
+#tmRoot[data-scheme="solarized-dark"],
+#tmRoot [data-scheme="solarized-dark"] {
+    --tm-bg: #002b36;
+    --tm-fg: #93a1a1;
+    --tm-bright: #eee8d5;
+    --tm-dim: #657b83;
+    --tm-red: #dc322f;
+    --tm-green: #859900;
+    --tm-yellow: #b58900;
+    --tm-blue: #268bd2;
+    --tm-magenta: #d33682;
+    --tm-cyan: #2aa198;
+    --tm-white: #eee8d5;
+}
+
+#tmRoot[data-scheme="solarized-light"],
+#tmRoot [data-scheme="solarized-light"] {
+    --tm-bg: #fdf6e3;
+    --tm-fg: #586e75;
+    --tm-bright: #073642;
+    --tm-dim: #93a1a1;
+    --tm-red: #dc322f;
+    --tm-green: #859900;
+    --tm-yellow: #b58900;
+    --tm-blue: #268bd2;
+    --tm-magenta: #d33682;
+    --tm-cyan: #2aa198;
+    --tm-white: #eee8d5;
+}
+
+/* Desktop: a window on the desk, clear of the theme switcher below it */
+.tm-win {
+    position: absolute;
+    inset: 28px max(28px, calc((100% - 1200px) / 2)) 68px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--tm-bg);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 2px 6px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 0, 0, 0.55);
+    font: 14px/1.6 var(--tm-font);
+}
+
+#tmRoot[data-os="windows"] .tm-win {
+    border-radius: 8px;
+}
+
+#tmRoot[data-os="linux"] .tm-win {
+    border-radius: 12px;
+}
+
+#tmRoot[data-os="phone"] .tm-win {
+    inset: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 13px;
+}
+
+/* The window stays hidden behind the theme chooser and opens when the boot starts */
+#tmRoot:not(.is-live) .tm-win {
+    visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    #tmRoot.is-live .tm-win {
+        animation: tm-open 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+}
+
+@keyframes tm-open {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+    }
+}
+
+#tmRoot b {
+    font-weight: 700;
+}
+
+#tmRoot .tm-out b {
+    color: var(--tm-yellow);
+}
+
+#tmRoot .tm-acc {
+    color: var(--tm-green);
+}
+
+#tmRoot .tm-key {
+    color: var(--tm-cyan);
+}
+
+#tmRoot .tm-blue {
+    color: var(--tm-blue);
+}
+
+#tmRoot .tm-dim {
+    color: var(--tm-dim);
+}
+
+#tmRoot .tm-err {
+    color: var(--tm-red);
+}
+
+#tmRoot a,
+#tmRoot button {
+    color: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#tmRoot a {
+    color: var(--tm-cyan);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s;
+}
+
+#tmRoot a:hover {
+    text-decoration-color: currentColor;
+}
+
+#tmRoot :focus-visible {
+    outline: 1px solid var(--tm-green);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+#tmRoot [hidden] {
+    display: none !important;
+}
+
+/* Window chrome */
+.tm-bar {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    color: #a1a1a1;
+    font: 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, system-ui, sans-serif;
+    user-select: none;
+}
+
+#tmRoot[data-os="mac"] .tm-bar {
+    justify-content: center;
+    height: 30px;
+    border-bottom: 1px solid #000;
+    background: #2c2c2e;
+}
+
+.tm-title {
+    overflow: hidden;
+    padding: 0 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#tmRoot[data-os="windows"] .tm-bar {
+    align-items: flex-end;
+    height: 40px;
+    padding-left: 8px;
+    background: #202020;
+    font-size: 12px;
+}
+
+.tm-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 230px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px 8px 0 0;
+    background: var(--tm-bg);
+    color: #f2f2f2;
+}
+
+#tmRoot[data-scheme="solarized-light"] .tm-tab {
+    color: var(--tm-bright);
+}
+
+.tm-ps {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: #2a5aa8;
+    color: #fff;
+    font: 700 8px/1 var(--tm-font);
+}
+
+#tmRoot[data-os="linux"] .tm-bar {
+    justify-content: center;
+    height: 46px;
+    background: #303030;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Screen */
+.tm-screen {
+    position: relative;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 20px 20px;
+    overflow-wrap: anywhere;
+}
+
+#tmOut {
+    container-type: inline-size;
+}
+
+.tm-sys {
+    white-space: pre-wrap;
+}
+
+.tm-entry {
+    margin-top: 14px;
+}
+
+.tm-entry:first-child {
+    margin-top: 0;
+}
+
+.tm-line {
+    display: flex;
+    gap: 1ch;
+    align-items: baseline;
+}
+
+.tm-prompt {
+    flex: none;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.tm-cmd {
+    color: var(--tm-bright);
+    white-space: pre-wrap;
+}
+
+.tm-entry-line {
+    margin-top: 14px;
+    cursor: text;
+}
+
+/* Prompt input: a transparent input over the echoed text, so the cursor can be a real terminal block */
+.tm-field {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+#tmEcho {
+    color: var(--tm-bright);
+    white-space: pre-wrap;
+}
+
+#tmRoot #tmInput:focus-visible {
+    outline: none;
+}
+
+#tmInput {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: transparent;
+    font: inherit;
+    caret-color: transparent;
+}
+
+.tm-cursor {
+    outline: 1px solid var(--tm-fg);
+    outline-offset: -1px;
+}
+
+.tm-field:focus-within .tm-cursor,
+#tmRoot.is-typing .tm-cursor {
+    outline: 0;
+    background: var(--tm-fg);
+    color: var(--tm-bg);
+}
+
+/* Windows Terminal's default cursor is a bar */
+#tmRoot[data-os="windows"] .tm-field:focus-within .tm-cursor,
+#tmRoot[data-os="windows"].is-typing .tm-cursor {
+    background: none;
+    color: inherit;
+    box-shadow: inset 2px 0 var(--tm-fg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .tm-field:focus-within .tm-cursor {
+        animation: tm-blink 1.1s step-end infinite;
+    }
+}
+
+@keyframes tm-blink {
+    50% {
+        background: transparent;
+        color: inherit;
+        box-shadow: none;
+    }
+}
+
+.tm-out {
+    max-width: 100ch;
+    margin-top: 4px;
+}
+
+.tm-out :is(p, ul, dl, section, div, pre) + :is(p, ul, dl, section, div, pre) {
+    margin-top: 8px;
+}
+
+.tm-out section + section {
+    margin-top: 18px;
+}
+
+.tm-kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 2ch;
+}
+
+.tm-list {
+    list-style: none;
+}
+
+.tm-list li {
+    position: relative;
+    padding-left: 2ch;
+}
+
+.tm-list li::before {
+    content: "-";
+    position: absolute;
+    left: 0;
+    color: var(--tm-dim);
+}
+
+/* git log --graph: a * per role, joined by a rail */
+.tm-log section {
+    position: relative;
+    padding-left: 3ch;
+}
+
+.tm-log section::before {
+    content: "*";
+    position: absolute;
+    left: 0;
+    color: var(--tm-green);
+}
+
+.tm-log section:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 1.6em;
+    bottom: -14px;
+    left: 0.5ch;
+    border-left: 1px solid color-mix(in srgb, var(--tm-fg) 22%, transparent);
+}
+
+/* clear keeps the boot header; it comes back without replaying its entrance */
+.tm-static .tm-out > *,
+.tm-static .tm-banner pre > span {
+    animation: none !important;
+}
+
+.tm-head .cc {
+    --cc-code: var(--tm-green);
+    --cc-glow: var(--tm-cyan);
+    width: 140px;
+    flex: none;
+}
+
+/* Boot header: caricature beside the name banner (scaled to fit its column) and two lines of facts */
+.tm-head {
+    display: flex;
+    gap: 2.5ch;
+    align-items: center;
+}
+
+.tm-head-text {
+    flex: 1;
+    min-width: 0;
+    container-type: inline-size;
+}
+
+.tm-head-text > * + * {
+    margin-top: 4px;
+}
+
+.tm-banner {
+    margin-bottom: 10px;
+}
+
+.tm-banner pre {
+    color: var(--tm-green);
+    font-size: min(8px, calc(100cqw / var(--cols) / 0.62));
+    line-height: 1;
+}
+
+.tm-shade {
+    color: color-mix(in srgb, var(--tm-green) 35%, transparent);
+}
+
+.tm-banner pre > span,
+.tm-art > span {
+    display: block;
+}
+
+.tm-fetch {
+    display: flex;
+    gap: 3ch;
+    align-items: flex-start;
+}
+
+/* Half-block portrait: --a / --b are the top / bottom pixel's share of green over the background */
+.tm-art {
+    flex: none;
+    font: 7px/1 var(--tm-font);
+    letter-spacing: 0;
+}
+
+.tm-art i {
+    font-style: normal;
+    color: color-mix(in srgb, var(--tm-green) calc(var(--a) * 1%), var(--tm-bg));
+    background: color-mix(in srgb, var(--tm-green) calc(var(--b) * 1%), var(--tm-bg));
+}
+
+.tm-photo {
+    width: 200px;
+    height: 200px;
+    flex: none;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.tm-info {
+    min-width: 0;
+}
+
+.tm-swatch {
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.tm-sample {
+    padding: 0 1ch;
+    background: var(--tm-bg);
+    color: var(--tm-fg);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tm-fg) 25%, transparent);
+}
+
+.tm-swatch i {
+    width: 2ch;
+}
+
+.tm-schemes {
+    align-items: center;
+}
+
+.tm-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 1.5ch;
+    align-items: baseline;
+}
+
+.tm-run {
+    padding: 0 2px;
+    border-radius: 3px;
+    color: var(--tm-green) !important;
+    font: inherit;
+    text-decoration: underline dotted color-mix(in srgb, var(--tm-green) 55%, transparent);
+    text-underline-offset: 3px;
+    transition: background-color 0.15s;
+}
+
+.tm-run:hover {
+    background: color-mix(in srgb, var(--tm-green) 14%, transparent);
+}
+
+.tm-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border: 1px solid color-mix(in srgb, var(--tm-fg) 25%, transparent);
+    border-radius: 4px;
+    color: var(--tm-fg) !important;
+    text-decoration: none !important;
+    transition: border-color 0.15s;
+}
+
+.tm-btn:hover {
+    border-color: var(--tm-green);
+}
+
+#tmRoot kbd {
+    padding: 0 4px;
+    border: 1px solid color-mix(in srgb, var(--tm-fg) 25%, transparent);
+    border-radius: 3px;
+    font: inherit;
+    font-size: 12px;
+}
+
+/* Output streams in line by line; --i is set per block in terminal.js */
+@media (prefers-reduced-motion: no-preference) {
+    .tm-out > *,
+    .tm-load > *,
+    .tm-banner pre > span,
+    .tm-art > span,
+    .tm-info > *,
+    .tm-sys {
+        animation: tm-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(var(--i, 0) * 30ms);
+    }
+
+    .tm-info > * {
+        animation-delay: 0.15s;
+    }
+}
+
+@keyframes tm-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+/* Phones: plain full-screen terminal, photo above the details, commands look as on desktop with a 44px tap area, 16px input (no zoom on focus) */
+@media (max-width: 767px) {
+    #tmRoot[data-os="phone"] .tm-screen {
+        padding: max(14px, env(safe-area-inset-top)) 16px 80px;
+    }
+
+    .tm-fetch {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .tm-head {
+        gap: 2ch;
+        align-items: flex-start;
+    }
+
+    .tm-head .cc {
+        width: 96px;
+    }
+
+    /* Rows spaced so each command's invisible 44px tap area barely overlaps the next */
+    .tm-menu {
+        row-gap: 14px;
+    }
+
+    .tm-help {
+        row-gap: 12px;
+    }
+
+    .tm-run,
+    .tm-btn {
+        position: relative;
+    }
+
+    .tm-run::after,
+    .tm-btn::after {
+        content: "";
+        position: absolute;
+        inset: -12px -4px;
+    }
+
+    #tmInput {
+        font-size: 16px;
+    }
+
+    .tm-entry-line {
+        align-items: center;
+        min-height: 44px;
+    }
 }
 
 /* Notebook cell styling */

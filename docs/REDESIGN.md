@@ -45,6 +45,7 @@ node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
 node tests/chatgpt.test.mjs    # screenshots go to tests/screenshots/ (git-ignored)
 node tests/modelcard.test.mjs  # desktop + 390px phone
 node tests/vscode.test.mjs     # desktop + 390px phone
+node tests/terminal.test.mjs   # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -60,7 +61,7 @@ node tests/vscode.test.mjs     # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | Not started | | Leaks a document click listener and startup timer |
+| Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -311,6 +312,119 @@ Checked with `tests/vscode.test.mjs` at 1440px and 390px:
 - No horizontal overflow; nothing under the switcher at the end of a file.
 - Switching theme removes the key listener, with no runtime errors.
 
+### Terminal (`theme/terminal`): rebuilt from scratch
+
+#### Terminal before
+
+- A 76-column ASCII "ASHUTOSH" banner and fixed-width box tables (skills), too wide for phones. The banner hardcoded the name.
+- Typed commands were echoed as HTML (XSS). `education` was defined twice. The help list was hardcoded.
+- A 500ms startup timer ran `help` even after you switched theme, and a `document` click listener was never removed.
+- Showed the phone number twice. The "I'm available for…" list and "Response time: 24 hours" were made up in the theme.
+- Experience showed two achievements per role; green, cyan, yellow and magenta all used as accents.
+
+#### Terminal after
+
+- **Looks like a zsh session:** a slim title bar (`guest@ashutosh: ~ — zsh`, host from the first name in `content.js`), a `guest@ashutosh ~ %` prompt, Geist Mono, near-black with one accent (terminal green).
+- **Login is `neofetch`:** the profile photo next to Title, Focus, Location, Uptime (`stats.years`), companies, projects and skills from `stats`, then a clickable menu of every command.
+- **Commands come from `content.js` `chatCommands`** (names and descriptions), plus shell built-ins `neofetch`, `history`, `clear`, and aliases `ls`/`man` → help, `whoami` → about, `cv` → resume. All from `content.js`:
+  - `experience`: every role and every achievement as a `git log --graph` (a `*` per role, joined by a rail).
+  - `projects`, `skills` (each skill once, same dedupe as VS Code), `education`, `certifications` (with the patent), `reading` (an ASCII progress bar), `contact`, `hire` (impact numbers and links), `resume` (Open / Download).
+- **Behaves like a terminal:** Tab completes (common prefix, or lists the matches), ↑/↓ history, Ctrl+L clears, Ctrl+C cancels the line. Unknown commands print `zsh: command not found` with a "Did you mean …?" (typos within two edits, or a 3+ letter prefix). `sudo` has an answer.
+- **Clickable:** every command name in the output is a button. A clicked command types itself at the prompt, then runs.
+- **Scrolling:** a long answer starts at its command line; a short one keeps the prompt in view. Clicking the screen focuses the prompt on desktop, but not when you're selecting text or clicking a link.
+- **Motion:** output streams in block by block (opacity + transform, staggered); typing and smooth scroll are skipped under reduced motion.
+- **Phones:** the photo sits above the details, command buttons are 44px, the prompt input is 16px. The screen's bottom padding keeps the prompt clear of the switcher.
+- **Code:** typed text is escaped; no global listeners; `cleanup()` clears the typing timer. The old `.text-magenta-400` helper is gone. Geist Mono added to the font link in `index.html`; the chooser tile uses the new background.
+- **Dropped:** the ASCII banner, the phone number, the invented availability list and response time, "Last login".
+
+#### Terminal verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The login shows name, title, `stats.years`, location and the photo from `content.js`; the menu lists every `chatCommand`.
+- `experience` shows every role with every achievement, and the answer starts at its command line.
+- A clicked command types itself, then runs; `skills` lists each skill once (`stats.skills`).
+- `help` shows every `chatCommands` description; `whoami` gives the bio; on phones command targets are at least 44px.
+- Typed HTML is escaped; "projcts" suggests `projects`; Tab completes "cert"; ↑/↓ walk the history.
+- Résumé links use the `content.js` path and open in a new tab; no phone number anywhere.
+- No horizontal overflow; nothing under the switcher at the end; Ctrl+L clears.
+- Switching theme mid-typing clears the timer, with no runtime errors.
+
+#### Terminal round 2 (owner feedback)
+
+The feedback was: it isn't true to a real terminal (it should match the visitor's device, and be a plain terminal on phones), the earlier version looked better, and it needs a beautiful opening animation like a loading screen instead of looking bland.
+
+- **Matches the device** (`detect()`): macOS gets macOS Terminal (traffic lights, `guest — -zsh — 138×34` title with the live window size, zsh prompt, `Last login: …`). Windows gets Windows Terminal running PowerShell (tab strip, window controls, `PS C:\Users\guest>`, the real PowerShell banner and "is not recognized as the name of a cmdlet" error, a bar cursor). Linux and the rest get Ubuntu's GNOME Terminal (header bar, aubergine background, Tango colours, `guest@ashutosh:~$`, Ubuntu's "Command 'x' not found, did you mean:"). Phones and narrow windows get a plain full-screen terminal with no chrome. Each uses its OS's terminal font where installed (SF Mono, Cascadia Mono, Ubuntu Mono), with Geist Mono as the fallback.
+- **Window on the desk:** on desktop the terminal is a window with layered shadows that zooms open, and the switcher sits on the desk below it. (Round 3 removed the window buttons.)
+- **Boot sequence:** the greeting prints, `./portfolio` types itself, and a loader spins through each module from `content.js` (experience, projects, skills, education, certifications) with a filling progress bar. It folds into one `✔ loaded 5 modules in 1.4s` line, then the first name prints as a block-letter banner (built from `content.js` with a 5×5 pixel font and a drop shadow, scaled to fit any width) and neofetch draws in. Any key, click or tap skips it, and reduced motion shows it all at once. It takes about 3.5s.
+- **Portrait instead of the photo:** your photo is drawn as a half-block pixel portrait in the terminal's green, the way terminal image viewers (`chafa`, `viu`) do it. It's a head-and-shoulders crop faded at the edges, and it prints row by row. An ASCII-character version was tried and dropped because it didn't read as a face. If the canvas can't read the image (a local `file://` copy), the photo is shown instead.
+- **Colour like the earlier version:** each OS's real ANSI palette. Titles are yellow, labels and links cyan, prompt, bullets and banner green, and errors red, and neofetch ends with the palette's colour swatches. *Deliberate deviation from the one-accent rule:* terminals are ANSI-coloured, and the owner preferred the earlier multi-colour look.
+- **Real cursor:** a block cursor that blinks when focused and turns hollow when not (a bar on Windows). The input sits transparent over the echoed text.
+- **Phones:** commands are 44px bordered buttons in a wrapping grid (not underlined words with big gaps). (Round 5 went back to the desktop look with hidden 44px tap areas.)
+- **Code:** `cleanup()` also removes the skip listener and the window-size observer. Boot waits are cancellable, so switching theme mid-boot stops it.
+
+#### Terminal round 2 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The boot shows the loader before the prompt; a key press skips straight to the finished boot.
+- macOS on desktop and the phone terminal on phones; forcing Windows and Linux gives their prompts and not-found wording.
+- The banner spells the first name from `content.js`; the portrait is drawn; the menu lists every `chatCommand`.
+- The prompt echo shows typed text with the cursor after it.
+- All round 1 checks still pass.
+
+#### Terminal round 3 (owner feedback)
+
+The feedback was: the boot plays in the background before a theme is chosen; the prompt shows a text box although the blinking cursor already says where to type; the boot header takes too much of the screen (keep it to 10–20%); the window buttons do nothing, so drop them; and add colour options if real terminals have them.
+
+- **Waits for the chooser:** the window stays hidden while the theme chooser is open. When the chooser closes, the window zooms open and the boot starts. Switching to Terminal from the chooser starts it straight away.
+- **No box around the prompt:** the input has no focus outline; the block cursor shows focus (solid and blinking when focused, hollow when not).
+- **Compact boot header (about 15% of the window):** a small pixel portrait beside the name banner, then two lines: name and title, then location, years, companies, projects and skills. The full card with the big portrait is still there under `neofetch`.
+- **No dead buttons:** the traffic lights, the Windows tab close, new-tab and window controls, and the Ubuntu header buttons are gone. Each OS keeps only its title (macOS with the live window size, the PowerShell tab on Windows, `guest@ashutosh: ~` on Ubuntu).
+- **Colour schemes:** a `theme` command, like a terminal's profiles: `default` (the OS's own), `homebrew`, `dracula`, `solarized-dark` and `solarized-light`. `theme` lists them with a preview swatch (background, text and ANSI colours) and marks the current one. Click one or type `theme dracula`; `theme default` goes back. The pick is remembered in this browser. `theme` is in the boot menu and in `help`.
+
+#### Terminal round 3 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- With the chooser open the window is hidden and nothing has printed; closing the chooser opens it and starts the boot.
+- The boot header is at most 20% of the window; the focused prompt has no outline.
+- The menu lists every `chatCommand`, then `theme`.
+- `theme` lists five schemes; clicking `dracula` applies it and remembers it; an unknown scheme is rejected; `theme default` restores the OS colours.
+- All earlier checks still pass.
+
+#### Terminal round 4 (owner feedback)
+
+The feedback was: `clear` wipes the boot header too, but that top section should stay; and draw a caricature of a plus-size person working on a laptop.
+
+- **`clear` and Ctrl+L keep the boot header:** everything else goes, and the header stays at the top without replaying its entrance animation.
+- **Caricature (`js/caricature.js`, shared by every theme):** a hand-drawn SVG of a plus-size developer behind a laptop: round full-cheeked face, short side-swept black hair, light stubble, big smile, light-blue collared shirt, laptop with stickers, a coffee mug. It's animated: the screen glow flickers on the face, steam rises from the mug, and bits of code (`</>`, `01`, `{ }`) float up. (Round 1 also had blinking, typing arms and a nod; see caricature round 2 for the current motion.) Everything is off under reduced motion.
+  - `caricatureSVG(label)` returns the inline SVG; each copy gets its own clip-path id. Colours are `--cc-*` variables (skin, hair, shirt, laptop, mug, glow, code), so each theme can recolour it; the styles live under `.cc` in `styles.css`.
+  - In Terminal it replaces the small portrait in the boot header. The floating code takes the terminal's green and the glow its cyan, so it follows the colour scheme. The pixel photo portrait is still under `neofetch`.
+
+#### Terminal round 4 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The boot header shows the caricature.
+- Ctrl+L and `clear` leave exactly the header (with the caricature) on screen.
+- `neofetch` still draws the pixel portrait.
+- All earlier checks still pass.
+
+#### Caricature round 2 (owner feedback)
+
+The feedback was: the lips don't move, the coffee looks like it's floating, the hand motion isn't visible (eye movement would be enough, as if reading), and people who code look serious, with changing expressions.
+
+- **Reading eyes:** eye whites with pupils that scan three lines left to right, then glance up to think; half-lidded upper lids give a focused look; it still blinks. The typing-arm motion is gone.
+- **Expressions on a 12s working cycle:** focused (brows drawn in, flat mouth, lips muttering now and then), thinking (one brow up, pursed mouth, head tilted), focused again, puzzled (frown, brows knitted), then a small "got it" smile. Mouths cross-fade (opacity) and brows and head move with transforms, so it works in every browser. Under reduced motion it rests on the focused face.
+- **Grounded:** a solid desk; the laptop and the mug (with a contact shadow) stand on it.
+
+#### Terminal round 5 (owner feedback)
+
+The feedback was: on phones every clickable command is a bordered tile; it should look the same as on desktop.
+
+- **Phones match desktop:** commands are the same dotted-underlined green words (menu, `help`, suggestions, scheme list), and Open / Download / Write to me are the same small buttons. The phone prompt shows `guest@ashutosh:~$` like the desktop ones. Each keeps a 44px tap area through an invisible `::after` hit zone, and the rows are spaced so neighbouring hit zones barely overlap. Checked by `tests/terminal.test.mjs`: no tile border, and a tap area of at least 44px.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -318,11 +432,12 @@ Checked with `tests/vscode.test.mjs` at 1440px and 390px:
 - [x] ~~Picker hover/click conflict, no Escape/focus/labels~~ (shell)
 - [x] ~~`#themeContainer` transform breaking `position: fixed`~~ (shell)
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
+- [ ] **Caricature:** use `caricatureSVG()` (js/caricature.js) in place of the photo where a theme shows a face, recoloured with `--cc-*` to suit the theme.
 - [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
 - [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)
 - [ ] **Basics:** meta description, Open Graph tags. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
-- [ ] **Terminal timers:** Terminal's startup timer runs after you switch away and throws an error.
+- [x] ~~Terminal timers~~ (terminal: no startup timer; `cleanup()` clears the typing timer)
 
 ## content.js notes (for the owner to decide)
 
