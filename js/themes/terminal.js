@@ -53,10 +53,11 @@ const TerminalTheme = {
         this.at = 0;
         this.commands = this.registry();
         this.token = (this.token || 0) + 1;
-        this.art = this.pixelArt(this.os === 'phone' ? 44 : 60);
+        this.art = this.pixelArt(48);
+        const scheme = this.savedScheme();
 
         document.getElementById('themeContainer').innerHTML = `
-            <div id="tmRoot" data-os="${this.os}">
+            <div id="tmRoot" data-os="${this.os}" ${scheme ? `data-scheme="${scheme}"` : ''}>
                 <div class="tm-win">
                     ${this.chrome()}
                     <div id="tmScreen" class="tm-screen">
@@ -75,22 +76,11 @@ const TerminalTheme = {
         this.boot(this.token);
     },
 
+    // Title only: window buttons that do nothing would only invite clicks
     chrome() {
-        const ico = list => list.map(i => `<i class="fas fa-${i}"></i>`).join('');
-        if (this.os === 'mac') return `<header class="tm-bar" aria-hidden="true"><span class="tm-dots"><i></i><i></i><i></i></span><span id="tmTitle" class="tm-title">guest — -zsh</span></header>`;
-        if (this.os === 'windows') return `
-            <header class="tm-bar" aria-hidden="true">
-                <span class="tm-tab"><span class="tm-ps">&gt;_</span>Windows PowerShell<i class="fas fa-xmark"></i></span>
-                <span class="tm-tabs-add">${ico(['plus', 'chevron-down'])}</span>
-                <span class="tm-ctl">${ico(['minus'])}<i class="far fa-square"></i>${ico(['xmark'])}</span>
-            </header>`;
-        if (this.os === 'linux') return `
-            <header class="tm-bar" aria-hidden="true">
-                <span class="tm-gbtn">${ico(['plus'])}</span>
-                <span class="tm-title">guest@${this.host}: ~</span>
-                <span class="tm-gbtn">${ico(['magnifying-glass'])}</span><span class="tm-gbtn">${ico(['bars'])}</span>
-                <span class="tm-ctl">${ico(['minus'])}<i class="far fa-square"></i>${ico(['xmark'])}</span>
-            </header>`;
+        if (this.os === 'mac') return `<header class="tm-bar" aria-hidden="true"><span id="tmTitle" class="tm-title">guest — -zsh</span></header>`;
+        if (this.os === 'windows') return `<header class="tm-bar" aria-hidden="true"><span class="tm-tab"><span class="tm-ps">&gt;_</span>Windows PowerShell</span></header>`;
+        if (this.os === 'linux') return `<header class="tm-bar" aria-hidden="true"><span class="tm-title">guest@${this.host}: ~</span></header>`;
         return '';
     },
 
@@ -112,6 +102,15 @@ const TerminalTheme = {
         const c = portfolioContent, s = c.stats, live = () => t === this.token;
         this.busy = this.booting = true;
         this.fast = this.calm();
+        // Nothing plays behind the theme chooser: the window opens once it's closed.
+        // On page load the chooser opens right after this first render, so look a microtask later
+        await null;
+        const chooser = document.getElementById('themeChooser');
+        if (chooser?.open) {
+            await new Promise(r => { this.onChooser = r; chooser.addEventListener('close', r, { once: true }); });
+            if (!live()) return;
+        }
+        this.root.classList.add('is-live');
         this.onSkip = () => this.skip();
         window.addEventListener('keydown', this.onSkip);
         const line = this.root.querySelector('.tm-entry-line');
@@ -157,11 +156,9 @@ const TerminalTheme = {
         box.removeAttribute('aria-hidden');
 
         const out = add(entry, '', 'tm-out');
-        add(out, this.banner(c.name.split(' ')[0]), 'tm-banner');
-        await this.wait(380); if (!live()) return;
         this.artLines = await this.art; if (!live()) return;
-        add(out, this.neofetch());
-        await this.wait(700); if (!live()) return;
+        add(out, this.header());
+        await this.wait(600); if (!live()) return;
         add(out, this.menu());
         line.hidden = false;
         this.done();
@@ -173,6 +170,26 @@ const TerminalTheme = {
         this.fast = false;
         this.screen.scrollTop = this.screen.scrollHeight;
         if (matchMedia('(pointer: fine)').matches) this.input.focus({ preventScroll: true });
+    },
+
+    // Boot header, kept to a few lines: a small portrait, the name banner and the essentials
+    header() {
+        const c = portfolioContent, s = c.stats;
+        return `
+            <div class="tm-head">
+                ${this.portrait('tm-art-sm')}
+                <div class="tm-head-text">
+                    <div class="tm-banner">${this.banner(c.name.split(' ')[0])}</div>
+                    <p><b>${c.name}</b> <span class="tm-dim">·</span> ${c.title}</p>
+                    <p class="tm-dim">${c.location} · ${s.years} years · ${s.companies} companies · ${s.projects} projects · ${s.skills} skills</p>
+                </div>
+            </div>`;
+    },
+
+    portrait(cls) {
+        const c = portfolioContent;
+        if (this.artLines) return `<pre class="tm-art ${cls}" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`;
+        return c.picture ? `<img src="${c.picture}" alt="" class="tm-photo ${cls}" onerror="this.remove()">` : '';
     },
 
     // The first name in 5x5 block letters with a drop shadow, built from the name in content.js
@@ -233,6 +250,7 @@ const TerminalTheme = {
 
     builtins: {
         neofetch: 'Who is behind this terminal',
+        theme: 'Change the colour scheme',
         history: 'Commands you ran',
         clear: 'Clear the screen'
     },
@@ -243,7 +261,7 @@ const TerminalTheme = {
             help: () => this.help(), about: () => this.about(), skills: () => this.skills(), experience: () => this.experience(),
             education: () => this.education(), certifications: () => this.certifications(), projects: () => this.projects(),
             reading: () => this.reading(), contact: () => this.contact(), hire: () => this.hire(), resume: () => this.resume(),
-            neofetch: () => this.neofetch(), history: () => this.list(this.history.map(h => this.esc(h)))
+            neofetch: () => this.neofetch(), theme: arg => this.theme(arg), history: () => this.list(this.history.map(h => this.esc(h)))
         };
         const cmds = {};
         portfolioContent.chatCommands.forEach(({ command, description }) => {
@@ -255,27 +273,59 @@ const TerminalTheme = {
     },
 
     menu() {
-        return `<p class="tm-menu"><span>Type a command, or ${this.os === 'phone' ? 'tap' : 'click'} one:</span> ${Object.keys(this.commands).filter(n => !this.builtins[n]).map(n => this.chip(n)).join(' ')}</p>`;
+        return `<p class="tm-menu"><span>Type a command, or ${this.os === 'phone' ? 'tap' : 'click'} one:</span> ${Object.keys(this.commands).filter(n => !this.builtins[n] || n === 'theme').map(n => this.chip(n)).join(' ')}</p>`;
     },
 
     neofetch() {
         const c = portfolioContent, s = c.stats;
         const rows = [['Role', c.title], ['Focus', c.specialization], ['Location', c.location], ['Uptime', `${s.years} years`],
             ['Companies', s.companies], ['Projects', s.projects], ['Skills', s.skills], ['Shell', this.p.shell]];
-        const art = this.artLines
-            ? `<pre class="tm-art" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`
-            : c.picture ? `<img src="${c.picture}" alt="" class="tm-photo" onerror="this.remove()">` : '';
         return `
             <div class="tm-fetch">
-                ${art}
+                ${this.portrait('')}
                 <div class="tm-info">
                     <p><b class="tm-acc">${c.name}</b></p>
                     <p class="tm-dim" aria-hidden="true">${'-'.repeat(c.name.length)}</p>
                     <dl class="tm-kv">${rows.map(([k, v]) => `<dt class="tm-acc">${k}</dt><dd>${v}</dd>`).join('')}</dl>
                     <p class="tm-dim">${c.tagline}</p>
-                    <p class="tm-swatch" aria-hidden="true">${['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'].map(n => `<i style="background:var(--tm-${n})"></i>`).join('')}</p>
+                    <p aria-hidden="true">${this.swatch()}</p>
                 </div>
             </div>`;
+    },
+
+    // Colour schemes, like a terminal's profiles; the pick is remembered in this browser
+    schemes: ['default', 'homebrew', 'dracula', 'solarized-dark', 'solarized-light'],
+
+    theme(arg) {
+        const current = this.root.dataset.scheme || 'default', pick = n => this.chip(`theme ${n}`, n);
+        if (arg && !this.schemes.includes(arg)) return `<p>theme: no such colour scheme: ${this.esc(arg)}</p><p class="tm-dim">Try ${this.schemes.map(pick).join(' ')}</p>`;
+        if (arg) {
+            this.setScheme(arg);
+            return `<p>Colour scheme set to <b>${arg}</b>.</p>`;
+        }
+        return `
+            <dl class="tm-kv tm-schemes">${this.schemes.map(n => `<dt>${pick(n)}</dt><dd>${this.swatch(n)}${n === current ? ' <span class="tm-dim">(current)</span>' : ''}</dd>`).join('')}</dl>
+            <p class="tm-dim">Type theme &lt;name&gt;, or click one.</p>`;
+    },
+
+    // A scheme's background, text and ANSI colours; the default scheme is the OS's own
+    swatch(scheme) {
+        const attr = !scheme ? '' : scheme === 'default' ? `data-os="${this.os}"` : `data-scheme="${scheme}"`;
+        return `<span class="tm-swatch" ${attr} aria-hidden="true"><span class="tm-sample">Aa</span>${['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'].map(n => `<i style="background:var(--tm-${n})"></i>`).join('')}</span>`;
+    },
+
+    setScheme(name) {
+        if (name === 'default') delete this.root.dataset.scheme; else this.root.dataset.scheme = name;
+        try { localStorage.setItem('terminal-scheme', name); } catch { /* storage blocked: the pick lasts until reload */ }
+    },
+
+    savedScheme() {
+        try {
+            const name = localStorage.getItem('terminal-scheme');
+            return name !== 'default' && this.schemes.includes(name) ? name : null;
+        } catch {
+            return null;
+        }
     },
 
     help() {
@@ -382,8 +432,8 @@ const TerminalTheme = {
         return `<span class="tm-prompt" aria-hidden="true">${this.p.prompt(this.host)}</span>`;
     },
 
-    chip(name) {
-        return `<button type="button" class="tm-run" data-run="${name}">${name}</button>`;
+    chip(cmd, label = cmd) {
+        return `<button type="button" class="tm-run" data-run="${cmd}">${label}</button>`;
     },
 
     kv(rows, keyClass = 'tm-key') {
@@ -449,7 +499,7 @@ const TerminalTheme = {
     },
 
     run(raw) {
-        const line = raw.trim(), word = line.split(/\s+/)[0], name = word.toLowerCase();
+        const line = raw.trim(), [word, arg] = line.split(/\s+/), name = word.toLowerCase();
         this.input.value = '';
         this.sync();
         if (line && line !== this.history.at(-1)) this.history.push(line);
@@ -457,7 +507,7 @@ const TerminalTheme = {
         const cmd = this.commands[this.aliases[name] || name];
         if (cmd === this.commands.clear) return this.clear();
         const near = !cmd && this.closest(name);
-        const html = !line ? '' : cmd ? cmd.view()
+        const html = !line ? '' : cmd ? cmd.view(arg?.toLowerCase())
             : name === 'sudo' ? '<p>guest is not in the sudoers file. This incident will be reported.</p>'
             : this.p.notFound(this.esc(word), near && this.chip(near)) + (near ? '' : `<p class="tm-dim">Type ${this.chip('help')} to see what's here.</p>`);
         this.follow(this.print(line, html));
@@ -566,6 +616,8 @@ const TerminalTheme = {
         this.timer = null;
         window.removeEventListener('keydown', this.onSkip);
         this.onSkip = null;
+        document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
+        this.onChooser = null;
         this.sizer?.disconnect();
         this.sizer = null;
     }

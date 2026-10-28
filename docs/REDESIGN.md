@@ -61,7 +61,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | **Rebuilt (2 rounds), in review** | `theme/terminal` | |
+| Terminal | ✅ | **Rebuilt (3 rounds), in review** | `theme/terminal` | |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -355,7 +355,7 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 The feedback was: it isn't true to a real terminal (it should match the visitor's device, and be a plain terminal on phones), the earlier version looked better, and it needs a beautiful opening animation like a loading screen instead of looking bland.
 
 - **Matches the device** (`detect()`): macOS gets macOS Terminal (traffic lights, `guest — -zsh — 138×34` title with the live window size, zsh prompt, `Last login: …`). Windows gets Windows Terminal running PowerShell (tab strip, window controls, `PS C:\Users\guest>`, the real PowerShell banner and "is not recognized as the name of a cmdlet" error, a bar cursor). Linux and the rest get Ubuntu's GNOME Terminal (header bar, aubergine background, Tango colours, `guest@ashutosh:~$`, Ubuntu's "Command 'x' not found, did you mean:"). Phones and narrow windows get a plain full-screen terminal with no chrome. Each uses its OS's terminal font where installed (SF Mono, Cascadia Mono, Ubuntu Mono), with Geist Mono as the fallback.
-- **Window on the desk:** on desktop the terminal is a window with layered shadows that zooms open, and the switcher sits on the desk below it.
+- **Window on the desk:** on desktop the terminal is a window with layered shadows that zooms open, and the switcher sits on the desk below it. (Round 3 removed the window buttons.)
 - **Boot sequence:** the greeting prints, `./portfolio` types itself, and a loader spins through each module from `content.js` (experience, projects, skills, education, certifications) with a filling progress bar. It folds into one `✔ loaded 5 modules in 1.4s` line, then the first name prints as a block-letter banner (built from `content.js` with a 5×5 pixel font and a drop shadow, scaled to fit any width) and neofetch draws in. Any key, click or tap skips it, and reduced motion shows it all at once. It takes about 3.5s.
 - **Portrait instead of the photo:** your photo is drawn as a half-block pixel portrait in the terminal's green, the way terminal image viewers (`chafa`, `viu`) do it. It's a head-and-shoulders crop faded at the edges, and it prints row by row. An ASCII-character version was tried and dropped because it didn't read as a face. If the canvas can't read the image (a local `file://` copy), the photo is shown instead.
 - **Colour like the earlier version:** each OS's real ANSI palette. Titles are yellow, labels and links cyan, prompt, bullets and banner green, and errors red, and neofetch ends with the palette's colour swatches. *Deliberate deviation from the one-accent rule:* terminals are ANSI-coloured, and the owner preferred the earlier multi-colour look.
@@ -372,6 +372,26 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 - The banner spells the first name from `content.js`; the portrait is drawn; the menu lists every `chatCommand`.
 - The prompt echo shows typed text with the cursor after it.
 - All round 1 checks still pass.
+
+#### Terminal round 3 (owner feedback)
+
+The feedback was: the boot plays in the background before a theme is chosen; the prompt shows a text box although the blinking cursor already says where to type; the boot header takes too much of the screen (keep it to 10–20%); the window buttons do nothing, so drop them; and add colour options if real terminals have them.
+
+- **Waits for the chooser:** the window stays hidden while the theme chooser is open. When the chooser closes, the window zooms open and the boot starts. Switching to Terminal from the chooser starts it straight away.
+- **No box around the prompt:** the input has no focus outline; the block cursor shows focus (solid and blinking when focused, hollow when not).
+- **Compact boot header (about 15% of the window):** a small pixel portrait beside the name banner, then two lines: name and title, then location, years, companies, projects and skills. The full card with the big portrait is still there under `neofetch`.
+- **No dead buttons:** the traffic lights, the Windows tab close, new-tab and window controls, and the Ubuntu header buttons are gone. Each OS keeps only its title (macOS with the live window size, the PowerShell tab on Windows, `guest@ashutosh: ~` on Ubuntu).
+- **Colour schemes:** a `theme` command, like a terminal's profiles: `default` (the OS's own), `homebrew`, `dracula`, `solarized-dark` and `solarized-light`. `theme` lists them with a preview swatch (background, text and ANSI colours) and marks the current one. Click one or type `theme dracula`; `theme default` goes back. The pick is remembered in this browser. `theme` is in the boot menu and in `help`.
+
+#### Terminal round 3 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- With the chooser open the window is hidden and nothing has printed; closing the chooser opens it and starts the boot.
+- The boot header is at most 20% of the window; the focused prompt has no outline.
+- The menu lists every `chatCommand`, then `theme`.
+- `theme` lists five schemes; clicking `dracula` applies it and remembers it; an unknown scheme is rejected; `theme default` restores the OS colours.
+- All earlier checks still pass.
 
 ## Shared backlog (shell / cross-theme)
 

@@ -1,5 +1,5 @@
 // Terminal theme checks: node tests/terminal.test.mjs [screenshot-dir]
-import { openTheme, sleep } from './cdp.mjs';
+import { openPage, sleep } from './cdp.mjs';
 import assert from 'node:assert';
 import { mkdirSync } from 'node:fs';
 const shots = process.argv[2] || 'tests/screenshots';
@@ -18,13 +18,18 @@ const cornerClear = `(() => { const s = document.getElementById('tmScreen'); s.s
 
 for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobile: true }]]) {
     const phone = label === 'm';
-    const b = await openTheme('terminal', opts);
+    const b = await openPage('terminal', opts);
     const c = await b.evaluate('JSON.stringify(portfolioContent)').then(JSON.parse);
+
+    // Nothing plays behind the theme chooser; closing it opens the window and starts the boot
+    assert.ok(await b.evaluate(`document.getElementById('themeChooser').open && !document.getElementById('tmOut').children.length && getComputedStyle(document.querySelector('.tm-win')).visibility === 'hidden'`), `${label}: no boot behind the chooser`);
+    await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(600);
+    assert.ok(await b.evaluate(`document.getElementById('tmOut').children.length > 0 && getComputedStyle(document.querySelector('.tm-win')).visibility === 'visible'`), `${label}: closing the chooser starts the boot`);
     const noOverflow = async what => assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), `${opts.width || 1440}x${opts.width || 1440}`, `${label}: no horizontal overflow (${what})`);
 
     // Boot: greeting, a loader, then the banner and neofetch; any key skips it
     await b.evaluate(`portfolioController.loadTheme('paper', { animate: false }); portfolioController.loadTheme('terminal', { animate: false })`);
-    await sleep(1300);
+    for (let i = 0; i < 30 && !(await b.evaluate(`!!document.querySelector('#tmOut .tm-load')`)); i++) await sleep(100);
     assert.ok(await b.evaluate(`!!document.querySelector('#tmOut .tm-load') && document.querySelector('.tm-entry-line').hidden && TerminalTheme.booting`), `${label}: boot shows the loader before the prompt`);
     await b.shot(`${out}-${label}-0-boot.png`);
     await b.evaluate(`dispatchEvent(new KeyboardEvent('keydown', { key: 'x' }))`); await sleep(400);
@@ -37,7 +42,10 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     assert.equal(await b.evaluate(`document.querySelector('.tm-banner pre').getAttribute('aria-label')`), c.name.split(' ')[0], `${label}: banner spells the first name`);
     assert.ok(await b.evaluate(`document.querySelectorAll('.tm-art > span').length > 20 || !!document.querySelector('.tm-photo')`), `${label}: portrait is drawn`);
     const menu = await b.evaluate(`[...document.querySelectorAll('.tm-menu [data-run]')].map(e => e.dataset.run).join()`);
-    assert.equal(menu, c.chatCommands.map(x => x.command.slice(1)).join(), `${label}: menu lists every chatCommand`);
+    assert.equal(menu, [...c.chatCommands.map(x => x.command.slice(1)), 'theme'].join(), `${label}: menu lists every chatCommand, then theme`);
+    // The boot header stays small: at most a fifth of the window
+    assert.ok(await b.evaluate(`document.querySelector('.tm-head').getBoundingClientRect().height <= document.querySelector('.tm-win').getBoundingClientRect().height * 0.2`), `${label}: boot header takes at most 20% of the window`);
+    assert.equal(await b.evaluate(`getComputedStyle(document.getElementById('tmInput')).outlineStyle`), 'none', `${label}: no box around the focused prompt`);
     await noOverflow('boot');
     await b.shot(`${out}-${label}-1-login.png`);
 
@@ -98,6 +106,17 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await noOverflow('hire');
     await b.shot(`${out}-${label}-4-hire.png`);
     assert.ok(await b.evaluate(cornerClear), `${label}: switcher corner clear at the end`);
+
+    // Colour schemes: listed, applied, remembered, and rejected when unknown
+    await enter(b, 'theme');
+    assert.equal(await b.evaluate(`document.querySelectorAll('#tmOut .tm-entry:last-child .tm-schemes [data-run]').length`), 5, `${label}: theme lists the colour schemes`);
+    await b.evaluate(`document.querySelector('#tmOut .tm-entry:last-child [data-run="theme dracula"]').click()`); await sleep(1400);
+    assert.equal(await b.evaluate(`document.getElementById('tmRoot').dataset.scheme + '|' + getComputedStyle(document.getElementById('tmRoot')).getPropertyValue('--tm-bg').trim() + '|' + localStorage.getItem('terminal-scheme')`), 'dracula|#282a36|dracula', `${label}: clicking a scheme applies and remembers it`);
+    await b.shot(`${out}-${label}-5-dracula.png`);
+    await enter(b, 'theme nope');
+    assert.ok((await b.evaluate(last)).includes('no such colour scheme'), `${label}: unknown scheme is rejected`);
+    await enter(b, 'theme default');
+    assert.ok(await b.evaluate(`!document.getElementById('tmRoot').dataset.scheme`), `${label}: theme default restores the OS colours`);
 
     // Ctrl+L clears
     await b.evaluate(press('l', 'ctrlKey: true,'));

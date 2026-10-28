@@ -1632,7 +1632,8 @@ button.shell-ui {
 }
 
 /* macOS Terminal (dark) */
-#tmRoot[data-os="mac"] {
+#tmRoot[data-os="mac"],
+#tmRoot [data-os="mac"] {
     --tm-bg: #1e1e1e;
     --tm-fg: #e5e5ea;
     --tm-bright: #ffffff;
@@ -1648,7 +1649,8 @@ button.shell-ui {
 }
 
 /* Windows Terminal, Campbell scheme */
-#tmRoot[data-os="windows"] {
+#tmRoot[data-os="windows"],
+#tmRoot [data-os="windows"] {
     --tm-bg: #0c0c0c;
     --tm-fg: #cccccc;
     --tm-bright: #f2f2f2;
@@ -1664,7 +1666,8 @@ button.shell-ui {
 }
 
 /* Ubuntu's GNOME Terminal: aubergine with Tango colours */
-#tmRoot[data-os="linux"] {
+#tmRoot[data-os="linux"],
+#tmRoot [data-os="linux"] {
     --tm-bg: #300a24;
     --tm-fg: #eeeeec;
     --tm-bright: #ffffff;
@@ -1677,6 +1680,67 @@ button.shell-ui {
     --tm-cyan: #34e2e2;
     --tm-white: #eeeeec;
     --tm-font: "Ubuntu Mono", "Ubuntu Sans Mono", "DejaVu Sans Mono", "Geist Mono", monospace;
+}
+
+/* Colour schemes (the theme command); they come after the OS palettes so they win */
+#tmRoot[data-scheme="homebrew"],
+#tmRoot [data-scheme="homebrew"] {
+    --tm-bg: #000000;
+    --tm-fg: #28fe14;
+    --tm-bright: #7dff6e;
+    --tm-dim: #1d9e12;
+    --tm-red: #e50000;
+    --tm-green: #28fe14;
+    --tm-yellow: #e5e500;
+    --tm-blue: #6e6eff;
+    --tm-magenta: #e500e5;
+    --tm-cyan: #00e5e5;
+    --tm-white: #e5e5e5;
+}
+
+#tmRoot[data-scheme="dracula"],
+#tmRoot [data-scheme="dracula"] {
+    --tm-bg: #282a36;
+    --tm-fg: #f8f8f2;
+    --tm-bright: #ffffff;
+    --tm-dim: #7a86b8;
+    --tm-red: #ff5555;
+    --tm-green: #50fa7b;
+    --tm-yellow: #f1fa8c;
+    --tm-blue: #bd93f9;
+    --tm-magenta: #ff79c6;
+    --tm-cyan: #8be9fd;
+    --tm-white: #f8f8f2;
+}
+
+#tmRoot[data-scheme="solarized-dark"],
+#tmRoot [data-scheme="solarized-dark"] {
+    --tm-bg: #002b36;
+    --tm-fg: #93a1a1;
+    --tm-bright: #eee8d5;
+    --tm-dim: #657b83;
+    --tm-red: #dc322f;
+    --tm-green: #859900;
+    --tm-yellow: #b58900;
+    --tm-blue: #268bd2;
+    --tm-magenta: #d33682;
+    --tm-cyan: #2aa198;
+    --tm-white: #eee8d5;
+}
+
+#tmRoot[data-scheme="solarized-light"],
+#tmRoot [data-scheme="solarized-light"] {
+    --tm-bg: #fdf6e3;
+    --tm-fg: #586e75;
+    --tm-bright: #073642;
+    --tm-dim: #93a1a1;
+    --tm-red: #dc322f;
+    --tm-green: #859900;
+    --tm-yellow: #b58900;
+    --tm-blue: #268bd2;
+    --tm-magenta: #d33682;
+    --tm-cyan: #2aa198;
+    --tm-white: #eee8d5;
 }
 
 /* Desktop: a window on the desk, clear of the theme switcher below it */
@@ -1707,8 +1771,13 @@ button.shell-ui {
     font-size: 13px;
 }
 
+/* The window stays hidden behind the theme chooser and opens when the boot starts */
+#tmRoot:not(.is-live) .tm-win {
+    visibility: hidden;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-    .tm-win {
+    #tmRoot.is-live .tm-win {
         animation: tm-open 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 }
@@ -1795,32 +1864,9 @@ button.shell-ui {
     background: #2c2c2e;
 }
 
-.tm-dots {
-    position: absolute;
-    left: 12px;
-    display: flex;
-    gap: 8px;
-}
-
-.tm-dots i {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #ff5f57;
-    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
-}
-
-.tm-dots i:nth-child(2) {
-    background: #febc2e;
-}
-
-.tm-dots i:nth-child(3) {
-    background: #28c840;
-}
-
 .tm-title {
     overflow: hidden;
-    padding: 0 80px;
+    padding: 0 16px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -1845,10 +1891,8 @@ button.shell-ui {
     color: #f2f2f2;
 }
 
-.tm-tab .fa-xmark {
-    margin-left: auto;
-    font-size: 11px;
-    color: #a1a1a1;
+#tmRoot[data-scheme="solarized-light"] .tm-tab {
+    color: var(--tm-bright);
 }
 
 .tm-ps {
@@ -1862,66 +1906,12 @@ button.shell-ui {
     font: 700 8px/1 var(--tm-font);
 }
 
-.tm-tabs-add {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    height: 32px;
-    padding: 0 14px;
-    font-size: 11px;
-}
-
-#tmRoot .tm-ctl {
-    display: flex;
-    align-self: stretch;
-    margin-left: auto;
-    font-size: 10px;
-}
-
-#tmRoot[data-os="windows"] .tm-ctl i {
-    display: grid;
-    place-items: center;
-    width: 46px;
-}
-
 #tmRoot[data-os="linux"] .tm-bar {
-    gap: 6px;
+    justify-content: center;
     height: 46px;
-    padding: 0 8px;
     background: #303030;
     color: #ffffff;
-}
-
-#tmRoot[data-os="linux"] .tm-title {
-    flex: 1;
-    padding: 0 12px;
-    text-align: center;
     font-weight: 700;
-}
-
-.tm-gbtn {
-    display: grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    font-size: 13px;
-}
-
-#tmRoot[data-os="linux"] .tm-ctl {
-    gap: 12px;
-    align-items: center;
-    margin: 0 4px 0 10px;
-}
-
-#tmRoot[data-os="linux"] .tm-ctl i {
-    display: grid;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Screen */
@@ -1982,6 +1972,10 @@ button.shell-ui {
 #tmEcho {
     color: var(--tm-bright);
     white-space: pre-wrap;
+}
+
+#tmRoot #tmInput:focus-visible {
+    outline: none;
 }
 
 #tmInput {
@@ -2088,10 +2082,30 @@ button.shell-ui {
     border-left: 1px solid color-mix(in srgb, var(--tm-fg) 22%, transparent);
 }
 
-/* Boot: name banner (scaled to fit), ASCII portrait, neofetch details */
+/* Boot header: small portrait beside the name banner (scaled to fit its column) and two lines of facts */
+.tm-head {
+    display: flex;
+    gap: 2.5ch;
+    align-items: center;
+}
+
+.tm-head-text {
+    flex: 1;
+    min-width: 0;
+    container-type: inline-size;
+}
+
+.tm-head-text > * + * {
+    margin-top: 4px;
+}
+
+.tm-banner {
+    margin-bottom: 10px;
+}
+
 .tm-banner pre {
     color: var(--tm-green);
-    font-size: min(1em, calc(100cqw / var(--cols) / 0.62));
+    font-size: min(8px, calc(100cqw / var(--cols) / 0.62));
     line-height: 1;
 }
 
@@ -2113,8 +2127,12 @@ button.shell-ui {
 /* Half-block portrait: --a / --b are the top / bottom pixel's share of green over the background */
 .tm-art {
     flex: none;
-    font: 9px/1 var(--tm-font);
+    font: 7px/1 var(--tm-font);
     letter-spacing: 0;
+}
+
+.tm-art-sm {
+    font-size: 4px;
 }
 
 .tm-art i {
@@ -2124,8 +2142,8 @@ button.shell-ui {
 }
 
 .tm-photo {
-    width: 160px;
-    height: 160px;
+    width: 200px;
+    height: 200px;
     flex: none;
     border-radius: 6px;
     object-fit: cover;
@@ -2135,14 +2153,29 @@ button.shell-ui {
     min-width: 0;
 }
 
+.tm-photo.tm-art-sm {
+    width: 116px;
+    height: 116px;
+}
+
 .tm-swatch {
-    display: flex;
-    margin-top: 12px !important;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.tm-sample {
+    padding: 0 1ch;
+    background: var(--tm-bg);
+    color: var(--tm-fg);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tm-fg) 25%, transparent);
 }
 
 .tm-swatch i {
-    width: 3ch;
-    height: 1.4em;
+    width: 2ch;
+}
+
+.tm-schemes {
+    align-items: center;
 }
 
 .tm-menu {
@@ -2222,6 +2255,20 @@ button.shell-ui {
     .tm-fetch {
         flex-direction: column;
         gap: 14px;
+    }
+
+    .tm-head {
+        gap: 2ch;
+        align-items: flex-start;
+    }
+
+    .tm-art-sm {
+        font-size: 2.6px;
+    }
+
+    .tm-photo.tm-art-sm {
+        width: 75px;
+        height: 75px;
     }
 
     .tm-menu {
