@@ -61,7 +61,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 | ChatGPT | ✅ | **Rebuilt (3 rounds), merged** | `theme/chatgpt` + `theme/shell` | Merged to `develop` |
 | Model Card | ✅ | **Rebuilt (2 rounds), merged** | `theme/modelcard` | Merged to `develop` |
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
-| Terminal | ✅ | **Rebuilt (3 rounds), in review** | `theme/terminal` | |
+| Terminal | ✅ | **Rebuilt (4 rounds), in review** | `theme/terminal` | |
 | Notebook | ✅ | Not started | | 491px wide on phones; header buttons sit top-right |
 | Research Paper | ✅ | Not started | | Fits phones |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
@@ -393,6 +393,24 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 - `theme` lists five schemes; clicking `dracula` applies it and remembers it; an unknown scheme is rejected; `theme default` restores the OS colours.
 - All earlier checks still pass.
 
+#### Terminal round 4 (owner feedback)
+
+The feedback was: `clear` wipes the boot header too, but that top section should stay; and draw a caricature of a plus-size person working on a laptop.
+
+- **`clear` and Ctrl+L keep the boot header:** everything else goes, and the header stays at the top without replaying its entrance animation.
+- **Caricature (`js/caricature.js`, shared by every theme):** a hand-drawn SVG of a plus-size developer behind a laptop: round full-cheeked face, short side-swept black hair, light stubble, big smile, light-blue collared shirt, laptop with stickers, a coffee mug. It's animated: it blinks, the arms move as it types, the head nods slightly, the screen glow flickers on the face, steam rises from the mug, and bits of code (`</>`, `01`, `{ }`) float up. Everything is off under reduced motion.
+  - `caricatureSVG(label)` returns the inline SVG; each copy gets its own clip-path id. Colours are `--cc-*` variables (skin, hair, shirt, laptop, mug, glow, code), so each theme can recolour it; the styles live under `.cc` in `styles.css`.
+  - In Terminal it replaces the small portrait in the boot header. The floating code takes the terminal's green and the glow its cyan, so it follows the colour scheme. The pixel photo portrait is still under `neofetch`.
+
+#### Terminal round 4 verified
+
+Checked with `tests/terminal.test.mjs` at 1440px and 390px:
+
+- The boot header shows the caricature.
+- Ctrl+L and `clear` leave exactly the header (with the caricature) on screen.
+- `neofetch` still draws the pixel portrait.
+- All earlier checks still pass.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -400,6 +418,7 @@ Checked with `tests/terminal.test.mjs` at 1440px and 390px:
 - [x] ~~Picker hover/click conflict, no Escape/focus/labels~~ (shell)
 - [x] ~~`#themeContainer` transform breaking `position: fixed`~~ (shell)
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
+- [ ] **Caricature:** use `caricatureSVG()` (js/caricature.js) in place of the photo where a theme shows a face, recoloured with `--cc-*` to suit the theme.
 - [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
 - [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
 - [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)

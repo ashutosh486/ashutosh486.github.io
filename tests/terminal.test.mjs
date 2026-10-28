@@ -36,11 +36,11 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     assert.ok(await b.evaluate(`!TerminalTheme.booting && !document.querySelector('.tm-entry-line').hidden && !!document.querySelector('.tm-menu')`), `${label}: a key press skips to the finished boot`);
     assert.equal(await b.evaluate(`document.getElementById('tmRoot').dataset.os`), phone ? 'phone' : 'mac', `${label}: terminal matches the device`);
 
-    // neofetch from content.js, the name banner and the portrait, and a clickable menu built from chatCommands
+    // Boot header from content.js: caricature, name banner and facts, and a clickable menu built from chatCommands
     const login = await b.evaluate(screen);
     for (const fact of [c.name, c.title, `${c.stats.years} years`, c.location]) assert.ok(login.includes(fact), `${label}: boot shows "${fact}" from content.js`);
     assert.equal(await b.evaluate(`document.querySelector('.tm-banner pre').getAttribute('aria-label')`), c.name.split(' ')[0], `${label}: banner spells the first name`);
-    assert.ok(await b.evaluate(`document.querySelectorAll('.tm-art > span').length > 20 || !!document.querySelector('.tm-photo')`), `${label}: portrait is drawn`);
+    assert.ok(await b.evaluate(`!!document.querySelector('.tm-head svg.cc')`), `${label}: header shows the caricature`);
     const menu = await b.evaluate(`[...document.querySelectorAll('.tm-menu [data-run]')].map(e => e.dataset.run).join()`);
     assert.equal(menu, [...c.chatCommands.map(x => x.command.slice(1)), 'theme'].join(), `${label}: menu lists every chatCommand, then theme`);
     // The boot header stays small: at most a fifth of the window
@@ -120,7 +120,12 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
 
     // Ctrl+L clears
     await b.evaluate(press('l', 'ctrlKey: true,'));
-    assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length`), 0, `${label}: Ctrl+L clears the screen`);
+    assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length + '|' + document.querySelectorAll('#tmOut .tm-head').length`), '1|1', `${label}: Ctrl+L clears the screen but keeps the boot header`);
+    await enter(b, 'neofetch');
+    assert.ok(await b.evaluate(`document.querySelectorAll('#tmOut .tm-entry:last-child .tm-art > span').length > 20 || !!document.querySelector('#tmOut .tm-entry:last-child .tm-photo')`), `${label}: neofetch draws the pixel portrait`);
+    await enter(b, 'clear');
+    assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length + '|' + !!document.querySelector('#tmOut .tm-head .cc')`), '1|true', `${label}: clear keeps the header with the caricature`);
+    await b.shot(`${out}-${label}-6-cleared.png`);
 
     // Desktop: Windows gets PowerShell and Linux gets Ubuntu's terminal, each with its own wording
     if (!phone) for (const [os, prompt, err] of [['windows', 'PS C:\\Users\\guest>', "is not recognized as the name of a cmdlet"], ['linux', 'guest@ashutosh:~$', "Command 'projcts' not found, did you mean:"]]) {

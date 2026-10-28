@@ -172,12 +172,12 @@ const TerminalTheme = {
         if (matchMedia('(pointer: fine)').matches) this.input.focus({ preventScroll: true });
     },
 
-    // Boot header, kept to a few lines: a small portrait, the name banner and the essentials
+    // Boot header, kept to a few lines: the caricature at its laptop, the name banner and the essentials
     header() {
         const c = portfolioContent, s = c.stats;
         return `
             <div class="tm-head">
-                ${this.portrait('tm-art-sm')}
+                ${caricatureSVG()}
                 <div class="tm-head-text">
                     <div class="tm-banner">${this.banner(c.name.split(' ')[0])}</div>
                     <p><b>${c.name}</b> <span class="tm-dim">·</span> ${c.title}</p>
@@ -186,10 +186,10 @@ const TerminalTheme = {
             </div>`;
     },
 
-    portrait(cls) {
+    portrait() {
         const c = portfolioContent;
-        if (this.artLines) return `<pre class="tm-art ${cls}" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`;
-        return c.picture ? `<img src="${c.picture}" alt="" class="tm-photo ${cls}" onerror="this.remove()">` : '';
+        if (this.artLines) return `<pre class="tm-art" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`;
+        return c.picture ? `<img src="${c.picture}" alt="" class="tm-photo" onerror="this.remove()">` : '';
     },
 
     // The first name in 5x5 block letters with a drop shadow, built from the name in content.js
@@ -282,7 +282,7 @@ const TerminalTheme = {
             ['Companies', s.companies], ['Projects', s.projects], ['Skills', s.skills], ['Shell', this.p.shell]];
         return `
             <div class="tm-fetch">
-                ${this.portrait('')}
+                ${this.portrait()}
                 <div class="tm-info">
                     <p><b class="tm-acc">${c.name}</b></p>
                     <p class="tm-dim" aria-hidden="true">${'-'.repeat(c.name.length)}</p>
@@ -519,8 +519,9 @@ const TerminalTheme = {
         this.screen.scrollTo({ top, behavior: this.calm() ? 'auto' : 'smooth' });
     },
 
+    // Like clear in a real terminal, except the boot header stays at the top
     clear() {
-        this.out.innerHTML = '';
+        this.out.innerHTML = `<div class="tm-entry tm-static"><div class="tm-out">${this.header()}</div></div>`;
         this.screen.scrollTop = 0;
     },
 

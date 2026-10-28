@@ -1608,6 +1608,112 @@ button.shell-ui {
     }
 }
 
+/* ---------- Caricature (js/caricature.js): themes recolour it through the --cc-* variables ---------- */
+.cc {
+    --cc-skin: #d9966a;
+    --cc-skin-shade: #b9764d;
+    --cc-hair: #241e1b;
+    --cc-hair-shine: #4a3f39;
+    --cc-shirt: #a9c9f1;
+    --cc-shirt-shade: #8aaedd;
+    --cc-collar: #c8ddf8;
+    --cc-eye: #241e1b;
+    --cc-mouth: #7a2e2a;
+    --cc-teeth: #ffffff;
+    --cc-blush: #f0857a;
+    --cc-laptop: #d3d8df;
+    --cc-laptop-shade: #9aa2ad;
+    --cc-desk: rgba(127, 127, 127, 0.25);
+    --cc-mug: #e07a5f;
+    --cc-steam: rgba(200, 204, 210, 0.7);
+    --cc-glow: #9fd3ff;
+    --cc-code: #4ade80;
+    --cc-sticker: #f2c14e;
+    display: block;
+    overflow: visible;
+}
+
+.cc-skin { fill: var(--cc-skin); }
+.cc-skin-shade { fill: var(--cc-skin-shade); }
+.cc-hair { fill: var(--cc-hair); }
+.cc-hair-shine { fill: var(--cc-hair-shine); }
+.cc-brow { stroke: var(--cc-hair); }
+.cc-stubble { fill: var(--cc-hair); opacity: 0.16; }
+.cc-shirt { fill: var(--cc-shirt); }
+.cc-shirt-shade { fill: var(--cc-shirt-shade); }
+.cc-collar { fill: var(--cc-collar); }
+.cc-placket { stroke: var(--cc-shirt-shade); }
+.cc-eye { fill: var(--cc-eye); }
+.cc-eye-shine { fill: #fff; }
+.cc-nose { stroke: var(--cc-skin-shade); }
+.cc-mouth { fill: var(--cc-mouth); }
+.cc-teeth { fill: var(--cc-teeth); }
+.cc-blush { fill: var(--cc-blush); opacity: 0.35; }
+.cc-laptop { fill: var(--cc-laptop); }
+.cc-laptop-shade { fill: var(--cc-laptop-shade); }
+.cc-logo { stroke: var(--cc-laptop-shade); }
+.cc-desk { fill: var(--cc-desk); }
+.cc-mug { fill: var(--cc-mug); }
+.cc-mug-handle { stroke: var(--cc-mug); }
+.cc-steam { stroke: var(--cc-steam); }
+.cc-glow { fill: var(--cc-glow); opacity: 0.08; }
+.cc-sticker-a { fill: var(--cc-code); }
+.cc-sticker-b { fill: var(--cc-sticker); }
+.cc-code { fill: var(--cc-code); opacity: 0; }
+
+.cc-eyes,
+.cc-arm,
+.cc-head,
+.cc-code text,
+.cc-steam {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .cc-eyes { animation: cc-blink 4.5s infinite; }
+    .cc-arm-l { animation: cc-type 0.32s ease-in-out infinite alternate; }
+    .cc-arm-r { animation: cc-type 0.32s ease-in-out -0.16s infinite alternate; }
+    .cc-head { animation: cc-nod 3.2s ease-in-out infinite; }
+    .cc-glow { animation: cc-glow 2.6s ease-in-out infinite; }
+    .cc-steam { animation: cc-steam 2.8s ease-in-out infinite; }
+    .cc-code { opacity: 1; }
+    .cc-code text { opacity: 0; animation: cc-code 3.6s ease-out infinite; }
+    .cc-code text:nth-child(2) { animation-delay: 1.2s; }
+    .cc-code text:nth-child(3) { animation-delay: 2.4s; }
+}
+
+@keyframes cc-blink {
+    0%, 93%, 100% { transform: scaleY(1); }
+    96% { transform: scaleY(0.1); }
+}
+
+@keyframes cc-type {
+    to { transform: translateY(-2.5px); }
+}
+
+@keyframes cc-nod {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(1.5px) rotate(-1.5deg); }
+}
+
+@keyframes cc-glow {
+    0%, 100% { opacity: 0.04; }
+    50% { opacity: 0.12; }
+}
+
+@keyframes cc-steam {
+    0% { opacity: 0; transform: translateY(6px); }
+    40% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes cc-code {
+    0% { opacity: 0; transform: translateY(0) scale(0.8); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-56px) scale(1); }
+}
+
 /* Terminal theme: each OS gets its own terminal's palette and font (ANSI colours, like the real thing) */
 #tmRoot {
     --tm-bg: #0c0c0c;
@@ -2082,7 +2188,20 @@ button.shell-ui {
     border-left: 1px solid color-mix(in srgb, var(--tm-fg) 22%, transparent);
 }
 
-/* Boot header: small portrait beside the name banner (scaled to fit its column) and two lines of facts */
+/* clear keeps the boot header; it comes back without replaying its entrance */
+.tm-static .tm-out > *,
+.tm-static .tm-banner pre > span {
+    animation: none !important;
+}
+
+.tm-head .cc {
+    --cc-code: var(--tm-green);
+    --cc-glow: var(--tm-cyan);
+    width: 140px;
+    flex: none;
+}
+
+/* Boot header: caricature beside the name banner (scaled to fit its column) and two lines of facts */
 .tm-head {
     display: flex;
     gap: 2.5ch;
@@ -2131,10 +2250,6 @@ button.shell-ui {
     letter-spacing: 0;
 }
 
-.tm-art-sm {
-    font-size: 4px;
-}
-
 .tm-art i {
     font-style: normal;
     color: color-mix(in srgb, var(--tm-green) calc(var(--a) * 1%), var(--tm-bg));
@@ -2151,11 +2266,6 @@ button.shell-ui {
 
 .tm-info {
     min-width: 0;
-}
-
-.tm-photo.tm-art-sm {
-    width: 116px;
-    height: 116px;
 }
 
 .tm-swatch {
@@ -2262,13 +2372,8 @@ button.shell-ui {
         align-items: flex-start;
     }
 
-    .tm-art-sm {
-        font-size: 2.6px;
-    }
-
-    .tm-photo.tm-art-sm {
-        width: 75px;
-        height: 75px;
+    .tm-head .cc {
+        width: 96px;
     }
 
     .tm-menu {
