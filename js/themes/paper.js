@@ -292,8 +292,9 @@ const PaperTheme = {
         const el = document.getElementById(id);
         if (!el) return;
         scrollTo({ top: el.getBoundingClientRect().top + scrollY - this.barH() - 16, behavior: this.calm() ? 'auto' : 'smooth' });
-        // The jump target stays current until the visitor scrolls themselves
+        // The jump target stays current while its heading is on screen
         this.pin = this.outline.find(([oid]) => oid === id) ? id : null;
+        this.pinSeen = false;
         if (!this.wide.matches) this.side(false);
     },
 
@@ -306,11 +307,22 @@ const PaperTheme = {
         const mid = innerHeight / 2, input = document.getElementById('ppPageIn');
         const n = Math.max(1, this.pages.filter(p => p.getBoundingClientRect().top < mid).length);
         if (document.activeElement !== input) input.value = n;
-        // Just under the toolbar: in two columns a later heading can sit higher on screen than the one being read
-        const line = this.barH() + 48;
+        // Current section: the one holding the first block not yet scrolled past, in reading order (left column, then right).
+        // Screen height alone is wrong in two columns, where a later heading can sit higher than the one being read
+        const bar = this.barH(), line = bar + 48, ids = new Set(this.outline.map(([id]) => id));
         let active = this.outline[0][0];
-        for (const [id] of this.outline) if (document.getElementById(id)?.getBoundingClientRect().top < line) active = id;
-        active = this.pin || active;
+        for (const el of document.querySelectorAll('#ppPages .pp-col > *')) {
+            if (ids.has(el.id)) active = el.id;
+            if (el.getBoundingClientRect().bottom > line) break;
+        }
+        // A jump target stays marked while the scroll heads there, and until its heading leaves the screen
+        const pinned = this.pin && document.getElementById(this.pin)?.getBoundingClientRect();
+        if (pinned) {
+            const shown = pinned.bottom > bar && pinned.top < innerHeight;
+            if (shown || !this.pinSeen) active = this.pin;
+            if (shown) this.pinSeen = true;
+            else if (this.pinSeen) this.pin = null;
+        }
         document.querySelectorAll('#ppSide [data-ol]').forEach(a => a.toggleAttribute('aria-current', a.dataset.ol === active));
     },
 
@@ -352,8 +364,6 @@ const PaperTheme = {
             if (e.key === 'Escape' && !this.wide.matches && root.classList.contains('side-open') && !document.querySelector('dialog[open]')) this.side(false);
         };
         window.addEventListener('keydown', this.onKey);
-        this.onInput = () => { this.pin = null; };
-        for (const type of ['wheel', 'touchstart', 'keydown']) window.addEventListener(type, this.onInput, { passive: true });
     },
 
     // ---------- opening: pdflatex compiles the paper, then the pages rise in and typeset ----------
@@ -426,8 +436,8 @@ const PaperTheme = {
         this.timer = null;
         cancelAnimationFrame(this.raf);
         this.endIntro();
-        for (const [type, fn] of [['scroll', this.onScroll], ['resize', this.onResize], ['keydown', this.onKey], ['wheel', this.onInput], ['touchstart', this.onInput], ['keydown', this.onInput]]) window.removeEventListener(type, fn);
-        this.onScroll = this.onResize = this.onKey = this.onInput = null;
+        for (const [type, fn] of [['scroll', this.onScroll], ['resize', this.onResize], ['keydown', this.onKey]]) window.removeEventListener(type, fn);
+        this.onScroll = this.onResize = this.onKey = null;
         document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
         this.onChooser = null;
     }

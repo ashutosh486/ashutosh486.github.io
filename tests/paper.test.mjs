@@ -86,6 +86,18 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await b.shot(`${out}-${label}-3-outline.png`);
     await b.evaluate(`document.querySelector('#ppSide [data-ol="pp-s3"]').click()`); await sleep(900);
     assert.ok(await b.evaluate(`document.querySelector('#ppSide [data-ol="pp-s3"]').hasAttribute('aria-current') && Math.abs(document.getElementById('pp-s3').getBoundingClientRect().top - document.querySelector('.pp-bar').offsetHeight) < 40`), `${label}: outline jumps to Projects and marks it`);
+    // Regression: after jumping to Education and scrolling a little, a later right-column heading (References) must not take over
+    if (await b.evaluate(`!document.getElementById('ppRoot').classList.contains('side-open')`)) await b.evaluate(`document.querySelector('.pp-bar [data-action="side"]').click()`);
+    await sleep(300);
+    await b.evaluate(`document.querySelector('#ppSide [data-ol="pp-s5"]').click()`); await sleep(900);
+    const marked = () => b.evaluate(`document.querySelector('#ppSide [aria-current]').dataset.ol`);
+    assert.equal(await marked(), 'pp-s5', `${label}: outline marks Education after the jump`);
+    await b.evaluate(`scrollBy(0, 150)`); await sleep(200);
+    assert.equal(await marked(), 'pp-s5', `${label}: Education stays marked while its heading is on screen`);
+    await b.evaluate(`PaperTheme.pin = null; PaperTheme.sync()`);
+    assert.ok(['pp-s5', 'pp-patents', 'pp-certs'].includes(await marked()), `${label}: scrolling within Education follows reading order, not a higher right-column heading`);
+    await b.evaluate(`document.querySelector('#ppSide [data-ol="pp-s3"]').click()`); await sleep(900);
+
     if (phone) {
         assert.ok(await b.evaluate(`!document.getElementById('ppRoot').classList.contains('side-open')`), 'm: outline closes after a jump');
         await b.evaluate(`document.querySelector('.pp-bar [data-action="side"]').click()`); await sleep(300);

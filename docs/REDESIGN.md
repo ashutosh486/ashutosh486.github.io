@@ -554,6 +554,11 @@ Checked with `tests/paper.test.mjs` at 1440px and 390px:
 - The switcher corner is clear at the end. Cleanup removes the listeners, and there are no runtime errors.
 - All other suites (shell, ChatGPT, Model Card, VS Code, Terminal, Notebook) still pass.
 
+#### Research Paper round 2 (owner feedback)
+
+- **Outline highlight jumped ahead:** clicking Education marked References. In two columns, a later right-column heading can sit higher on screen than the left-column one being read, and the highlight went by screen height. It now follows reading order: the current section holds the first block not yet scrolled past (left column, then right). A clicked item stays marked while the page scrolls to it and until its heading leaves the screen.
+- `tests/paper.test.mjs` now jumps to Education, scrolls a little, and checks that Education stays marked.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
