@@ -47,6 +47,7 @@ node tests/modelcard.test.mjs  # desktop + 390px phone
 node tests/vscode.test.mjs     # desktop + 390px phone
 node tests/terminal.test.mjs   # desktop + 390px phone
 node tests/notebook.test.mjs   # desktop + 390px phone
+node tests/paper.test.mjs      # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -64,7 +65,7 @@ node tests/notebook.test.mjs   # desktop + 390px phone
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
-| Research Paper | ✅ | Not started | | Fits phones |
+| Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
@@ -498,6 +499,65 @@ Checked with `tests/notebook.test.mjs` at 1440px and 390px:
 - Help › Keyboard Shortcuts and `H` open the dialog, and Escape closes it. `0, 0` restarts the counts.
 - Project highlights, degree highlights, book notes and every hobby come from `content.js`.
 - All round 1 checks still pass.
+
+### Research Paper (`theme/paper`): rebuilt from scratch
+
+#### Research Paper before
+
+- A white page in Times with two loose columns. It looked like a styled web page, not a paper.
+- The CSS forced colours with `!important` on every element, including links.
+- The prose was invented ("An Empirical Analysis…", "Open to collaboration…"). "References" were the first three projects cited with today's year.
+- It showed only three projects and only the latest role's achievements. The phone number was shown.
+
+#### Research Paper after
+
+- **Chrome's PDF viewer:** the dark toolbar has the outline button, `pandey2026.pdf`, a page box (`1 / 3`), zoom − / % / +, and a download button for the résumé PDF. Every control works:
+  - **Outline:** lists the PDF's bookmarks (sections and roles) and marks the one being read. On wide screens it is open and pushes the pages aside. Elsewhere it slides over the pages and closes after a jump or on Escape.
+  - **Page box:** follows the scroll. Typing a number and pressing Enter jumps to that page.
+  - **Zoom:** steps through Chrome's levels (50–200%). The page starts fitted to the width, up to 125%.
+- **Typeset like LaTeX:** the font is Latin Modern (Computer Modern), loaded from jsDelivr (`latex.css@1.10.0`). Pages are Letter-sized with two columns in the ICML style. JS fills the columns block by block:
+  - Headings stay with the text after them.
+  - Figure 1 and Table 1 float to the top of the next column when they don't fit, as LaTeX floats do.
+  - The last page's columns are balanced.
+  - Text is never clipped: a block taller than a column stays where it is.
+  - Typesetting runs again once the font loads.
+- **The paper:** every fact comes from `content.js`.
+  - The arXiv identifier runs down page 1's left margin.
+  - The title is the tagline; the author block shows name, title, company, location and email. A footnote lists website, GitHub and LinkedIn.
+  - The abstract is the bio plus the stats, followed by keywords from `interests`.
+  - **Figure 1** is the caricature.
+  - **Introduction:** short bio and fun fact (emoji dropped). The impact numbers are the "main contributions", followed by a "rest of this paper" paragraph whose section links work.
+  - **Experience:** every role and every achievement.
+  - **Projects:** every project, with its highlights.
+  - **Technical Stack:** Table 1 in booktabs style, each skill listed once.
+  - **Education and Credentials:** degrees, the patent and certifications.
+  - **Ongoing Work:** books in progress.
+  - **Acknowledgments:** hobbies.
+  - **References:** numbered entries for project sites, the patent, certificates and books. Citations `[n]` scroll to their entry without touching the `#paper` hash.
+  - The phone number and `summary` (which says "6+ years") are not used.
+- **Opening (after the theme chooser closes):** a `pdflatex` log streams, listing a `.tex` file per section, and ends with "Output written on pandey2026.pdf (3 pages)." Then the pages rise in, and page 1's title, authors and first blocks set in reading order. A key press or click skips it. With reduced motion, the paper shows at once.
+- **Phones:** no fixed pages. The paper is one flowing sheet at 15.5px, with the arXiv line at the top and the footnote at the end. The page box and zoom are hidden, and toolbar buttons are 44px. The chooser tile is now Chrome's viewer grey with a PDF icon.
+
+#### Research Paper verified
+
+Checked with `tests/paper.test.mjs` at 1440px and 390px:
+
+- Nothing plays behind the chooser. Closing it shows the pdflatex log, which ends with "Output written on…" and closes before the pages appear. A key press skips the opening.
+- The facts come from `content.js`: name, title, email, bio, stats, impact, every role's last achievement, every project, institutions, GPA, patent number, every certificate, books, notes and hobbies.
+- Table 1 lists each skill once and all of them. Every citation resolves, and the bibliography has one entry per site, patent, certificate and book.
+- The résumé download uses the `content.js` path and opens in a new tab. Figure 1 is the caricature, not the photo.
+- The toolbar takes at most 20% of the screen, and no column overflows its page.
+- A citation scrolls to its reference and the URL stays `#paper`.
+- Desktop has 3 two-column pages, counted in the toolbar. The page box jumps to page 2. Zoom out works, and zoom in stops at 200% with no page-level horizontal overflow.
+- The outline opens and jumps to Projects, marking it. On phones it closes after the jump and on Escape. On desktop, closing it refits the page.
+- Phones show one sheet with 44px buttons and text of at least 15px.
+- The switcher corner is clear at the end. Cleanup removes the listeners, and there are no runtime errors.
+- All other suites (shell, ChatGPT, Model Card, VS Code, Terminal, Notebook) still pass.
+
+#### Research Paper round 2 (owner feedback)
+
+- **Outline highlight jumped ahead:** clicking Education marked References. In two columns, a later right-column heading can sit higher on screen than the left-column one being read, and the highlight went by screen height. It now follows reading order: the current section holds the first block not yet scrolled past (left column, then right). A clicked item stays marked while the page scrolls to it and until its heading leaves the screen.
+- `tests/paper.test.mjs` now jumps to Education, scrolls a little, and checks that Education stays marked.
 
 ## Shared backlog (shell / cross-theme)
 

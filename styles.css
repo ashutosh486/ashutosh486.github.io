@@ -3174,3 +3174,587 @@ button.shell-ui {
         animation: none;
     }
 }
+
+/* Paper theme: an arXiv preprint in Chrome's PDF viewer. Viewer greys are Chrome's; the page is set in Latin Modern, like LaTeX */
+@font-face { font-family: 'Latin Modern'; font-style: normal; font-weight: normal; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-regular.woff2') format('woff2'); }
+@font-face { font-family: 'Latin Modern'; font-style: italic; font-weight: normal; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Latin Modern'; font-style: normal; font-weight: bold; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold.woff2') format('woff2'); }
+@font-face { font-family: 'Latin Modern'; font-style: italic; font-weight: bold; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold-italic.woff2') format('woff2'); }
+
+#ppRoot {
+    --pp-bar: #323639;
+    --pp-desk: #525659;
+    --pp-ink: #111;
+    --pp-link: #1f4fa3;
+    --pp-bar-h: 48px;
+    --pp-side-w: 260px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--pp-desk);
+    color: #f1f1f1;
+    font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Toolbar: outline and file name, page box and zoom in the middle, download on the right */
+.pp-bar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    height: var(--pp-bar-h);
+    padding: 0 8px;
+    background: var(--pp-bar);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.pp-bar-l,
+.pp-bar-c,
+.pp-bar-r {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.pp-bar-r {
+    justify-content: flex-end;
+}
+
+.pp-file {
+    overflow: hidden;
+    padding-left: 6px;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pp-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #f1f1f1;
+    font-size: 14px;
+    transition: background-color 0.15s;
+    touch-action: manipulation;
+}
+
+.pp-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pp-btn:focus-visible,
+.pp-page-in:focus-visible,
+.pp-ol:focus-visible {
+    outline: 2px solid #8ab4f8;
+    outline-offset: 1px;
+}
+
+.pp-page-in {
+    width: 34px;
+    height: 24px;
+    border: 0;
+    border-radius: 2px;
+    background: #191b1c;
+    color: #f1f1f1;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.pp-of {
+    padding: 0 4px;
+    color: #c4c7c5;
+}
+
+#ppCount,
+.pp-zoom {
+    font-variant-numeric: tabular-nums;
+}
+
+.pp-zoom {
+    min-width: 44px;
+    text-align: center;
+}
+
+.pp-div {
+    width: 1px;
+    height: 20px;
+    margin: 0 12px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Outline (the PDF's bookmarks): pushes the pages aside on wide screens, slides over them otherwise */
+.pp-side {
+    position: fixed;
+    top: var(--pp-bar-h);
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    width: var(--pp-side-w);
+    padding: 12px 8px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--pp-bar);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.22s;
+}
+
+.side-open .pp-side {
+    transform: none;
+    visibility: visible;
+}
+
+.pp-side ul {
+    list-style: none;
+}
+
+.pp-ol {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 4px;
+    color: #e3e3e3;
+    font-size: 13px;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.pp-ol-sub {
+    padding-left: 28px;
+    color: #c4c7c5;
+}
+
+.pp-ol:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.pp-ol[aria-current] {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+.pp-scrim {
+    position: fixed;
+    inset: var(--pp-bar-h) 0 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s;
+}
+
+/* Pages: Letter size (8.5 × 11 in), 1 in top margin, two columns; zoom is set on .pp-pages */
+.pp-doc {
+    overflow-x: auto;
+    padding: 24px 24px calc(48px + 44px);
+}
+
+@media (min-width: 1280px) {
+    .side-open .pp-doc {
+        padding-left: calc(var(--pp-side-w) + 24px);
+    }
+}
+
+@media (max-width: 1279px) {
+    .side-open .pp-scrim {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.pp-pages {
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.is-waiting .pp-pages {
+    opacity: 0;
+}
+
+.pp-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 816px;
+    height: 1056px;
+    padding: 72px 84px 60px;
+    background: #fff;
+    color: var(--pp-ink);
+    font: 13.33px/1.24 'Latin Modern', 'Computer Modern Serif', Georgia, serif;
+    font-kerning: normal;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.pp-page + .pp-page {
+    margin-top: 16px;
+}
+
+.pp-page a {
+    color: var(--pp-link);
+    text-decoration: none;
+}
+
+.pp-page a:hover {
+    text-decoration: underline;
+}
+
+.pp-page a:focus-visible {
+    outline: 1px solid var(--pp-link);
+    outline-offset: 1px;
+}
+
+.pp-stamp {
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    color: #8c8c8c;
+    font: 26px/1 'Times New Roman', Times, serif;
+    white-space: nowrap;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+.pp-head {
+    margin-bottom: 26px;
+    text-align: center;
+}
+
+.pp-head h1 {
+    margin: 4px 0 20px;
+    padding: 10px 0;
+    border-block: 1px solid var(--pp-ink);
+    font-size: 19px;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+.pp-authors {
+    line-height: 1.35;
+}
+
+.pp-tt {
+    font-family: 'Latin Modern Mono', ui-monospace, Menlo, monospace;
+    font-size: 12px;
+}
+
+.pp-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+}
+
+.pp-col {
+    min-width: 0;
+    min-height: 0;
+}
+
+.pp-col > * + * {
+    margin-top: 6px;
+}
+
+.pp-col p {
+    text-align: justify;
+    hyphens: auto;
+}
+
+.pp-col p + p:not(.pp-para, .pp-meta, .pp-bib, .pp-keywords) {
+    margin-top: 0;
+    text-indent: 1.4em;
+}
+
+.pp-col h2 {
+    font-size: 14.67px;
+    font-weight: bold;
+}
+
+.pp-col > h2:not(:first-child) {
+    margin-top: 14px;
+}
+
+.pp-col h3 {
+    font-size: 13.33px;
+    font-weight: bold;
+}
+
+.pp-col > h3:not(:first-child) {
+    margin-top: 10px;
+}
+
+.pp-n {
+    display: inline-block;
+    min-width: 1.6em;
+}
+
+.pp-col h3 .pp-n {
+    min-width: 2.1em;
+}
+
+.pp-abstract {
+    padding: 0 14px;
+}
+
+.pp-abstract h2 {
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.pp-keywords {
+    padding: 0 14px;
+}
+
+.pp-meta {
+    font-style: italic;
+}
+
+.pp-ul {
+    padding-left: 16px;
+    list-style: none;
+}
+
+.pp-col > .pp-ul + .pp-ul {
+    margin-top: 2px;
+}
+
+.pp-ul li {
+    position: relative;
+    text-align: justify;
+    hyphens: auto;
+}
+
+.pp-ul li::before {
+    content: '•';
+    position: absolute;
+    left: -11px;
+}
+
+/* Floats: Figure 1 and Table 1, caption below a figure and above a table as in LaTeX */
+.pp-fig {
+    padding: 6px 0 2px;
+    text-align: center;
+}
+
+.pp-fig .cc {
+    width: 78%;
+    margin: 0 auto 6px;
+}
+
+.pp-col figcaption {
+    font-size: 12px;
+    text-align: left;
+}
+
+.pp-table figcaption {
+    margin-bottom: 6px;
+}
+
+.pp-table table {
+    width: 100%;
+    border-collapse: collapse;
+    border-block: 1.2px solid var(--pp-ink);
+    font-size: 12px;
+}
+
+.pp-table th,
+.pp-table td {
+    padding: 2px 4px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.pp-table thead th {
+    border-bottom: 0.6px solid var(--pp-ink);
+}
+
+.pp-table td:first-child {
+    white-space: nowrap;
+}
+
+.pp-table tbody tr:first-child td {
+    padding-top: 4px;
+}
+
+.pp-table tbody tr:last-child td {
+    padding-bottom: 4px;
+}
+
+.pp-bib {
+    position: relative;
+    padding-left: 24px;
+    font-size: 12px;
+    text-align: left !important;
+    overflow-wrap: anywhere;
+}
+
+.pp-bib > span {
+    position: absolute;
+    left: 0;
+}
+
+.pp-foot {
+    margin-top: 10px;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+/* LaTeX's short footnote rule */
+.pp-foot::before {
+    content: '';
+    display: block;
+    width: 40%;
+    margin-bottom: 4px;
+    border-top: 0.6px solid var(--pp-ink);
+}
+
+.pp-folio {
+    position: absolute;
+    right: 0;
+    bottom: 30px;
+    left: 0;
+    text-align: center;
+}
+
+/* pdflatex log, shown while the paper "compiles" */
+.pp-log {
+    position: fixed;
+    top: calc(var(--pp-bar-h) + 24px);
+    left: 50%;
+    --pp-shift: 0px;
+    z-index: 2;
+    width: min(640px, calc(100vw - 32px));
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1e1f20;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    transform: translateX(calc(-50% + var(--pp-shift)));
+}
+
+/* Centred over the pages, not the outline */
+@media (min-width: 1280px) {
+    .side-open .pp-log {
+        --pp-shift: calc(var(--pp-side-w) / 2);
+    }
+}
+
+.pp-log pre {
+    color: #d4d4d4;
+    font: 12px/1.55 'Geist Mono', ui-monospace, Menlo, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* Phones: no fixed pages, one sheet that flows, readable type; page box and zoom hidden, 44px targets */
+@media (max-width: 899px) {
+    #ppRoot {
+        --pp-bar-h: 52px;
+        --pp-side-w: min(300px, 82vw);
+    }
+
+    .pp-paged {
+        display: none;
+    }
+
+    .pp-bar {
+        grid-template-columns: 1fr auto;
+    }
+
+    .pp-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .pp-ol {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .pp-ol-sub {
+        padding-left: 28px;
+    }
+
+    .pp-doc {
+        padding: 12px 0 calc(32px + 44px);
+    }
+
+    .pp-pages,
+    .pp-page {
+        width: 100%;
+    }
+
+    .pp-cols {
+        display: block;
+    }
+
+    .pp-page {
+        height: auto;
+        padding: 20px 20px 28px;
+        font-size: 15.5px;
+        line-height: 1.45;
+    }
+
+    .pp-stamp {
+        position: static;
+        margin-bottom: 14px;
+        font-size: 13px;
+        white-space: normal;
+        transform: none;
+    }
+
+    .pp-head h1 {
+        font-size: 21px;
+    }
+
+    .pp-col h2 {
+        font-size: 18px;
+    }
+
+    .pp-col h3 {
+        font-size: 16px;
+    }
+
+    .pp-abstract,
+    .pp-keywords {
+        padding: 0;
+    }
+
+    .pp-fig .cc {
+        width: min(70%, 260px);
+    }
+
+    .pp-col figcaption,
+    .pp-table table,
+    .pp-bib {
+        font-size: 14px;
+    }
+
+    .pp-table td:first-child {
+        white-space: normal;
+    }
+
+    .pp-foot {
+        font-size: 13px;
+    }
+
+    .pp-folio {
+        display: none;
+    }
+
+    .pp-page a {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pp-side,
+    .pp-scrim {
+        transition: none;
+    }
+}

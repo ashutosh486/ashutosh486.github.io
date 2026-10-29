@@ -26,7 +26,7 @@ class PortfolioController {
             vscode: { label: 'VS Code', blurb: 'Browse my résumé as source files', icon: 'fas fa-code', bg: '#181818', fg: '#4fc1ff' },
             terminal: { label: 'Terminal', blurb: 'Type commands, get answers', icon: 'fas fa-terminal', bg: '#0c0c0c', fg: '#4ade80' },
             notebook: { label: 'Notebook', blurb: 'A Jupyter notebook you can run', icon: 'fas fa-book', bg: '#ffffff', fg: '#f37726' },
-            paper: { label: 'Paper', blurb: 'Typeset like a research paper', icon: 'fas fa-file-lines', bg: '#ffffff', fg: '#111111' },
+            paper: { label: 'Paper', blurb: 'An arXiv preprint in a PDF viewer', icon: 'fas fa-file-pdf', bg: '#525659', fg: '#ffffff' },
             book: { label: 'Book', blurb: 'Read it chapter by chapter', icon: 'fas fa-book-open', bg: '#ffffff', fg: '#2563eb' },
             apple: { label: 'Persona Card', blurb: 'One clean profile card', icon: 'fas fa-address-card', bg: '#ffffff', fg: '#1d1d1f' },
             scifi: { label: 'Sci-Fi', blurb: 'A starship personnel console', icon: 'fas fa-satellite-dish', bg: '#000000', fg: '#22d3ee' }
