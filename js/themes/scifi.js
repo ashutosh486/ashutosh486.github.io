@@ -1,340 +1,262 @@
-// Sci-Fi Holographic Console Theme
+// Sci-Fi Console theme - a starship's crew records terminal on an amber phosphor CRT (cassette futurism). A numbered
+// menu (keys 1-7, arrows) switches record screens, the selected one in inverse video; each screen prints line by line.
+// Opens after the theme chooser closes: the tube powers on, runs a self-test, then the console draws in
 const SciFiTheme = {
     name: "Sci-Fi Console",
-    
-    animationFrame: null,
-    particles: [],
-    
+    token: 0,
+
     render() {
-        const container = document.getElementById('themeContainer');
-        container.innerHTML = `
-            <div class="min-h-screen bg-black text-cyan-400 relative overflow-hidden font-mono">
-                <!-- Animated Background -->
-                <canvas id="bgCanvas" class="fixed inset-0 w-full h-full opacity-20"></canvas>
-                
-                <!-- Scanline Effect -->
-                <div class="fixed inset-0 pointer-events-none" style="background: repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 2px); z-index: 1;"></div>
-                
-                <!-- Main Console -->
-                <div class="relative z-10 min-h-screen p-6">
-                    <!-- Header -->
-                    <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur mb-6 p-4 shadow-[0_0_30px_rgba(0,255,255,0.3)]">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(0,255,255,0.8)]"></div>
-                                <div>
-                                    <div class="text-xs text-cyan-600">SYSTEM PERSONNEL FILE</div>
-                                    <div class="text-xl font-bold tracking-wider text-cyan-300">${portfolioContent.name.toUpperCase()}</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <div class="text-right text-xs">
-                                    <div class="text-cyan-600">STATUS</div>
-                                    <div class="text-cyan-300 font-bold">AVAILABLE</div>
-                                </div>
-                                <a href="mailto:${portfolioContent.email}" class="px-4 py-2 border-2 border-cyan-500 hover:bg-cyan-500 hover:text-black transition-all text-xs font-bold tracking-wider shadow-[0_0_15px_rgba(0,255,255,0.5)]">
-                                    ESTABLISH LINK
-                                </a>
-                            </div>
-                        </div>
-                        <div class="mt-3 flex gap-2 text-xs">
-                            <div class="px-2 py-1 border border-cyan-600 text-cyan-400">ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
-                            <div class="px-2 py-1 border border-cyan-600 text-cyan-400">CLEARANCE: ALPHA</div>
-                            <div class="px-2 py-1 border border-cyan-600 text-cyan-400">TIMESTAMP: ${new Date().toISOString().split('T')[0]}</div>
-                        </div>
+        const c = portfolioContent;
+        this.token++;
+        this.anims = [];
+        this.fast = this.calm();
+        this.screens = this.records();
+        this.current = this.screens[0].id;
+
+        document.getElementById('themeContainer').innerHTML = `
+            <div id="sfRoot" lang="en" class="${this.fast ? '' : 'is-waiting'}">
+                <div class="sf-crt">
+                    <header class="sf-top">
+                        <span class="sf-top-title">Crew records <span class="sf-sep">//</span> ${this.esc(c.name)}</span>
+                        <span class="sf-clock" aria-hidden="true">Ship time <span id="sfClock">${this.stamp()}</span></span>
+                    </header>
+                    <div class="sf-body">
+                        <nav class="sf-menu" role="tablist" aria-label="Crew records" aria-orientation="vertical">${this.screens.map((s, i) => `
+                            <button type="button" role="tab" id="sfTab-${s.id}" class="sf-tab" data-screen="${s.id}" aria-controls="sfPanel"
+                                aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" aria-keyshortcuts="${i + 1}"><span class="sf-key">${i + 1}</span><span>${s.title}</span></button>`).join('')}
+                        </nav>
+                        <main id="sfPanel" class="sf-panel" role="tabpanel" aria-labelledby="sfTab-${this.current}" tabindex="0">${this.screens[0].html}</main>
                     </div>
-
-                    <div class="grid lg:grid-cols-3 gap-6">
-                        <!-- Main Display -->
-                        <div class="lg:col-span-2 space-y-6">
-                            <!-- Bio Scanner -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-6 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-cyan-900">
-                                    <i class="fas fa-user-circle text-cyan-500"></i>
-                                    <span class="text-sm font-bold tracking-wider">BIOGRAPHICAL DATA</span>
-                                </div>
-                                <div class="text-cyan-300 text-sm leading-relaxed">
-                                    ${portfolioContent.about.bio}
-                                </div>
-                                <div class="mt-4 pt-4 border-t border-cyan-900">
-                                    <div class="text-xs text-cyan-600 mb-2">PRIMARY DIRECTIVES:</div>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${portfolioContent.about.interests.map(interest => 
-                                            `<div class="px-3 py-1 border border-cyan-600 text-xs text-cyan-400 shadow-[0_0_5px_rgba(0,255,255,0.3)]">${interest.toUpperCase()}</div>`
-                                        ).join('')}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Skill Matrix -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-6 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-cyan-900">
-                                    <i class="fas fa-microchip text-cyan-500"></i>
-                                    <span class="text-sm font-bold tracking-wider">SKILL MATRIX</span>
-                                </div>
-                                <div class="space-y-4">
-                                    ${Object.entries(portfolioContent.skills).map(([category, skills]) => `
-                                        <div>
-                                            <div class="text-xs text-cyan-600 mb-2">&gt; ${category.toUpperCase().replace('_', ' ')}</div>
-                                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                ${skills.map(skill => `
-                                                    <div class="flex items-center gap-2 text-xs">
-                                                        <div class="w-1.5 h-1.5 bg-cyan-400 shadow-[0_0_5px_rgba(0,255,255,0.8)]"></div>
-                                                        <span class="text-cyan-300">${skill}</span>
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Mission Log (Projects) -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-6 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-cyan-900">
-                                    <i class="fas fa-rocket text-cyan-500"></i>
-                                    <span class="text-sm font-bold tracking-wider">MISSION LOG</span>
-                                </div>
-                                <div class="space-y-4">
-                                    ${portfolioContent.projects.slice(0, 4).map((project, idx) => `
-                                        <div class="border-l-2 border-cyan-700 pl-4">
-                                            <div class="flex items-start justify-between gap-4 mb-2">
-                                                <div class="text-sm font-bold text-cyan-300">MISSION-${String(idx + 1).padStart(3, '0')}: ${project.title.toUpperCase()}</div>
-                                            </div>
-                                            <div class="text-xs text-cyan-400 leading-relaxed mb-2">
-                                                ${project.description.substring(0, 120)}...
-                                            </div>
-                                            <div class="flex flex-wrap gap-1">
-                                                ${project.tags.slice(0, 4).map(tag => 
-                                                    `<span class="px-2 py-0.5 bg-cyan-950 border border-cyan-800 text-xs text-cyan-400">${tag}</span>`
-                                                ).join('')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Side Panel -->
-                        <div class="lg:col-span-1 space-y-6">
-                            <!-- System Stats -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-4 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="text-xs font-bold tracking-wider mb-4 text-cyan-500">SYSTEM ANALYTICS</div>
-                                <div class="space-y-4">
-                                    <div>
-                                        <div class="flex justify-between text-xs mb-1">
-                                            <span class="text-cyan-600">SKILL INDEX</span>
-                                            <span class="text-cyan-300 font-bold">${portfolioContent.stats.skills}</span>
-                                        </div>
-                                        <div class="h-1 bg-cyan-950 border border-cyan-900">
-                                            <div class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]" style="width: 95%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <div class="flex justify-between text-xs mb-1">
-                                            <span class="text-cyan-600">MISSIONS COMPLETE</span>
-                                            <span class="text-cyan-300 font-bold">${portfolioContent.projects.length}</span>
-                                        </div>
-                                        <div class="h-1 bg-cyan-950 border border-cyan-900">
-                                            <div class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]" style="width: 87%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <div class="flex justify-between text-xs mb-1">
-                                            <span class="text-cyan-600">EXPERIENCE LEVEL</span>
-                                            <span class="text-cyan-300 font-bold">${portfolioContent.stats.years}+ YRS</span>
-                                        </div>
-                                        <div class="h-1 bg-cyan-950 border border-cyan-900">
-                                            <div class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]" style="width: 92%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Service Record -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-4 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="text-xs font-bold tracking-wider mb-4 text-cyan-500">SERVICE RECORD</div>
-                                <div class="space-y-3">
-                                    ${portfolioContent.experience.map((exp, idx) => `
-                                        <div class="text-xs">
-                                            <div class="flex items-start gap-2 mb-1">
-                                                <div class="text-cyan-600 mt-1">&gt;</div>
-                                                <div class="flex-1">
-                                                    <div class="text-cyan-300 font-bold">${exp.position.toUpperCase()}</div>
-                                                    <div class="text-cyan-600 text-[10px] mt-0.5">${exp.company} | ${exp.period}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        ${idx < portfolioContent.experience.length - 1 ? '<div class="border-b border-cyan-950 my-2"></div>' : ''}
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Network Access -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-4 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="text-xs font-bold tracking-wider mb-4 text-cyan-500">NETWORK ACCESS</div>
-                                <div class="space-y-2">
-                                    <a href="mailto:${portfolioContent.email}" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
-                                        <i class="fas fa-envelope text-cyan-500 group-hover:text-cyan-300"></i>
-                                        <div class="text-xs">
-                                            <div class="text-cyan-600">EMAIL PROTOCOL</div>
-                                            <div class="text-cyan-400 text-[10px] break-all">${portfolioContent.email}</div>
-                                        </div>
-                                    </a>
-                                    
-                                    <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
-                                        <i class="fab fa-github text-cyan-500 group-hover:text-cyan-300"></i>
-                                        <div class="text-xs">
-                                            <div class="text-cyan-600">CODE REPOSITORY</div>
-                                            <div class="text-cyan-400 text-[10px]">${portfolioContent.social.github.replace('https://', '')}</div>
-                                        </div>
-                                    </a>
-                                    
-                                    <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-3 p-2 border border-cyan-700 hover:border-cyan-400 hover:bg-cyan-950 transition-all group">
-                                        <i class="fab fa-linkedin text-cyan-500 group-hover:text-cyan-300"></i>
-                                        <div class="text-xs">
-                                            <div class="text-cyan-600">PROFESSIONAL NETWORK</div>
-                                            <div class="text-cyan-400 text-[10px]">${portfolioContent.social.linkedin.replace('https://', '')}</div>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <!-- Education -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-4 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="text-xs font-bold tracking-wider mb-4 text-cyan-500">TRAINING CREDENTIALS</div>
-                                <div class="space-y-3">
-                                    ${portfolioContent.education.map((edu, idx) => `
-                                        <div class="text-xs">
-                                            <div class="text-cyan-300 font-bold">${edu.degree}</div>
-                                            <div class="text-cyan-600 text-[10px] mt-1">${edu.institution}</div>
-                                            <div class="text-cyan-700 text-[10px]">${edu.year}</div>
-                                        </div>
-                                        ${idx < portfolioContent.education.length - 1 ? '<div class="border-b border-cyan-950 my-2"></div>' : ''}
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Knowledge Acquisition Logs -->
-                            <div class="border-2 border-cyan-500 bg-black/80 backdrop-blur p-4 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                                <div class="text-xs font-bold tracking-wider mb-4 text-cyan-500">
-                                    <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full animate-pulse mr-2"></span>
-                                    KNOWLEDGE ACQUISITION LOGS
-                                </div>
-                                <div class="space-y-2">
-                                    ${portfolioContent.currentlyReading.map(book => `
-                                        <div class="text-xs border-l-2 border-cyan-700 pl-3 py-1">
-                                            <div class="text-cyan-600 text-[10px]">${book.startDate}</div>
-                                            <div class="text-cyan-300 mt-1">
-                                                ACQUIRING: ${book.title} [${book.author}]
-                                            </div>
-                                            <div class="text-cyan-500 text-[10px] mt-1">
-                                                STATUS: ${book.status === 'completed' ? '[COMPLETE]' : '[' + book.progress + '%]'}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="mt-6 border-2 border-cyan-500 bg-black/80 backdrop-blur p-3 text-center shadow-[0_0_30px_rgba(0,255,255,0.2)]">
-                        <div class="text-xs text-cyan-600 tracking-wider">
-                            SYSTEM ACCESS GRANTED • <span class="text-cyan-400">${portfolioContent.about.tagline.toUpperCase()}</span> • END TRANSMISSION
-                        </div>
-                    </div>
+                    <footer class="sf-keys" aria-hidden="true">
+                        <span><b>1</b>–<b>${this.screens.length}</b> Select</span><span><b>↑</b><b>↓</b> Move</span>
+                    </footer>
+                    <div class="sf-boot" aria-hidden="true" ${this.fast ? 'hidden' : ''}>${this.bootLines().map(l => `<p>${l}</p>`).join('')}<p class="sf-cursor">&nbsp;</p></div>
                 </div>
-            </div>
-        `;
-        
-        this.initCanvas();
-        this.startAnimation();
+                <div class="sf-glass" aria-hidden="true"></div>
+            </div>`;
+
+        this.root = document.getElementById('sfRoot');
+        this.panel = document.getElementById('sfPanel');
+        this.bind();
+        const t = this.token;
+        this.intro(t);
     },
-    
-    initCanvas() {
-        const canvas = document.getElementById('bgCanvas');
-        if (!canvas) return;
-        
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        this.ctx = canvas.getContext('2d');
-        
-        // Initialize particles
-        this.particles = [];
-        for (let i = 0; i < 100; i++) {
-            this.particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5,
-                size: Math.random() * 2
-            });
-        }
+
+    // ---------- record screens: every fact from portfolioContent ----------
+
+    records() {
+        const c = portfolioContent, s = c.stats, e = x => this.esc(x);
+        const h = x => `<h3 class="sf-h">${e(x)}</h3>`;
+        const link = (href, text, download = false) => `<a href="${href}" ${download ? 'download target="_blank" rel="noopener"' : /^https?:/.test(href) ? 'target="_blank" rel="noopener"' : ''}>${e(text)}</a>`;
+        const host = url => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+        const list = items => `<ul class="sf-list">${items.map(x => `<li>${x}</li>`).join('')}</ul>`;
+        // Colour emoji would break the single-phosphor screen
+        const plain = x => x.replace(/\s*\p{Extended_Pictographic}️?/gu, '');
+        const seen = new Set();
+        const skills = Object.entries(c.skills)
+            .map(([key, items]) => [c.skillLabels[key] || key, items.filter(x => !seen.has(x.toLowerCase()) && seen.add(x.toLowerCase()))])
+            .filter(([, items]) => items.length);
+        const now = c.experience[0];
+        const channels = [['Email', `mailto:${c.email}`, c.email], ['GitHub', c.social.github, host(c.social.github)],
+            ['LinkedIn', c.social.linkedin, host(c.social.linkedin)], ['Homepage', c.social.portfolio, host(c.social.portfolio)],
+            ['Twitter', c.social.twitter && `https://twitter.com/${c.social.twitter}`, `@${c.social.twitter}`]].filter(([, href]) => href);
+        const screen = (title, note, body) => `<div class="sf-screen"><h2 class="sf-title">${e(title)}<span>${e(note)}</span></h2>${body}</div>`;
+
+        return [
+            { id: 'dossier', title: 'Dossier', html: screen('Crew dossier', 'Personnel file', `
+                <div class="sf-id">
+                    <figure class="sf-portrait">${caricatureSVG(`Caricature of ${e(c.name)}`)}<figcaption>Visual ID on file</figcaption></figure>
+                    <dl class="sf-fields">
+                        <div><dt>Name</dt><dd>${e(c.name)}</dd></div>
+                        <div><dt>Designation</dt><dd>${e(c.title)}</dd></div>
+                        <div><dt>Specialty</dt><dd>${e(c.specialization)}</dd></div>
+                        <div><dt>Posting</dt><dd>${e(now.company)} · ${e(now.location)}</dd></div>
+                        <div><dt>Home port</dt><dd>${e(c.location)}</dd></div>
+                        <div><dt>In service</dt><dd>${s.years} years · ${s.companies} companies</dd></div>
+                    </dl>
+                </div>
+                ${h('Profile')}<p>${e(c.about.tagline)}.</p><p>${e(c.about.bio)}</p>
+                ${h('Commendations')}${list(c.impact.map(i => `<b>${e(i.value)}</b> ${e(i.label)}`))}<p>${e(plain(c.about.funFact))}</p>
+                ${h('Focus')}<p class="sf-tags">${c.about.interests.map(x => `<span>${e(x)}</span>`).join('')}</p>
+                ${h('Off duty')}<p>${e(c.hobbies.join(' · '))}</p>`) },
+            { id: 'service', title: 'Service record', html: screen('Service record', `${s.years} years · ${c.experience.length} postings`, c.experience.map(x => `
+                <article class="sf-entry">
+                    <p class="sf-date">${e(x.period)}</p>
+                    <h3 class="sf-entry-title">${e(x.position)}</h3>
+                    <p class="sf-dim">${e(x.company)} · ${e(x.location)}</p>
+                    ${list(x.achievements.map(e))}
+                    <p class="sf-dim">Systems: ${e(x.technologies.join(', '))}</p>
+                </article>`).join('')) },
+            { id: 'missions', title: 'Missions', html: screen('Mission log', `${s.projects} missions`, c.projects.map(p => `
+                <article class="sf-entry">
+                    <p class="sf-date">MSN-${String(p.id).padStart(3, '0')}</p>
+                    <h3 class="sf-entry-title">${e(p.title)}</h3>
+                    <p>${e(p.description)}</p>
+                    ${list(p.highlights.map(e))}
+                    <p class="sf-dim">Systems: ${e(p.tags.join(', '))}</p>
+                    ${p.site ? `<p>Uplink: ${link(`https://${p.site}`, p.site)}</p>` : ''}
+                </article>`).join('')) },
+            { id: 'systems', title: 'Systems', html: screen('Systems check', `${s.skills} modules online`, `
+                <dl class="sf-fields sf-skills">${skills.map(([label, items]) => `
+                    <div><dt>${e(label)}</dt><dd><ul>${items.map(x => `<li>${e(x)}</li>`).join(' ')}</ul></dd></div>`).join('')}
+                </dl>`) },
+            { id: 'training', title: 'Training', html: screen('Training', `${c.education.length} academies · ${c.certifications.length} certificates`, c.education.map(x => `
+                <article class="sf-entry">
+                    <p class="sf-date">${e(x.year)}</p>
+                    <h3 class="sf-entry-title">${e(x.degree)}</h3>
+                    <p class="sf-dim">${e(x.institution)} · ${e(x.location)} · GPA ${e(x.gpa)}</p>
+                    ${list((x.achievements.length ? x.achievements : [x.description].filter(Boolean)).map(e))}
+                </article>`).join('')
+                + h(c.patents.length > 1 ? 'Patents' : 'Patent') + list(c.patents.map(p => `${link(p.link, p.title)} <span class="sf-dim">${e(p.number)} · ${e(p.status)} ${e(p.year)}</span><br>${e(p.description)}`))
+                + h('Certificates') + list(c.certifications.map(x => `${link(x.link, x.title)} <span class="sf-dim">${e(x.issuer)} · ${e(x.year)}</span>`))) },
+            { id: 'archive', title: 'Archive', html: screen('Reading archive', `${c.currentlyReading.length} volumes`, c.currentlyReading.map(r => `
+                <article class="sf-entry">
+                    <p class="sf-date">${r.status === 'completed' ? 'Finished' : `${e(r.progress)}% read`}</p>
+                    <h3 class="sf-entry-title">${link(r.link, r.title)}</h3>
+                    <p class="sf-dim">${e(r.author)}</p>
+                    <p>${e(r.notes)}</p>
+                </article>`).join('')) },
+            { id: 'comms', title: 'Comms', html: screen('Comms', 'Channels open', `
+                <dl class="sf-fields sf-channels">${channels.map(([label, href, text]) => `
+                    <div><dt>${label}</dt><dd>${link(href, text)}</dd></div>`).join('')}
+                    ${c.resume ? `<div><dt>Dossier</dt><dd>${link(c.resume, 'Download résumé (PDF)', true)}</dd></div>` : ''}
+                    <div><dt>Location</dt><dd>${e(c.location)}</dd></div>
+                </dl>
+                <p class="sf-dim">Awaiting transmission<span class="sf-cursor">&nbsp;</span></p>`) }
+        ];
     },
-    
-    startAnimation() {
-        const animate = () => {
-            if (!this.ctx) return;
-            
-            const canvas = this.ctx.canvas;
-            const ctx = this.ctx;
-            
-            // Clear canvas
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Update and draw particles
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
-            
-            this.particles.forEach((p, i) => {
-                // Update position
-                p.x += p.vx;
-                p.y += p.vy;
-                
-                // Wrap around edges
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
-                
-                // Draw particle
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Draw connections
-                this.particles.slice(i + 1).forEach(p2 => {
-                    const dx = p.x - p2.x;
-                    const dy = p.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.globalAlpha = (150 - dist) / 150 * 0.2;
-                        ctx.stroke();
-                        ctx.globalAlpha = 1;
-                    }
-                });
-            });
-            
-            this.animationFrame = requestAnimationFrame(animate);
+
+    // Power-on self-test; the counts are real
+    bootLines() {
+        const c = portfolioContent, s = c.stats;
+        return ['Power on', 'Self-test .......... OK', 'Crew registry link .. OK', `Query: ${this.esc(c.name)}`,
+            `${c.experience.length} postings · ${s.projects} missions · ${s.skills} modules`, 'Access granted'];
+    },
+
+    // Day-of-year ship time, e.g. 2026.302 14:05:09
+    stamp() {
+        const d = new Date();
+        const day = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
+        return `${d.getFullYear()}.${String(day).padStart(3, '0')} ${d.toTimeString().slice(0, 8)}`;
+    },
+
+    esc(s) {
+        return String(s).replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`);
+    },
+
+    // ---------- behaviour ----------
+
+    bind() {
+        this.tabs = [...this.root.querySelectorAll('.sf-tab')];
+        this.root.querySelector('.sf-menu').addEventListener('click', (e) => {
+            const tab = e.target.closest('[data-screen]');
+            if (tab) this.show(tab.dataset.screen);
+        });
+
+        // 1-7 open a screen from anywhere; arrows, Home and End move along the menu (a tablist)
+        this.onKey = (e) => {
+            if (e.metaKey || e.ctrlKey || e.altKey || document.getElementById('themeChooser')?.open) return;
+            const n = Number(e.key);
+            if (n >= 1 && n <= this.tabs.length) return this.show(this.screens[n - 1].id, true);
+            const at = this.tabs.indexOf(document.activeElement);
+            if (at < 0) return;
+            const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+            const to = step ? (at + step + this.tabs.length) % this.tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? this.tabs.length - 1 : -1;
+            if (to < 0) return;
+            e.preventDefault();
+            this.show(this.screens[to].id, true);
         };
-        
-        animate();
+        window.addEventListener('keydown', this.onKey);
+
+        this.clock = setInterval(() => { document.getElementById('sfClock').textContent = this.stamp(); }, 1000);
     },
-    
-    cleanup() {
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-            this.animationFrame = null;
+
+    // Swap the panel to a screen; it prints in line by line (CSS, --i per line)
+    show(id, focus = false) {
+        const tab = this.tabs.find(t => t.dataset.screen === id);
+        if (focus) tab.focus();
+        if (id === this.current) return;
+        this.current = id;
+        this.tabs.forEach(t => {
+            t.setAttribute('aria-selected', t === tab);
+            t.tabIndex = t === tab ? 0 : -1;
+        });
+        this.panel.setAttribute('aria-labelledby', tab.id);
+        this.panel.innerHTML = this.screens.find(s => s.id === id).html;
+        this.lines(this.panel).forEach((el, i) => {
+            el.classList.add('sf-line');
+            el.style.setProperty('--i', Math.min(i, 30));
+        });
+        this.panel.scrollTop = 0;
+        tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        // Phones scroll the page, not the panel: bring the new screen's top under the sticky menu
+        const menu = this.root.querySelector('.sf-menu').getBoundingClientRect();
+        const top = this.panel.getBoundingClientRect().top;
+        if (getComputedStyle(this.panel).overflowY === 'visible' && top < menu.bottom) scrollBy(0, top - menu.bottom);
+    },
+
+    lines(scope) {
+        return [...scope.querySelectorAll('.sf-screen > :not(.sf-entry, .sf-list, .sf-id, .sf-fields), .sf-entry > :not(.sf-list), .sf-portrait, .sf-fields > div, .sf-list > li')];
+    },
+
+    calm() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    },
+
+    // ---------- opening: the tube powers on, the self-test prints, then the console draws in ----------
+
+    async intro(t) {
+        const live = () => t === this.token;
+        if (this.fast) return;
+        // Nothing plays behind the theme chooser. On page load it opens right after this first render, so look a microtask later
+        await null;
+        if (!live()) return;
+        const chooser = document.getElementById('themeChooser');
+        if (chooser?.open) {
+            await new Promise(r => { this.onChooser = r; chooser.addEventListener('close', r, { once: true }); });
+            if (!live()) return;
         }
+        this.onSkip = () => this.skip();
+        window.addEventListener('keydown', this.onSkip);
+        window.addEventListener('pointerdown', this.onSkip);
+
+        this.root.classList.remove('is-waiting');
+        const q = sel => [...this.root.querySelectorAll(sel)];
+        const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const boot = q('.sf-boot p'), lineAt = 520, uiAt = lineAt + boot.length * 140 + 260;
+        const ui = [...q('.sf-top, .sf-tab'), ...this.lines(this.panel), ...q('.sf-keys')];
+        this.anims = [
+            // A bright line opens out to the full tube
+            this.root.querySelector('.sf-crt').animate([{ transform: 'scale(0.6, 0.004)', opacity: 0 }, { transform: 'scale(1, 0.004)', opacity: 1, offset: 0.45 }, { transform: 'none', opacity: 1 }], { duration: 480, easing: ease, fill: 'backwards' }),
+            ...boot.map((el, i) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 60, delay: lineAt + i * 140, fill: 'backwards' })),
+            this.root.querySelector('.sf-boot').animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, delay: uiAt - 120, fill: 'forwards' }),
+            ...ui.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: uiAt + Math.min(i, 40) * 28, easing: ease, fill: 'backwards' }))
+        ];
+        await Promise.all(this.anims.map(a => a.finished)).catch(() => {});
+        if (live()) this.endIntro();
+    },
+
+    skip() {
+        this.anims.forEach(a => a.finish());
+        this.endIntro();
+    },
+
+    endIntro() {
+        window.removeEventListener('keydown', this.onSkip);
+        window.removeEventListener('pointerdown', this.onSkip);
+        this.onSkip = null;
+        if (this.root?.isConnected) this.root.querySelector('.sf-boot').hidden = true;
+    },
+
+    cleanup() {
+        this.token++;
+        this.endIntro();
+        window.removeEventListener('keydown', this.onKey);
+        this.onKey = null;
+        clearInterval(this.clock);
+        this.clock = null;
+        document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
+        this.onChooser = null;
     }
 };
 
