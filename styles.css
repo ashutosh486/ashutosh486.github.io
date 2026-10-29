@@ -33,10 +33,27 @@ body {
     outline: none;
 }
 
-/* Theme switches cross-fade (View Transitions API) */
-::view-transition-old(root),
+/* Theme switches: the old theme sinks back and fades as the new one settles in (View Transitions API) */
+::view-transition-old(root) {
+    animation: theme-out 0.45s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
 ::view-transition-new(root) {
-    animation-duration: 0.25s;
+    animation: theme-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes theme-out {
+    to {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+}
+
+@keyframes theme-in {
+    from {
+        opacity: 0;
+        transform: scale(1.02);
+    }
 }
 
 /* ---------- Shell: theme switcher & chooser (neutral, Geist, no gradients) ---------- */
@@ -291,6 +308,37 @@ button.shell-ui {
     background: var(--shell-surface);
 }
 
+.chooser-foot-start {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.chooser-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    font-size: 13px;
+    color: var(--shell-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.chooser-check:hover {
+    color: var(--shell-text);
+}
+
+.chooser-check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--shell-text);
+    cursor: pointer;
+}
+
 .chooser-foot-hint {
     font-size: 13px;
     color: var(--shell-muted);
@@ -360,6 +408,19 @@ button.shell-ui {
     animation: chooser-fade 0.22s ease-out;
 }
 
+/* Cards deal in one after another; --i is set in main.js */
+.chooser[open] .chooser-item {
+    animation: chooser-card 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(80ms + var(--i, 0) * 45ms);
+}
+
+@keyframes chooser-card {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+}
+
 @keyframes chooser-in {
     from {
         opacity: 0;
@@ -393,8 +454,15 @@ button.shell-ui {
     .chooser-wide-only {
         display: none;
     }
+    .chooser-foot {
+        flex-wrap: wrap;
+    }
+    .chooser-foot-start,
     .chooser-actions {
-        flex: 1;
+        flex: 1 0 100%;
+    }
+    .chooser-check {
+        min-height: 44px;
     }
     .chooser-secondary {
         height: 44px;
@@ -458,7 +526,8 @@ button.shell-ui {
 
 @media (prefers-reduced-motion: reduce) {
     .chooser,
-    .chooser::backdrop {
+    .chooser::backdrop,
+    .chooser .chooser-item {
         animation: none !important;
     }
 }
@@ -699,8 +768,16 @@ button.shell-ui {
 /* Scroll reveal (mc-anim is only added when motion is allowed); --i staggers the schedule bars */
 .mc-anim .mc-reveal {
     opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform: translateY(20px);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--d, 0ms);
+}
+
+/* Desktop: the sidebar slides in from its side */
+@media (min-width: 1024px) {
+    .mc-anim aside .mc-reveal {
+        transform: translateX(24px);
+    }
 }
 
 .mc-anim .mc-reveal.is-in {
@@ -714,8 +791,8 @@ button.shell-ui {
 
 .mc-anim .mc-bar {
     transform: scaleX(0);
-    transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
-    transition-delay: calc(var(--i, 0) * 90ms + 150ms);
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 140ms + 300ms);
 }
 
 .mc-anim .is-in .mc-bar {

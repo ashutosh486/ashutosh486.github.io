@@ -72,6 +72,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
+| Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, in review** | `theme/motion` | Cross-theme; not merged |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -651,6 +652,50 @@ Checked by `tests/scifi.test.mjs` at 1440px and 390px:
 - Keys 1–7 open each screen, with the panel labelled by the focused tab. The facts from `content.js` appear across the screens; the phone number and colour emoji don't. Systems lists every skill once. The résumé link uses the `content.js` path.
 - Arrow keys move along the menu and wrap; a new screen prints in.
 - There is no horizontal overflow on any screen, and the switcher corner stays clear at the end of a screen. On phones the menu sticks to the top and a new screen starts under it; on desktop the console fills the window. Cleanup removes the listeners and the clock, and there are no runtime errors. The shell suite still passes.
+
+### Motion pass (`theme/motion`)
+
+The owner asked for a "don't show" option in the theme chooser, animation in as many places as possible, and openings that run at least 2–3 seconds so visitors actually see them. This is one cross-theme branch, cut from `feature/ashutoshcodes` after it was fast-forwarded to `develop`.
+
+#### Before
+
+Opening lengths, measured from the chooser closing to the last frame:
+
+| Theme | Opening |
+| --- | --- |
+| ChatGPT | none (its welcome blocks animated behind the chooser) |
+| Model Card | none (the first screen's scroll reveals ran behind the chooser) |
+| VS Code | none |
+| Book | 1.7s |
+| Contact Card | 2.0s |
+| Paper | 3.1s |
+| Sci-Fi | 2.9s |
+| Terminal | ~3.5s |
+| Notebook | 5.4s |
+
+#### After
+
+- **"Don't show again"** in the chooser footer, a native checkbox (44px row on phones). When it's ticked, later visits skip the chooser and the theme's opening plays straight away. The switcher still opens the chooser with the box ticked, and unticking it brings the chooser back on every visit. The setting is stored in `localStorage` (`portfolio-chooser-hide`). If storage is blocked, the chooser keeps asking.
+- **Shell motion:**
+  - The chooser's cards deal in one after another.
+  - A theme switch now sinks the old theme back as the new one settles in (0.45s out, 0.6s in), replacing the flat 0.25s cross-fade.
+- **`playOpening(anims, onStart)`** (main.js) is a shared helper for theme openings. The animations are created paused on their first frame, which keeps their elements hidden while the chooser is open. They play once it closes, and any key, click or tap finishes them. It returns a `stop()` for `cleanup()`.
+- **ChatGPT opening (2.6s):** the header first. Then the topics fill the sidebar, the avatar scales in, and the greeting, heading and bio rise line by line. The stats box, its four numbers, the suggestion cards and the composer follow.
+- **Model Card opening (2.6s+):** the repo name, then the tags pop in one by one and the tabs settle. The scroll reveal starts only once the chooser closes. Sections that enter together rise one after another, and on desktop the sidebar cards slide in from the right. Reveals are slower (0.8s), and the schedule bars grow over 1.2s, starting after their section.
+- **VS Code opening (3.1s):** like a workspace loading. The title bar and status bar come first, then the activity bar icons pop in and the Explorer tree fills row by row. The tabs and breadcrumbs follow, then README renders block by block.
+- **Book (1.7s → 2.5s):** the Markdown types a little slower, and the rendered chapter and sidebar rise in more slowly.
+- **Contact Card (2.0s → 2.9s):** slower letters, caricature and groups.
+- Micro-interactions (hover, menus, drawers, the chooser opening and collapsing) stay short on purpose, because a 2s dialog would feel broken. Everything is still off under reduced motion.
+
+#### Verified
+
+Checked with `tests/shell.test.mjs`:
+
+- The checkbox starts unticked. Ticking it skips the chooser on the next visit, and Paper's opening plays without it.
+- The switcher reopens the chooser with the box ticked, and unticking it asks again.
+- On phones the checkbox fits the sheet with a 44px target.
+- ChatGPT, Model Card and VS Code each hold their opening (paused) behind the chooser, play it after it closes, and finish it on a key press, with no errors.
+- All other theme tests still pass.
 
 ## Shared backlog (shell / cross-theme)
 

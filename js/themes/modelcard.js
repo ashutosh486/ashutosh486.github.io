@@ -380,15 +380,31 @@ const ModelCardTheme = {
         // Sections rise in as they scroll into view; without motion (or observer) everything is simply shown
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
         root.classList.add('mc-anim');
-        this.observer = new IntersectionObserver((entries) => entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-in');
-            this.observer.unobserve(entry.target);
-        }), { rootMargin: '0px 0px -8% 0px' });
-        root.querySelectorAll('.mc-reveal').forEach(el => this.observer.observe(el));
+        // Sections that come into view together rise one after another (--d), after the header on the first screen
+        let lead = 700;
+        this.observer = new IntersectionObserver((entries) => {
+            entries.filter(entry => entry.isIntersecting).forEach((entry, i) => {
+                entry.target.style.setProperty('--d', `${lead + i * 200}ms`);
+                entry.target.classList.add('is-in');
+                this.observer.unobserve(entry.target);
+            });
+            lead = 0;
+        }, { rootMargin: '0px 0px -8% 0px' });
+
+        // Opening (~2.6s, after the theme chooser closes): the repo name, tags and tabs settle in,
+        // then the README and the sidebar reveal
+        const q = sel => [...root.querySelectorAll(sel)], ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const rise = (els, at, step, from, duration = 700) => els.map((el, i) =>
+            el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
+        this.stopOpening = playOpening([
+            ...rise(q('header h1 > *'), 0, 110, 'translateY(10px)'),
+            ...rise(q('header li'), 400, 70, 'scale(0.8)', 500),
+            ...rise(q('header [role="tab"]'), 800, 120, 'translateY(8px)', 500)
+        ], () => q('.mc-reveal').forEach(el => this.observer.observe(el)));
     },
 
     cleanup() {
+        this.stopOpening?.();
         this.observer?.disconnect();
         this.observer = null;
         this.timers.forEach(clearTimeout);

@@ -547,11 +547,11 @@ ${links.join('\n')}`, '', true);
         src.hidden = false;
         let done = '';
         for (const line of this.byId[this.current].md.split('\n')) {
-            // Each line types in at most 8 frames, so a long paragraph doesn't hold the page up
-            const step = Math.max(2, Math.ceil(line.length / 8));
+            // Each line types in at most 12 steps, so a long paragraph doesn't hold the page up
+            const step = Math.max(2, Math.ceil(line.length / 12));
             for (let n = step; n < line.length && !this.fast; n += step) {
                 src.innerHTML = `${done}${this.tint(line.slice(0, n))}<span class="bk-caret"></span>`;
-                await this.frame();
+                await this.wait(24);
                 if (!live()) return;
             }
             done += `${this.tint(line)}\n`;
@@ -568,11 +568,11 @@ ${links.join('\n')}`, '', true);
         if (this.fast) src.hidden = true;
         else {
             const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-            const out = src.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 220, easing: 'ease-out', fill: 'forwards' });
+            const out = src.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 320, easing: 'ease-out', fill: 'forwards' });
             out.onfinish = () => { if (live()) src.hidden = true; };
             this.anims = [out,
-                ...[...this.main.children].slice(0, 14).map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 120 + i * 55, easing: ease, fill: 'backwards' })),
-                ...[...this.root.querySelectorAll('.bk-chapter li')].map((el, i) => el.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: i * 30, easing: ease, fill: 'backwards' }))];
+                ...[...this.main.children].slice(0, 14).map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 650, delay: 200 + i * 90, easing: ease, fill: 'backwards' })),
+                ...[...this.root.querySelectorAll('.bk-chapter li')].map((el, i) => el.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 450, delay: 100 + i * 50, easing: ease, fill: 'backwards' }))];
         }
         this.endIntro();
     },
