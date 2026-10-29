@@ -72,7 +72,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
-| Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, in review** | `theme/motion` | Cross-theme; not merged |
+| Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, merged** | `theme/motion` | Merged to `develop` |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
