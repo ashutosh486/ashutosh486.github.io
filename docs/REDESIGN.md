@@ -36,6 +36,17 @@ Flow: branch → rebuild → run the tests → update this file → commit on th
 
 When one branch needs another, cut it from that branch and merge in order. `theme/chatgpt` and `theme/shell` were stacked and are both merged. `theme/modelcard` is cut from `feature/ashutoshcodes` after it was fast-forwarded to `develop` (to pick up the M.Tech `content.js` update).
 
+## Styles build
+
+Tailwind is built ahead of time, not loaded from the CDN. `css/tailwind.css` is committed, so GitHub Pages needs no build step. After adding or changing Tailwind classes in `index.html` or `js/`, rebuild it and commit the result:
+
+```sh
+npm install          # once
+npm run build:css    # or: npm run watch:css while editing
+```
+
+The version is pinned to 3.4.17, the one the CDN served, so the output matches. The file loads after `styles.css`, where the CDN put its styles, so the cascade is unchanged.
+
 ## Testing
 
 Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome.
@@ -697,6 +708,19 @@ Checked with `tests/shell.test.mjs`:
 - ChatGPT, Model Card and VS Code each hold their opening (paused) behind the chooser, play it after it closes, and finish it on a key press, with no errors.
 - All other theme tests still pass.
 
+### Tailwind build (`theme/shell`)
+
+- **Before:** `index.html` loaded `cdn.tailwindcss.com`. That script isn't meant for production: it compiles styles in the browser after load and prints a console warning.
+- **After:**
+  - A pinned Tailwind 3.4.17 CLI build (`package.json`, `tailwind.config.js`, `css/tailwind.src.css` → `css/tailwind.css`, 44 KB minified).
+  - It scans `index.html` and `js/**/*.js`. Every dynamic class is written out in full in the source, so the scan finds them.
+  - The stylesheet loads after `styles.css`, the same place the CDN injected its `<style>`.
+  - `node_modules/` is ignored.
+- **Verified:**
+  - Every theme was exercised on the CDN: every ChatGPT topic and the unknown answer, the slash menu, every VS Code file, every Terminal command, and Model Card's show-more and Résumé tab, at 1440px and 390px. The build contains every rule the CDN generated; the 4 that looked missing were only merged by the minifier.
+  - Screenshots of all 9 themes at 1440px and 390px, CDN vs build: 17 of 18 match pixel for pixel. Notebook at 1440px differs by 40 anti-aliased pixels on the switcher's blurred backdrop.
+  - All theme tests pass.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
@@ -706,7 +730,7 @@ Checked with `tests/shell.test.mjs`:
 - [x] ~~Random theme on load, no shareable links~~ (shell: `#theme` and localStorage)
 - [ ] **Caricature:** use `caricatureSVG()` (js/caricature.js) in place of the photo where a theme shows a face, recoloured with `--cc-*` to suit the theme.
 - [ ] **Each theme keeps the bottom-right corner clear** (`--theme-dock-w` + 24px wide, 60px tall) when redesigned.
-- [ ] **Tailwind:** the CDN script isn't meant for production. Move to a Tailwind CLI build.
+- [x] ~~**Tailwind:** CDN script isn't meant for production~~ (shell: Tailwind 3.4.17 CLI build, `css/tailwind.css` committed; run `npm run build:css` after changing classes)
 - [x] ~~Favicon~~ (shell: `images/favicon.png`, a round crop of the profile photo; `images/apple-touch-icon.png` for home screens)
 - [ ] **Basics:** meta description, Open Graph tags. Strip `content.js`'s `console.log`s. Remove the committed `.DS_Store` files.
 - [x] ~~Terminal timers~~ (terminal: no startup timer; `cleanup()` clears the typing timer)

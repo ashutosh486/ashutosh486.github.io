@@ -44,7 +44,7 @@ export async function openPage(hash = '', { width = 1440, height = 900, mobile =
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: mobile ? 2 : 1, mobile });
     await send('Page.navigate', { url: INDEX + (hash ? `#${hash}` : '') });
-    await sleep(2500); // Tailwind CDN + first render
+    await sleep(2500); // fonts + first render
     return { send, evaluate, shot, key, errors, close: () => { ws.close(); chrome.kill(); } };
 }
 
