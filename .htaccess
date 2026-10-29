@@ -1,0 +1,12 @@
+# Hostinger (Apache/LiteSpeed): serve only the files the site loads. Everything else in the checkout 404s:
+# .git, tests/, docs/REDESIGN.md, package.json, the Tailwind sources, unused themes, folder listings.
+# When the site starts loading a new file, add its path to the allow rule below.
+Options -Indexes
+DirectoryIndex index.html
+
+# No <IfModule> guard on purpose: without mod_rewrite this fails closed (500) instead of exposing everything
+RewriteEngine On
+# Patterns are relative to this file's folder, so the same file works in public_html and in public_html/about
+RewriteRule ^js/themes/(agent|aiplayground)\.js$ - [R=404,L]
+RewriteRule ^(index\.html|styles\.css|css/tailwind\.css|js/(content|caricature|main)\.js|js/themes/[a-z]+\.js|images/(favicon|apple-touch-icon)\.png|images/profile\.jpg|docs/Ashutosh_Pandey_Resume\.pdf)?$ - [L]
+RewriteRule ^ - [R=404,L]

@@ -47,6 +47,12 @@ npm run build:css    # or: npm run watch:css while editing
 
 The version is pinned to 3.4.17, the one the CDN served, so the output matches. The file loads after `styles.css`, where the CDN put its styles, so the cascade is unchanged.
 
+## Hosting (Hostinger)
+
+The same site is deployed to two folders: `public_html` (ashutoshcodes.in) and `public_html/about` (about.ashutoshcodes.in). The `.htaccess` at the repo root is an allowlist. It serves only the files the page loads (`index.html`, `styles.css`, `css/tailwind.css`, `js/` scripts except the unused `agent`/`aiplayground`, the three images and the résumé PDF), and everything else returns 404: `.git`, `tests/`, `docs/REDESIGN.md`, `package*.json`, the Tailwind sources and folder listings. Its patterns are relative to its own folder, so the same file works in both places.
+
+**When the site starts loading a new file** (an image, a script, a font), add its path to the allow rule in `.htaccess`, or it will 404 on Hostinger. GitHub Pages ignores the file, and the GitHub repo is public either way.
+
 ## Testing
 
 Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome.
