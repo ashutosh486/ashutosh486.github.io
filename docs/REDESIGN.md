@@ -574,7 +574,7 @@ Checked with `tests/paper.test.mjs` at 1440px and 390px:
   - **Sidebar toggle:** open on wide screens, where it pushes the page (the chapter re-centres with a FLIP, so only transforms animate). Under 1080px it starts closed and slides the page aside like mdBook. It closes after a pick, on a tap beside it, or on Escape.
   - **Themes:** mdBook's five (Light, Rust, Coal, Navy, Ayu) with their real palettes. The first visit follows the OS (Navy when dark, like mdBook). The choice is remembered and also paints the page background, browser colour and scrollbars.
   - **Search** (button, S or /): mdBook's search bar and results ("N search results for '…'", `Chapter » Heading`, teaser with the words in bold). ↑/↓ move through the results. A result opens the chapter at that heading and marks the words, and clicking the page clears the marks.
-  - **Print** (button or Ctrl+P): prints the whole book, one chapter per page, without the switcher.
+  - **Print:** prints the résumé PDF (from `content.js`) through an off-screen frame. Where the browser has no inline PDF viewer (phones) or refuses, the PDF opens in a new tab to print from there. Ctrl+P prints the open chapter without the sidebar, menu or switcher.
   - **GitHub** link, and **← →** arrows: big side arrows on wide screens and buttons under the chapter on narrow ones. The arrow keys turn chapters too.
   - The menu bar slides away while you scroll down and comes back when you scroll up.
 - **Written in Markdown:** each chapter is a Markdown string built from `content.js` and rendered by a small renderer (headings, paragraphs, lists, quotes, tables, the caricature image, inline code/bold/italic/links). Links to `foo.md` turn chapters. Heading links scroll without touching the `#book` hash.
@@ -594,7 +594,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 - ← and → turn chapters, and the arrows sit on the sides (desktop) or under the chapter (phone).
 - The theme menu opens on the current theme. Rust applies, paints the page, is saved, and survives a reload.
 - S opens search. "patent" finds results, and typed HTML is escaped. A result opens Education with the words marked, and a click clears the marks.
-- Print holds every chapter and is cleared afterwards.
+- Print loads the résumé PDF from `content.js`, and cleanup removes the frame.
 - No horizontal overflow, and the switcher corner is clear at the end of a chapter. Cleanup removes the listeners, and there are no runtime errors.
 - Also fixed in Notebook and Paper (same pattern): if the theme was switched away within a microtask of rendering, the old theme's opening still ran and threw. All three now check the render token after `await null`. All other suites still pass.
 

@@ -126,14 +126,12 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await b.evaluate(`document.querySelector('#bkMain p').click()`);
     assert.equal(await b.evaluate(`document.querySelectorAll('#bkMain mark').length`), 0, `${label}: clicking the page clears the marks`);
 
-    // Print gives the whole book
-    await b.evaluate(`dispatchEvent(new Event('beforeprint'))`);
-    assert.equal(await b.evaluate(`document.querySelectorAll('#bkPrint h1').length`), ids.length, `${label}: print holds every chapter`);
-    await b.evaluate(`dispatchEvent(new Event('afterprint'))`);
-    assert.equal(await b.evaluate(`document.getElementById('bkPrint').innerHTML`), '', `${label}: print copy cleared afterwards`);
+    // Print prints the résumé PDF: from an off-screen frame, or in a new tab where the browser can't
+    await b.evaluate(`window.open = url => { window.opened = url; }; document.querySelector('[data-action="print"]').click()`); await sleep(1500);
+    assert.ok(await b.evaluate(`(f => f ? f.getAttribute('src') === portfolioContent.resume : window.opened === portfolioContent.resume)(document.querySelector('body > iframe'))`), `${label}: print loads the résumé PDF from content.js`);
 
     await b.evaluate(`portfolioController.loadTheme('notebook')`); await sleep(300);
-    assert.ok(await b.evaluate(`BookTheme.onScroll === null && BookTheme.onKey === null && BookTheme.onSkip === null && BookTheme.onPrint === null && BookTheme.onWide === null`), `${label}: cleanup removes the listeners`);
+    assert.ok(await b.evaluate(`BookTheme.onScroll === null && BookTheme.onKey === null && BookTheme.onSkip === null && !document.querySelector('body > iframe') && BookTheme.onWide === null`), `${label}: cleanup removes the listeners`);
     assert.deepEqual(b.errors.filter(e => e.includes('/book.js')), [], `${label}: no runtime errors`);
     b.close();
 }

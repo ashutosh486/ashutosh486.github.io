@@ -1,6 +1,6 @@
 // Book theme - the résumé as an mdBook. Chapters are written in Markdown from portfolioContent and rendered by a small
 // Markdown renderer. Everything in the menu bar works: sidebar toggle, mdBook's five themes, search (S or /), print (the
-// whole book) and the GitHub link; ← → turn chapters. Opens with the chapter's Markdown typing out, then rendering
+// résumé PDF) and the GitHub link; ← → turn chapters. Opens with the chapter's Markdown typing out, then rendering
 const BookTheme = {
     name: "Markdown Book",
     token: 0,
@@ -40,7 +40,7 @@ const BookTheme = {
                         </div>
                         <h1 class="bk-title">${c.name}</h1>
                         <div class="bk-buttons bk-buttons-r">
-                            <button type="button" class="bk-icon" data-action="print" aria-label="Print this book" title="Print this book"><i class="fas fa-print" aria-hidden="true"></i></button>
+                            ${c.resume ? '<button type="button" class="bk-icon" data-action="print" aria-label="Print résumé (PDF)" title="Print résumé (PDF)"><i class="fas fa-print" aria-hidden="true"></i></button>' : ''}
                             <a class="bk-icon" href="${c.social.github}" target="_blank" rel="noopener" aria-label="Git repository" title="Git repository"><i class="fab fa-github" aria-hidden="true"></i></a>
                         </div>
                     </div>
@@ -57,7 +57,6 @@ const BookTheme = {
                     </div>
                     <nav class="bk-nav-wide" aria-label="Chapter navigation"></nav>
                 </div>
-                <div id="bkPrint" class="bk-print"></div>
             </div>`;
 
         this.root = document.getElementById('bkRoot');
@@ -204,7 +203,7 @@ ${links.join('\n')}`, '', true);
 
     block: /^(#{1,3} |>|- |\||!\[.*\]\(.*\)$)/,
 
-    md(src, prefix = '') {
+    md(src) {
         const lines = src.split('\n'), out = [];
         const take = test => { const got = []; while (lines.length && test(lines[0])) got.push(lines.shift()); return got; };
         while (lines.length) {
@@ -213,9 +212,9 @@ ${links.join('\n')}`, '', true);
             if (!line.trim()) lines.shift();
             else if ((m = line.match(/^(#{1,3}) (.*)/))) {
                 lines.shift();
-                const id = prefix + this.slug(m[2]), h = m[1].length;
+                const id = this.slug(m[2]), h = m[1].length;
                 out.push(`<h${h} id="${id}"><a class="bk-header" href="#${id}">${this.inline(m[2])}</a></h${h}>`);
-            } else if (line.startsWith('>')) out.push(`<blockquote>${this.md(take(l => l.startsWith('>')).map(l => l.replace(/^> ?/, '')).join('\n'), prefix)}</blockquote>`);
+            } else if (line.startsWith('>')) out.push(`<blockquote>${this.md(take(l => l.startsWith('>')).map(l => l.replace(/^> ?/, '')).join('\n'))}</blockquote>`);
             else if (line.startsWith('- ')) out.push(`<ul>${take(l => l.startsWith('- ')).map(l => `<li>${this.inline(l.slice(2))}</li>`).join('')}</ul>`);
             else if (line.startsWith('|')) {
                 const [head, , ...rows] = take(l => l.startsWith('|')).map(l => l.slice(1, -1).split('|').map(cell => this.inline(cell.trim())));
@@ -447,7 +446,7 @@ ${links.join('\n')}`, '', true);
             if (action === 'sidebar') this.toggleSidebar();
             else if (action === 'themes') this.togglePalettes(document.getElementById('bkThemes').hidden);
             else if (action === 'search') this.toggleSearch(document.getElementById('bkSearch').hidden);
-            else if (action === 'print') window.print();
+            else if (action === 'print') this.printResume();
         });
 
         document.getElementById('bkSearchbar').addEventListener('input', (e) => this.search(e.target.value));
@@ -467,12 +466,26 @@ ${links.join('\n')}`, '', true);
 
         this.onWide = () => this.toggleSidebar(this.wide.matches);
         this.wide.addEventListener('change', this.onWide);
+    },
 
-        // Print (the button or Ctrl+P) gives the whole book, chapter after chapter
-        this.onPrint = () => { document.getElementById('bkPrint').innerHTML = this.chapters.map(ch => `<section class="bk-print-ch">${this.md(ch.md, `${ch.id}-`)}</section>`).join(''); };
-        this.onPrinted = () => { document.getElementById('bkPrint').innerHTML = ''; };
-        window.addEventListener('beforeprint', this.onPrint);
-        window.addEventListener('afterprint', this.onPrinted);
+    // Prints the résumé PDF from an off-screen frame, as print-js does. Browsers without an inline PDF viewer (phones)
+    // or that refuse the frame get the PDF in a new tab, to print from there
+    printResume() {
+        const url = portfolioContent.resume;
+        this.printFrame?.remove();
+        if (!navigator.pdfViewerEnabled) return window.open(url, '_blank', 'noopener');
+        const frame = this.printFrame = Object.assign(document.createElement('iframe'), { src: url, title: 'Résumé', tabIndex: -1 });
+        frame.setAttribute('aria-hidden', 'true');
+        frame.style.cssText = 'position: fixed; width: 0; height: 0; border: 0; visibility: hidden';
+        frame.onload = () => {
+            try {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+            } catch {
+                window.open(url, '_blank', 'noopener');
+            }
+        };
+        document.body.append(frame);
     },
 
     key(e) {
@@ -593,9 +606,11 @@ ${links.join('\n')}`, '', true);
         clearTimeout(this.timer);
         cancelAnimationFrame(this.raf);
         this.endIntro();
-        for (const [type, fn] of [['scroll', this.onScroll], ['keydown', this.onKey], ['beforeprint', this.onPrint], ['afterprint', this.onPrinted]]) window.removeEventListener(type, fn);
+        for (const [type, fn] of [['scroll', this.onScroll], ['keydown', this.onKey]]) window.removeEventListener(type, fn);
         this.wide?.removeEventListener('change', this.onWide);
-        this.onScroll = this.onKey = this.onPrint = this.onPrinted = this.onWide = null;
+        this.onScroll = this.onKey = this.onWide = null;
+        this.printFrame?.remove();
+        this.printFrame = null;
         document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
         this.onChooser = null;
     }

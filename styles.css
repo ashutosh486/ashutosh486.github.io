@@ -4132,30 +4132,25 @@ button.shell-ui {
 /* Rendered Markdown, mdBook's general.css */
 #bkMain h1,
 #bkMain h2,
-#bkMain h3,
-.bk-print h1,
-.bk-print h2,
-.bk-print h3 {
+#bkMain h3 {
     font-weight: 700;
     line-height: 1.2;
     scroll-margin-top: calc(var(--menu-h) + 10px);
 }
 
-#bkMain h1, .bk-print h1 { margin: 0.67em 0; font-size: 2em; }
-#bkMain h2, .bk-print h2 { margin: 2.5em 0 0.83em; font-size: 1.5em; }
-#bkMain h3, .bk-print h3 { margin: 2.5em 0 1em; font-size: 1.17em; }
+#bkMain h1 { margin: 0.67em 0; font-size: 2em; }
+#bkMain h2 { margin: 2.5em 0 0.83em; font-size: 1.5em; }
+#bkMain h3 { margin: 2.5em 0 1em; font-size: 1.17em; }
 
 #bkRoot .bk-header {
     color: var(--fg);
 }
 
-#bkMain p,
-.bk-print p {
+#bkMain p {
     margin: 1em 0;
 }
 
-#bkMain ul,
-.bk-print ul {
+#bkMain ul {
     margin: 1em 0;
     padding-left: 40px;
     list-style: disc;
@@ -4165,8 +4160,7 @@ button.shell-ui {
     margin-top: 0.2em;
 }
 
-#bkMain blockquote,
-.bk-print blockquote {
+#bkMain blockquote {
     margin: 20px 0;
     padding: 0 20px;
     border-top: 0.1em solid var(--quote-border);
@@ -4174,8 +4168,7 @@ button.shell-ui {
     background: var(--quote-bg);
 }
 
-#bkMain code,
-.bk-print code {
+#bkMain code {
     padding: 0.1em 0.3em;
     border-radius: 3px;
     background: var(--code-bg);
@@ -4188,24 +4181,20 @@ button.shell-ui {
     overflow-x: auto;
 }
 
-#bkMain table,
-.bk-print table {
+#bkMain table {
     margin: 0 auto;
     border-collapse: collapse;
 }
 
 #bkMain td,
-#bkMain th,
-.bk-print td,
-.bk-print th {
+#bkMain th {
     padding: 3px 20px;
     border: 1px solid var(--table-border);
     text-align: left;
     vertical-align: top;
 }
 
-#bkMain thead,
-.bk-print thead {
+#bkMain thead {
     background: var(--table-header);
 }
 
@@ -4303,33 +4292,20 @@ button.shell-ui {
     #bkRoot .bk-nav { display: none; }
 }
 
-.bk-print {
-    display: none;
-}
-
-/* Printing gives the whole book, one chapter per page */
+/* Ctrl+P prints the open chapter on its own (the print button prints the résumé PDF) */
 @media print {
     body:has(#bkRoot) .shell-ui,
-    #bkRoot > :not(.bk-print) {
+    .bk-sidebar,
+    .bk-menu,
+    .bk-search,
+    .bk-nav,
+    .bk-nav-wide {
         display: none !important;
     }
 
-    #bkRoot {
-        min-height: 0;
-        background: #ffffff;
-        color: #000000;
-    }
-
-    .bk-print {
-        display: block;
-    }
-
-    .bk-print-ch + .bk-print-ch {
-        break-before: page;
-    }
-
-    .bk-print .bk-header {
-        color: #000000;
+    #bkRoot .bk-page {
+        margin: 0;
+        transform: none;
     }
 }
 
