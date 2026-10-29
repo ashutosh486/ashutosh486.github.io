@@ -36,6 +36,7 @@ class PortfolioController {
         this.dock = document.getElementById('themeDock');
         this.chooser = document.getElementById('themeChooser');
         this.list = document.getElementById('themeChooserList');
+        this.skip = document.getElementById('themeChooserSkip');
         this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
         this.buildChooser();
@@ -48,8 +49,8 @@ class PortfolioController {
         const initial = [location.hash.slice(1), this.readSaved()].find(key => this.themes[key]) || Object.keys(this.themes)[0];
         this.loadTheme(initial, { animate: false });
 
-        // Ask on every visit, with the current theme preselected
-        this.openChooser();
+        // Ask on every visit, with the current theme preselected, unless this browser ticked "Don't show again"
+        if (!this.readSaved('portfolio-chooser-hide')) this.openChooser();
 
         // Back/Forward and hand-edited URLs switch themes too
         window.addEventListener('hashchange', () => {
@@ -158,6 +159,9 @@ class PortfolioController {
             });
         });
 
+        // The switcher still opens the chooser; unticking the box brings it back on every visit
+        this.skip.addEventListener('change', () => this.save(this.skip.checked ? '1' : null, 'portfolio-chooser-hide'));
+
         this.chooser.querySelectorAll('[data-collapse]').forEach(button => button.addEventListener('click', () => this.closeChooser()));
 
         // Escape: animate the collapse instead of the native instant close
@@ -174,9 +178,11 @@ class PortfolioController {
 
     openChooser() {
         const current = this.themes[this.currentTheme];
-        this.list.querySelectorAll('[data-theme]').forEach(item => {
+        this.list.querySelectorAll('[data-theme]').forEach((item, i) => {
             item.setAttribute('aria-current', item.dataset.theme === this.currentTheme ? 'true' : 'false');
+            item.style.setProperty('--i', i);
         });
+        this.skip.checked = !!this.readSaved('portfolio-chooser-hide');
         document.getElementById('themeChooserContinue').textContent = `Continue with ${this.metaFor(this.currentTheme).label}`;
         document.getElementById('themeChooserContinue').setAttribute('aria-label', `Continue with ${current.name}`);
 
@@ -207,25 +213,51 @@ class PortfolioController {
 
     // ---------- persistence (per browser; storage can be unavailable in private mode) ----------
 
-    readSaved() {
+    readSaved(name = 'portfolio-theme') {
         try {
-            return localStorage.getItem('portfolio-theme');
+            return localStorage.getItem(name);
         } catch {
             return null;
         }
     }
 
-    save(key) {
+    save(key, name = 'portfolio-theme') {
         try {
-            localStorage.setItem('portfolio-theme', key);
+            key === null ? localStorage.removeItem(name) : localStorage.setItem(name, key);
         } catch {
-            // Storage blocked: the URL hash still keeps the theme on refresh
+            // Storage blocked: the URL hash still keeps the theme on refresh (and the chooser simply keeps asking)
         }
     }
 
     getCurrentTheme() {
         return this.currentTheme;
     }
+}
+
+// A theme's opening: `anims` (Web Animations) are paused on their first frame, which keeps their elements hidden while the
+// theme chooser is open, and play once it closes. Any key, click or tap finishes them. Returns a stop() for cleanup().
+function playOpening(anims, onStart) {
+    const chooser = document.getElementById('themeChooser');
+    let stopped = false;
+    anims.forEach(a => a.pause());
+    const finish = () => { anims.forEach(a => a.finish()); stop(); };
+    const stop = () => {
+        stopped = true;
+        chooser.removeEventListener('close', start);
+        window.removeEventListener('keydown', finish);
+        window.removeEventListener('pointerdown', finish);
+    };
+    const start = () => {
+        if (stopped) return;
+        anims.forEach(a => a.play());
+        onStart?.();
+        window.addEventListener('keydown', finish);
+        window.addEventListener('pointerdown', finish);
+        Promise.all(anims.map(a => a.finished)).then(stop, stop);
+    };
+    // On page load the chooser opens right after the theme's first render, so look a microtask later
+    queueMicrotask(() => (stopped ? null : chooser.open ? chooser.addEventListener('close', start, { once: true }) : start()));
+    return stop;
 }
 
 // Initialize portfolio when DOM is ready

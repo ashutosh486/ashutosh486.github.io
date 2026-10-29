@@ -65,6 +65,35 @@ assert.equal((await state(b)).theme, 'paper', 'Back returns to previous theme');
 assert.deepEqual(b.errors.filter(e => /main\.js|chatgpt\.js/.test(e)), [], 'no shell errors');
 b.close();
 
+// "Don't show again": the next visit skips the chooser (the switcher still opens it, ticked); unticking asks again
+b = await openPage('paper');
+assert.equal(await b.evaluate(`document.getElementById('themeChooserSkip').checked`), false, "don't show starts unticked");
+await b.evaluate(`document.getElementById('themeChooserSkip').click()`);
+await b.send('Page.reload'); await sleep(2500);
+assert.equal((await state(b)).open, false, "don't show again skips the chooser on the next visit");
+assert.ok(await b.evaluate(`!PaperTheme.onSkip && !document.getElementById('ppRoot').classList.contains('is-waiting')`), 'the opening plays without the chooser');
+await b.evaluate(`document.getElementById('themeDock').click()`); await sleep(400);
+assert.ok(await b.evaluate(`document.getElementById('themeChooser').open && document.getElementById('themeChooserSkip').checked`), 'switcher still opens it, ticked');
+await b.evaluate(`document.getElementById('themeChooserSkip').click()`);
+await b.send('Page.reload'); await sleep(2500);
+assert.equal((await state(b)).open, true, 'unticking asks again');
+b.close();
+
+// Openings added to ChatGPT, Model Card and VS Code (playOpening): held while the chooser is open, play once it closes,
+// a key press finishes them
+const anims = b => b.evaluate(`JSON.stringify(document.getAnimations().filter(a => a.constructor === Animation && a.effect?.getTiming().fill === 'backwards').map(a => a.playState))`).then(JSON.parse);
+for (const key of ['chatgpt', 'modelcard', 'vscode']) {
+    b = await openPage(key);
+    const held = await anims(b);
+    assert.ok(held.length > 10 && held.every(p => p === 'paused'), `${key}: opening held behind the chooser`);
+    await b.key('Escape'); await sleep(600);
+    assert.ok((await anims(b)).includes('running'), `${key}: opening plays after the chooser closes`);
+    await b.key('a'); await sleep(50);
+    assert.ok((await anims(b)).every(p => p === 'finished'), `${key}: a key press finishes the opening`);
+    assert.deepEqual(b.errors, [], `${key}: no errors`);
+    b.close();
+}
+
 // The switcher never covers ChatGPT's composer, at any width
 const overlaps = `(() => { const a = document.getElementById('themeDock').getBoundingClientRect(), f = document.getElementById('cgForm').getBoundingClientRect();
     return a.left < f.right && f.left < a.right && a.top < f.bottom && f.top < a.bottom; })()`;
@@ -84,6 +113,8 @@ b = await openPage('', { width: 390, height: 844, mobile: true });
 assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), '390x390', 'no horizontal overflow');
 const sheet = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('.chooser-panel').getBoundingClientRect())`));
 assert.ok(Math.abs(sheet.bottom - 844) < 2 && Math.abs(sheet.width - 390) < 2, 'chooser is a full-width bottom sheet');
+const check = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('.chooser-check').getBoundingClientRect())`));
+assert.ok(check.height >= 44 && check.right <= 390, "don't show again fits the sheet with a 44px target");
 await b.shot(`${out}-4-m-sheet.png`);
 await b.evaluate(`document.querySelector('.chooser-primary').click()`); await sleep(400);
 const dock = JSON.parse(await b.evaluate(`JSON.stringify(document.getElementById('themeDock').getBoundingClientRect())`));

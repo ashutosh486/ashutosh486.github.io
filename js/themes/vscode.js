@@ -54,6 +54,25 @@ const VSCodeTheme = {
         `;
         this.bind();
         this.openFile('README.md');
+        this.opening();
+    },
+
+    // Opening (~2.7s, after the theme chooser closes), like a workspace loading: the chrome, the activity bar, the explorer
+    // tree row by row, the tabs, then README renders block by block
+    opening() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const q = sel => [...document.querySelectorAll(`#vsRoot ${sel}`)], ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const rise = (els, at, step, from, duration = 600) => els.map((el, i) =>
+            el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
+        this.stopOpening = playOpening([
+            ...rise(q('.vs-title > *'), 0, 120, 'translateY(-6px)'),
+            ...rise(q('.vs-status > *'), 100, 60, 'translateY(6px)', 500),
+            ...rise(q('.vs-act'), 200, 70, 'scale(0.6)', 500),
+            ...rise(q('.vs-side-title, .vs-row'), 350, 55, 'translateX(-12px)', 500),
+            ...rise(q('.vs-tab'), 900, 160, 'translateY(-8px)'),
+            ...rise(q('.vs-crumb'), 1150, 90, 'translateX(-6px)', 400),
+            ...rise(q('.vs-view > *').slice(0, 14), 1300, 100, 'translateY(14px)', 700)
+        ]);
     },
 
     // ---------- workspace: path -> { lang, code?, view() } ----------
@@ -393,6 +412,7 @@ const VSCodeTheme = {
     },
 
     cleanup() {
+        this.stopOpening?.();
         window.removeEventListener('keydown', this.onKey);
         this.onKey = null;
     }

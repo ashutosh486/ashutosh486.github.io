@@ -249,12 +249,12 @@ const AppleTheme = {
 
         this.root.classList.remove('is-waiting');
         const spring = 'cubic-bezier(0.34, 1.4, 0.64, 1)', ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-        const letters = [...this.root.querySelectorAll('.ap-letter')], figureAt = 160 + letters.length * 38;
+        const letters = [...this.root.querySelectorAll('.ap-letter')], figureAt = 200 + letters.length * 60;
         const card = [this.root.querySelector('.ap-head'), ...this.root.querySelectorAll('.ap-action, .ap-card > .ap-group')];
         this.anims = [
-            ...letters.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(45%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 620, delay: 120 + i * 38, easing: spring, fill: 'backwards' })),
-            this.root.querySelector('.ap-figure').animate([{ opacity: 0, transform: 'translateY(18%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 820, delay: figureAt, easing: spring, fill: 'backwards' }),
-            ...card.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: figureAt + 280 + i * 55, easing: ease, fill: 'backwards' }))
+            ...letters.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(45%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 800, delay: 150 + i * 60, easing: spring, fill: 'backwards' })),
+            this.root.querySelector('.ap-figure').animate([{ opacity: 0, transform: 'translateY(18%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 1000, delay: figureAt, easing: spring, fill: 'backwards' }),
+            ...card.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 600, delay: figureAt + 380 + i * 80, easing: ease, fill: 'backwards' }))
         ];
         await Promise.all(this.anims.map(a => a.finished)).catch(() => {});
         if (live()) this.endIntro();

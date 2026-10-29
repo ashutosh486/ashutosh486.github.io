@@ -111,6 +111,26 @@ const ChatGPTTheme = {
 
         this.bind();
         this.showWelcome();
+        this.opening();
+    },
+
+    // Opening (~2.6s, after the theme chooser closes): the topics fill the sidebar, the welcome settles in line by line,
+    // then the stats, the suggestions and the composer
+    opening() {
+        if (this.reduced) return;
+        const q = sel => [...this.root.querySelectorAll(sel)], ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const rise = (els, at, step, from = 'translateY(16px)', duration = 700) => els.map((el, i) =>
+            el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
+        this.stopOpening = playOpening([
+            ...rise(q('main > header, .cg-side-head'), 0, 0, 'translateY(-8px)', 600),
+            ...rise(q('#cgSidebar nav > p, .cg-topic, .cg-profile, .cg-links'), 150, 70, 'translateX(-16px)', 600),
+            ...rise(q('#cgWelcome > .cg-block:first-child > :first-child'), 250, 0, 'scale(0.6)', 900),
+            ...rise(q('#cgWelcome > .cg-block:first-child .min-w-0 > *'), 450, 220),
+            ...rise(q('#cgWelcome dl'), 1100, 0, 'translateY(16px) scale(0.98)'),
+            ...rise(q('#cgWelcome dl > div'), 1250, 110, 'translateY(10px)'),
+            ...rise(q('#cgWelcome button'), 1550, 110),
+            ...rise(q('#cgForm, main > div:last-child > p'), 1900, 0, 'translateY(24px)', 700)
+        ]);
     },
 
     bind() {
@@ -612,6 +632,7 @@ const ChatGPTTheme = {
 
     cleanup() {
         this.clearTimers();
+        this.stopOpening?.();
     }
 };
 
