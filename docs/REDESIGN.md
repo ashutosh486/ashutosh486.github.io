@@ -69,7 +69,7 @@ node tests/apple.test.mjs      # desktop + 390px phone
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
 | Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
-| Contact Card (was Apple Persona Card) | ✅ | **Rebuilt, in review** | `theme/apple` | iOS Contacts card with a Contact Poster |
+| Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
