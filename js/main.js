@@ -1,4 +1,4 @@
-// Main Portfolio Controller
+// Main Portfolio Controller: loads, remembers and switches themes, and owns the theme chooser
 class PortfolioController {
     constructor() {
         this.themes = {
@@ -18,262 +18,260 @@ class PortfolioController {
             // json: JsonTheme,
             // training: TrainingTheme
         };
-        
-        this.currentTheme = null;
-        this.themeNames = {
-            chatgpt: "ChatGPT Interface",
-            modelcard: "Model Card Resume",
-            vscode: "VSCode Workspace",
-            terminal: "Terminal",
-            neural: "Neural Network Viz",
-            notebook: "Interactive Notebook",
-            paper: "Research Paper",
-            api: "API Documentation",
-            book: "Markdown Book",
-            prompt: "Prompt Studio",
-            apple: "Apple Persona Card",
-            scifi: "Sci-Fi Console",
-            gitdiff: "Git Diff Resume",
-            json: "JSON Resume",
-            training: "Training Dashboard"
+
+        // Chooser details per theme: short label, one-line pitch, and the theme's own colours for its preview tile
+        this.meta = {
+            chatgpt: { label: 'ChatGPT', blurb: 'Ask anything, chat-style', icon: 'fas fa-comments', bg: '#212121', fg: '#ececec' },
+            modelcard: { label: 'Model Card', blurb: 'My career as an ML model card', icon: 'fas fa-id-card', bg: '#ffffff', fg: '#111827' },
+            vscode: { label: 'VS Code', blurb: 'Browse my résumé as source files', icon: 'fas fa-code', bg: '#181818', fg: '#4fc1ff' },
+            terminal: { label: 'Terminal', blurb: 'Type commands, get answers', icon: 'fas fa-terminal', bg: '#0c0c0c', fg: '#4ade80' },
+            notebook: { label: 'Notebook', blurb: 'A Jupyter notebook you can run', icon: 'fas fa-book', bg: '#ffffff', fg: '#f37726' },
+            paper: { label: 'Paper', blurb: 'An arXiv preprint in a PDF viewer', icon: 'fas fa-file-pdf', bg: '#525659', fg: '#ffffff' },
+            book: { label: 'Book', blurb: 'An mdBook, read chapter by chapter', icon: 'fas fa-book-open', bg: '#ffffff', fg: '#20609f' },
+            apple: { label: 'Contact Card', blurb: 'An iPhone contact card', icon: 'fas fa-address-card', bg: '#2f6f62', fg: '#ffffff' },
+            scifi: { label: 'Sci-Fi', blurb: 'A starship crew records terminal', icon: 'fas fa-satellite-dish', bg: '#0b0700', fg: '#ffb000' }
         };
-        
-        this.menuExpanded = false;
-        this.init();
-    }
-    
-    init() {
-        console.log('🎨 Portfolio Controller Initializing...');
-        console.log('📦 Available themes:', Object.keys(this.themes));
-        console.log('📄 Portfolio content:', typeof portfolioContent !== 'undefined' ? '✅ Loaded' : '❌ Missing');
-        
-        // Setup theme toggle
-        this.setupThemeToggle();
-        
-        // DISABLED: URL routing (doesn't work on static hosting like Hostinger)
-        // Always load a random theme on page load
-        this.loadRandomTheme();
-        
-        // DISABLED: Browser history handling (only works with server)
-        // Keeping the code commented for future reference if you add a server
-        /*
-        // Check if URL has a theme path (only if running on server)
-        let themeFromUrl = null;
-        if (window.location.protocol !== 'file:') {
-            const path = window.location.pathname;
-            const themeName = path.substring(1); // Remove leading slash
-            
-            if (themeName && this.themes[themeName]) {
-                themeFromUrl = themeName;
-            }
-        }
-        
-        if (themeFromUrl) {
-            // Load theme from URL
-            this.loadTheme(themeFromUrl);
-        } else {
-            // Load random theme on refresh
-            this.loadRandomTheme();
-        }
-        
-        // Handle browser back/forward (only if running on server)
-        if (window.location.protocol !== 'file:') {
-            window.addEventListener('popstate', (event) => {
-                if (event.state && event.state.theme && this.themes[event.state.theme]) {
-                    this.currentTheme = null; // Reset to allow reload
-                    this.loadTheme(event.state.theme);
-                }
-            });
-        }
-        */
-    }
-    
-    setupThemeToggle() {
-        const floatingBtn = document.getElementById('themeFloatingBtn');
-        const optionsDeck = document.getElementById('themeOptionsDeck');
-        const themeOptions = document.querySelectorAll('.theme-option-inline');
-        const container = document.getElementById('themeSelectorContainer');
-        let isExpanded = false;
-        
-        // Toggle on floating button click
-        if (floatingBtn) {
-            floatingBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                isExpanded = !isExpanded;
-                
-                if (isExpanded) {
-                    this.expandDeck();
-                } else {
-                    this.collapseDeck();
-                }
-            });
-        }
-        
-        // Close when clicking outside
-        document.addEventListener('click', (e) => {
-            if (isExpanded && !container.contains(e.target)) {
-                isExpanded = false;
-                this.collapseDeck();
-            }
-        });
-        
-        // Theme selection
-        themeOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const themeName = e.currentTarget.dataset.theme;
-                this.loadTheme(themeName);
-                
-                // Close the selector
-                isExpanded = false;
-                this.collapseDeck();
-            });
+
+        this.currentTheme = null;
+        this.dock = document.getElementById('themeDock');
+        this.chooser = document.getElementById('themeChooser');
+        this.list = document.getElementById('themeChooserList');
+        this.skip = document.getElementById('themeChooserSkip');
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        this.buildChooser();
+        this.bindChooser();
+
+        // Themes read --theme-dock-w to keep their bottom-right corner clear of the switcher
+        new ResizeObserver(() => document.documentElement.style.setProperty('--theme-dock-w', `${this.dock.offsetWidth}px`)).observe(this.dock);
+
+        // URL first (shareable links), then this browser's last pick, then the first theme
+        const initial = [location.hash.slice(1), this.readSaved()].find(key => this.themes[key]) || Object.keys(this.themes)[0];
+        this.loadTheme(initial, { animate: false });
+
+        // Ask on every visit, with the current theme preselected, unless this browser ticked "Don't show again"
+        if (!this.readSaved('portfolio-chooser-hide')) this.openChooser();
+
+        // Back/Forward and hand-edited URLs switch themes too
+        window.addEventListener('hashchange', () => {
+            const key = location.hash.slice(1);
+            if (this.themes[key] && key !== this.currentTheme) this.loadTheme(key, { updateUrl: false });
         });
     }
-    
-    expandDeck() {
-        const optionsDeck = document.getElementById('themeOptionsDeck');
-        const floatingBtn = document.getElementById('themeFloatingBtn');
-        
-        optionsDeck.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-        optionsDeck.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
-        
-        if (floatingBtn) {
-            floatingBtn.style.display = 'none';
-        }
+
+    metaFor(key) {
+        return this.meta[key] || { label: this.themes[key].name, blurb: '', icon: 'fas fa-palette', bg: '#111111', fg: '#ededed' };
     }
-    
-    collapseDeck() {
-        const optionsDeck = document.getElementById('themeOptionsDeck');
-        const floatingBtn = document.getElementById('themeFloatingBtn');
-        
-        optionsDeck.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-        optionsDeck.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
-        
-        if (floatingBtn) {
-            floatingBtn.style.display = 'flex';
-        }
-    }
-    
-    loadRandomTheme() {
-        const themeKeys = Object.keys(this.themes);
-        
-        // Get previously loaded theme from sessionStorage (only for current session)
-        const lastTheme = sessionStorage.getItem('lastTheme');
-        
-        // Filter out the last theme to ensure we get a different one
-        let availableThemes = lastTheme 
-            ? themeKeys.filter(t => t !== lastTheme) 
-            : themeKeys;
-        
-        // If all themes filtered out (shouldn't happen), use all themes
-        if (availableThemes.length === 0) {
-            availableThemes = themeKeys;
-        }
-        
-        const randomIndex = Math.floor(Math.random() * availableThemes.length);
-        const randomTheme = availableThemes[randomIndex];
-        
-        // Store this theme as the last one
-        sessionStorage.setItem('lastTheme', randomTheme);
-        
-        console.log(`🎲 Random theme selected: ${randomTheme} (previous: ${lastTheme || 'none'})`);
-        this.loadTheme(randomTheme);
-    }
-    
-    loadTheme(themeName) {
-        console.log(`🎨 Loading theme: ${themeName}`);
-        
-        if (!this.themes[themeName]) {
-            console.error(`❌ Theme "${themeName}" not found`);
+
+    // ---------- theme loading ----------
+
+    loadTheme(themeName, { animate = true, updateUrl = true, pushHistory = false } = {}) {
+        const theme = this.themes[themeName];
+        if (!theme) {
+            console.error(`Theme "${themeName}" not found`);
             return;
         }
-        
-        console.log(`✅ Theme "${themeName}" exists, type:`, typeof this.themes[themeName]);
-        console.log(`✅ Theme render function:`, typeof this.themes[themeName].render);
-        
-        // Cleanup current theme if it has a cleanup method
-        if (this.currentTheme && this.themes[this.currentTheme]?.cleanup) {
-            this.themes[this.currentTheme].cleanup();
-        }
-        
-        // Show loading overlay
-        const loadingOverlay = document.getElementById('themeLoadingOverlay');
-        const container = document.getElementById('themeContainer');
-        
-        loadingOverlay.classList.remove('hidden');
-        container.style.opacity = '0';
-        container.style.transform = 'scale(0.98)';
-        
-        // DISABLED: URL routing (doesn't work on static hosting without server)
-        // Keeping this commented for future reference
-        /*
-        // Update URL with theme name for tracking (only if running on a server, not file://)
-        try {
-            if (window.location.protocol !== 'file:') {
-                const newPath = `/${themeName}`;
-                window.history.pushState({ theme: themeName }, '', newPath);
-            }
-        } catch (e) {
-            // Silently fail if pushState is not available (e.g., file:// protocol)
-            console.log('URL routing disabled (not running on web server)');
-        }
-        */
-        
-        // Update current theme
-        this.currentTheme = themeName;
-        
-        // Load new theme after animation
-        setTimeout(() => {
+
+        const swap = () => {
+            if (this.currentTheme) this.themes[this.currentTheme].cleanup?.();
             try {
-                console.log(`🎬 Calling render() for ${themeName}...`);
-                this.themes[themeName].render();
-                console.log(`✅ Theme ${themeName} rendered successfully`);
+                theme.render();
             } catch (error) {
-                console.error(`❌ Error rendering theme ${themeName}:`, error);
-                console.error('Stack trace:', error.stack);
+                console.error(`Error rendering theme ${themeName}:`, error);
             }
-            
-            // Fade in new theme
-            setTimeout(() => {
-                loadingOverlay.classList.add('hidden');
-                container.style.opacity = '1';
-                container.style.transform = 'scale(1)';
-            }, 300);
-        }, 400);
-        
-        // Log theme change
-        console.log(`Theme changed to: ${this.themeNames[themeName]}`);
+            this.currentTheme = themeName;
+            this.paintDock();
+            this.syncPage();
+        };
+
+        if (animate && document.startViewTransition && !this.reducedMotion.matches) {
+            document.startViewTransition(swap);
+        } else {
+            swap();
+        }
+
+        if (updateUrl && location.hash.slice(1) !== themeName) {
+            history[pushHistory ? 'pushState' : 'replaceState'](null, '', `#${themeName}`);
+        }
+        this.save(themeName);
     }
-    
+
+    // Switcher shows the current theme's tile and short name
+    paintDock() {
+        const meta = this.metaFor(this.currentTheme);
+        const tile = document.getElementById('themeDockTile');
+        tile.style.background = meta.bg;
+        tile.style.color = meta.fg;
+        tile.innerHTML = `<i class="${meta.icon}"></i>`;
+        document.getElementById('themeDockLabel').textContent = meta.label;
+        this.dock.setAttribute('aria-label', `Change theme, current theme ${this.themes[this.currentTheme].name}`);
+    }
+
+    // Title, browser UI colour and scrollbar/form colour scheme follow the active theme
+    syncPage() {
+        const meta = this.metaFor(this.currentTheme);
+        document.title = `${portfolioContent.name} · ${this.themes[this.currentTheme].name}`;
+        document.querySelector('meta[name="theme-color"]').content = meta.bg;
+        document.body.style.backgroundColor = meta.bg;
+        const [r, g, b] = [1, 3, 5].map(i => parseInt(meta.bg.slice(i, i + 2), 16));
+        document.documentElement.style.colorScheme = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? 'dark' : 'light';
+    }
+
+    // ---------- chooser ----------
+
+    buildChooser() {
+        const count = Object.keys(this.themes).length;
+        document.getElementById('themeChooserHint').textContent = `One résumé, ${count} interfaces. Switch anytime from the theme button.`;
+        const resume = portfolioContent.resume;
+        if (resume) {
+            const link = document.getElementById('themeChooserResume');
+            link.href = resume;
+            link.download = resume.split('/').pop();
+            // download is ignored on some origins (e.g. file://); a new tab keeps the portfolio open either way
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.hidden = false;
+        }
+        this.list.innerHTML = Object.entries(this.themes).map(([key, theme]) => {
+            const meta = this.metaFor(key);
+            return `
+                <button type="button" class="chooser-item" data-theme="${key}">
+                    <span class="theme-tile" style="background:${meta.bg};color:${meta.fg}" aria-hidden="true"><i class="${meta.icon}"></i></span>
+                    <span class="chooser-item-text">
+                        <span class="chooser-item-name">${theme.name}</span>
+                        <span class="chooser-item-blurb">${meta.blurb}</span>
+                    </span>
+                    <i class="fas fa-check chooser-item-check" aria-hidden="true"></i>
+                </button>`;
+        }).join('');
+    }
+
+    bindChooser() {
+        this.dock.addEventListener('click', () => this.openChooser());
+
+        this.list.addEventListener('click', (e) => {
+            const item = e.target.closest('[data-theme]');
+            if (!item) return;
+            const key = item.dataset.theme;
+            // Collapse first, then cross-fade to the new theme
+            this.closeChooser(() => {
+                if (key !== this.currentTheme) this.loadTheme(key, { pushHistory: true });
+            });
+        });
+
+        // The switcher still opens the chooser; unticking the box brings it back on every visit
+        this.skip.addEventListener('change', () => this.save(this.skip.checked ? '1' : null, 'portfolio-chooser-hide'));
+
+        this.chooser.querySelectorAll('[data-collapse]').forEach(button => button.addEventListener('click', () => this.closeChooser()));
+
+        // Escape: animate the collapse instead of the native instant close
+        this.chooser.addEventListener('cancel', (e) => {
+            e.preventDefault();
+            this.closeChooser();
+        });
+
+        // A click on the backdrop lands on the <dialog> itself
+        this.chooser.addEventListener('click', (e) => {
+            if (e.target === this.chooser) this.closeChooser();
+        });
+    }
+
+    openChooser() {
+        const current = this.themes[this.currentTheme];
+        this.list.querySelectorAll('[data-theme]').forEach((item, i) => {
+            item.setAttribute('aria-current', item.dataset.theme === this.currentTheme ? 'true' : 'false');
+            item.style.setProperty('--i', i);
+        });
+        this.skip.checked = !!this.readSaved('portfolio-chooser-hide');
+        document.getElementById('themeChooserContinue').textContent = `Continue with ${this.metaFor(this.currentTheme).label}`;
+        document.getElementById('themeChooserContinue').setAttribute('aria-label', `Continue with ${current.name}`);
+
+        this.chooser.classList.remove('is-closing');
+        this.chooser.style.transformOrigin = '';
+        if (!this.chooser.open) this.chooser.showModal();
+        // Focus the window itself: the current card is already marked, and a focus ring on it would draw a second box
+        this.chooser.querySelector('.chooser-panel').focus();
+    }
+
+    closeChooser(then) {
+        if (!this.chooser.open || this.chooser.classList.contains('is-closing')) return;
+        const finish = () => {
+            this.chooser.classList.remove('is-closing');
+            this.chooser.close();
+            then?.();
+            this.dock.focus({ preventScroll: true });
+        };
+        if (this.reducedMotion.matches) return finish();
+
+        // Shrink toward the dock so the window visibly collapses into the switcher
+        const dock = this.dock.getBoundingClientRect();
+        const box = this.chooser.getBoundingClientRect();
+        this.chooser.style.transformOrigin = `${dock.left + dock.width / 2 - box.left}px ${dock.top + dock.height / 2 - box.top}px`;
+        this.chooser.classList.add('is-closing');
+        setTimeout(finish, 160);
+    }
+
+    // ---------- persistence (per browser; storage can be unavailable in private mode) ----------
+
+    readSaved(name = 'portfolio-theme') {
+        try {
+            return localStorage.getItem(name);
+        } catch {
+            return null;
+        }
+    }
+
+    save(key, name = 'portfolio-theme') {
+        try {
+            key === null ? localStorage.removeItem(name) : localStorage.setItem(name, key);
+        } catch {
+            // Storage blocked: the URL hash still keeps the theme on refresh (and the chooser simply keeps asking)
+        }
+    }
+
     getCurrentTheme() {
         return this.currentTheme;
     }
 }
 
+// A theme's opening: `anims` (Web Animations) are paused on their first frame, which keeps their elements hidden while the
+// theme chooser is open, and play once it closes. Any key, click or tap finishes them. Returns a stop() for cleanup().
+function playOpening(anims, onStart) {
+    const chooser = document.getElementById('themeChooser');
+    let stopped = false;
+    anims.forEach(a => a.pause());
+    const finish = () => { anims.forEach(a => a.finish()); stop(); };
+    const stop = () => {
+        stopped = true;
+        chooser.removeEventListener('close', start);
+        window.removeEventListener('keydown', finish);
+        window.removeEventListener('pointerdown', finish);
+    };
+    const start = () => {
+        if (stopped) return;
+        anims.forEach(a => a.play());
+        onStart?.();
+        window.addEventListener('keydown', finish);
+        window.addEventListener('pointerdown', finish);
+        Promise.all(anims.map(a => a.finished)).then(stop, stop);
+    };
+    // On page load the chooser opens right after the theme's first render, so look a microtask later
+    queueMicrotask(() => (stopped ? null : chooser.open ? chooser.addEventListener('close', start, { once: true }) : start()));
+    return stop;
+}
+
 // Initialize portfolio when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📱 DOM Content Loaded');
     try {
         window.portfolioController = new PortfolioController();
-        console.log('✅ Portfolio Controller created successfully');
     } catch (error) {
-        console.error('❌ Error creating Portfolio Controller:', error);
-        console.error('Stack:', error.stack);
-        
-        // Show error on page
+        console.error('Error creating Portfolio Controller:', error);
         document.body.innerHTML = `
             <div style="background: #1f2937; color: white; padding: 40px; font-family: monospace;">
-                <h1 style="color: #ef4444; font-size: 24px; margin-bottom: 20px;">⚠️ Portfolio Error</h1>
+                <h1 style="color: #ef4444; font-size: 24px; margin-bottom: 20px;">Portfolio Error</h1>
                 <p style="margin-bottom: 10px;"><strong>Error:</strong> ${error.message}</p>
                 <pre style="background: black; padding: 20px; overflow: auto; border-radius: 8px;">${error.stack}</pre>
             </div>
         `;
     }
-});
-
-// Prevent FOUC (Flash of Unstyled Content)
-window.addEventListener('load', () => {
-    document.body.style.visibility = 'visible';
-    console.log('📦 Page fully loaded');
 });

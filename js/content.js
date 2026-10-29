@@ -6,6 +6,7 @@ const portfolioContent = {
     name: "Ashutosh Pandey",
     title: "Manager - AI & Automation Specialist",
     tagline: "Building intelligent solutions with GenAI and ML",
+    specialization: "GenAI & Automation",
     location: "Prayagraj, India",
     email: "ashutosh14486@gmail.com",
     phone: "+91-8004644122",
@@ -15,12 +16,12 @@ const portfolioContent = {
         github: "https://github.com/ashutosh486",
         linkedin: "https://linkedin.com/in/ashutosh14486",
         twitter: "",  // Optional: add your Twitter username
-        portfolio: "https://ashutoshcodes.in",
+        portfolio: "https://about.ashutoshcodes.in",
     },
     
     // About Section
     about: {
-        greeting: "Hey there! 👋",
+        greeting: "Hey there!",
         tagline: "Building intelligent solutions with GenAI and ML",
         bio: "I am a skilled AI and automation specialist with a proven track record in launching innovative solutions and improving operational efficiency. With rich experience in machine learning, natural language processing, and cloud technologies, I have successfully led cross-functional teams and developed end-to-end automation projects that drive significant organizational improvements.",
         shortBio: "AI and automation specialist with expertise in GenAI, NLP, and cloud technologies, driving innovation and operational efficiency.",
@@ -28,20 +29,32 @@ const portfolioContent = {
         funFact: "I hold a patent in Textual Entailment and have delivered solutions saving 14+ FTE equivalent! 🚀"
     },
     
+    // Headline impact numbers (Model Card benchmarks, Prompt Studio)
+    impact: [
+        { value: "14+ FTE", label: "Equivalent Savings Delivered" },
+        { value: "50K+", label: "Classes Handled in ML Model" },
+        { value: "4000+", label: "Hours ASR Training Data" }
+    ],
+
     // Skills
     skills: {
+        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         backend: ["Python", "Flask", "Jinja2", "psycopg2", "pandas", "numpy", "Streamlit"],
         frontend: ["HTML", "CSS", "JavaScript", "Angular", "Tailwind CSS"],
         database: ["PostgreSQL", "SQLite", "MongoDB"],
         ml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4", "TensorFlow", "PyTorch"],
-        languages: ["Python", "JavaScript", "HTML", "CSS", "SQL"],
         frameworks: ["Flask", "Angular", "Tailwind CSS", "Streamlit", "LangChain", "pandas", "numpy"],
         cloud: ["AWS", "Azure", "Databricks"],
         aiml: ["sklearn", "keras", "fastText", "gensim", "nltk", "spaCy", "transformers", "sentence-transformers", "LangChain", "GPT-4"],
         mlops: ["mlflow", "PySpark", "Databricks", "CVAT", "Docker"],
-        tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence"],
         databases: ["PostgreSQL", "SQLite", "MongoDB"],
         tools: ["VSCode", "PyCharm", "git", "Jira", "Confluence", "Docker", "mlflow"]
+    },
+    
+    // Display names for the skill categories above
+    skillLabels: {
+        languages: "Languages", backend: "Backend", frontend: "Frontend", database: "Databases", ml: "Machine Learning",
+        frameworks: "Frameworks", cloud: "Cloud", aiml: "AI / ML", mlops: "MLOps", databases: "Databases", tools: "Tools"
     },
     
     // Projects
@@ -164,11 +177,21 @@ const portfolioContent = {
     // Education
     education: [
         {
+            degree: "M.Tech. in AIML (Artificial Intelligence and Machine Learning)",
+            institution: "Birla Institute of Technology and Science, Pilani (BITS Pilani)",
+            year: "2026 - Present",
+            gpa: "9.0/10.0",
+            location: "Rajasthan, India",
+            description: "",
+            achievements: [
+                ]
+        },
+        {
             degree: "B.Tech. in Electronics & Communication Engineering",
             institution: "National Institute of Technology, Hamirpur (NIT Hamirpur)",
             year: "2014 - 2018",
             gpa: "8.20/10.0",
-            location: "H.P., India",
+            location: "H.P. India",
             description: "Strong foundation in signal processing and communication with focus on machine learning and data structures",
             achievements: [
                 "Strong foundation in signal processing and communication",
@@ -256,7 +279,10 @@ const portfolioContent = {
     hobbies: ["Traveling and exploring places", "Listening to music", "Playing Chess", "Badminton", "Table Tennis"],
     
     // Picture placeholder
-    picture: "https://via.placeholder.com/200x200/667eea/ffffff?text=AP",
+    picture: "images/profile.jpg",
+    
+    // Résumé PDF offered for download (theme chooser, ChatGPT /resume, sidebar, hire card)
+    resume: "docs/Ashutosh_Pandey_Resume.pdf",
     
     // Chat Commands (for ChatGPT theme)
     chatCommands: [
@@ -269,8 +295,23 @@ const portfolioContent = {
         { command: "/reading", description: "See what I'm reading" },
         { command: "/contact", description: "Get in touch with me" },
         { command: "/hire", description: "Ready to hire me!" },
+        { command: "/resume", description: "Download my résumé" },
         { command: "/help", description: "Show available commands" }
     ]
+};
+
+// Derived numbers shown by themes - computed from the data above, don't edit by hand
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const careerStart = Math.min(...portfolioContent.experience.map(exp => {
+    const [month, year] = exp.period.split(' - ')[0].split(' ');
+    return new Date(+year, MONTHS.indexOf(month)).getTime();
+}));
+portfolioContent.stats = {
+    years: Math.floor((Date.now() - careerStart) / (365.25 * 24 * 3600 * 1000)),
+    // Skill categories overlap (e.g. Python is in several), so count each skill once
+    skills: new Set(Object.values(portfolioContent.skills).flat().map(s => s.toLowerCase())).size,
+    projects: portfolioContent.projects.length,
+    companies: new Set(portfolioContent.experience.map(exp => exp.company)).size
 };
 
 console.log('✅ portfolioContent loaded successfully');

@@ -1,295 +1,420 @@
-// VSCode Developer Workspace Portfolio Theme
+// VS Code theme - the résumé as a workspace in VS Code (Dark Modern); every fact comes from portfolioContent
 const VSCodeTheme = {
     name: "VSCode Workspace",
-    currentFile: 'About.md',
-    
-    files: {
-        'About.md': {
-            icon: 'fa-user',
-            content: `# About Me
+    mod: /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+',
 
-${portfolioContent.about.bio}
-
-## Interests
-${portfolioContent.about.interests.map(i => `- ${i}`).join('\n')}
-
-## Fun Fact
-${portfolioContent.about.funFact}
-
----
-*Location:* ${portfolioContent.location}  
-*Email:* ${portfolioContent.email}  
-*Phone:* ${portfolioContent.phone}`
-        },
-        'Skills.md': {
-            icon: 'fa-code',
-            content: `# Technical Skills
-
-| Category | Skills |
-|----------|--------|
-${Object.entries(portfolioContent.skills).map(([cat, skills]) => 
-    `| **${cat.charAt(0).toUpperCase() + cat.slice(1).replace('aiml', 'AI/ML').replace('mlops', 'MLOps')}** | ${skills.join(', ')} |`
-).join('\n')}`
-        },
-        'Experience.md': {
-            icon: 'fa-briefcase',
-            content: `# Work Experience
-
-${portfolioContent.experience.map(exp => `## ${exp.position}
-**${exp.company}** | ${exp.duration}  
-*${exp.location}*
-
-${exp.achievements.map(a => `- ${a}`).join('\n')}
-`).join('\n\n')}`
-        },
-        'Projects.md': {
-            icon: 'fa-folder-open',
-            content: `# Projects Portfolio
-
-${portfolioContent.projects.map(proj => `## ${proj.title}
-
-${proj.description}
-
-**Technologies:** ${proj.tags.join(', ')}
-
-**Highlights:**
-${proj.highlights.map(h => `- ${h}`).join('\n')}
-${proj.site ? `\n**🌐 Live Site:** [${proj.site}](https://${proj.site})` : ''}
-`).join('\n\n---\n\n')}`
-        },
-        'Reading.md': {
-            icon: 'fa-book',
-            content: `# 📚 Currently Reading
-
-${portfolioContent.currentlyReading.map(book => `## ${book.title}
-
-**Author:** ${book.author}  
-**Status:** ${book.status === 'completed' ? '✅ Completed' : '📖 In Progress (' + book.progress + '%)'}  
-**Started:** ${book.startDate}  
-${book.endDate ? '**Finished:** ' + book.endDate + '\n' : ''}
-> ${book.notes}
-${book.link ? '\n[Learn More](' + book.link + ')' : ''}
-`).join('\n---\n\n')}`
-        },
-        'Education.md': {
-            icon: 'fa-graduation-cap',
-            content: `# Education
-
-${portfolioContent.education.map(edu => `## ${edu.degree}
-**${edu.institution}**  
-*${edu.duration}* | GPA: ${edu.gpa}
-
-${edu.achievements.map(a => `- ${a}`).join('\n')}
-`).join('\n\n')}`
-        },
-        'Contact.md': {
-            icon: 'fa-envelope',
-            content: `# Contact Information
-
-## Get In Touch
-
-I'm always interested in hearing about new opportunities and collaborations.
-
-## Contact Details
-
-**Email:** [${portfolioContent.email}](mailto:${portfolioContent.email})
-
-**Phone:** [${portfolioContent.phone}](tel:${portfolioContent.phone})
-
-**Location:** ${portfolioContent.location}
-
-## Social Media
-
-- [LinkedIn Profile](${portfolioContent.social.linkedin})
-- [GitHub Profile](${portfolioContent.social.github})
-- [Personal Portfolio](${portfolioContent.social.portfolio})
-
----
-
-## Open To
-
-Feel free to reach out for:
-- Job opportunities
-- Collaboration on AI/ML projects
-- Speaking engagements
-- Technical consulting`
-        }
-    },
-    
     render() {
-        const container = document.getElementById('themeContainer');
-        container.innerHTML = `
-            <div class="flex h-screen bg-[#1e1e1e] text-gray-300 font-mono text-sm">
-                <!-- Activity Bar -->
-                <div class="w-12 bg-[#333333] flex flex-col items-center py-4 space-y-6">
-                    <div class="w-10 h-10 flex items-center justify-center text-white cursor-pointer">
-                        <i class="fas fa-bars"></i>
-                    </div>
-                    <div class="w-10 h-10 flex items-center justify-center text-white bg-[#1e1e1e] rounded cursor-pointer">
-                        <i class="fas fa-copy"></i>
-                    </div>
-                    <div class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white cursor-pointer">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white cursor-pointer">
-                        <i class="fas fa-code-branch"></i>
-                    </div>
-                    <div class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white cursor-pointer">
-                        <i class="fas fa-play"></i>
-                    </div>
+        this.root = portfolioContent.name.toLowerCase().replace(/\s+/g, '-');
+        this.files = this.workspace();
+        this.tabs = ['README.md', 'experience.md'];
+        this.active = null;
+        this.scroll = {};
+        this.sideOpen = !this.phone();
+
+        document.getElementById('themeContainer').innerHTML = `
+            <div id="vsRoot" class="${this.sideOpen ? 'side-open' : ''}">
+                <header class="vs-title">
+                    <button type="button" class="vs-menu" data-action="explorer" aria-controls="vsSide" aria-expanded="${this.sideOpen}" aria-label="Explorer"><i class="fas fa-bars" aria-hidden="true"></i></button>
+                    <button type="button" class="vs-cc" data-action="quick" aria-label="Go to file"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><span>${this.root}</span><kbd class="vs-kbd">${this.mod}P</kbd></button>
+                </header>
+                <div class="vs-body">
+                    <nav class="vs-activity" aria-label="Activity bar">
+                        <button type="button" class="vs-act" data-action="explorer" aria-controls="vsSide" aria-expanded="${this.sideOpen}" aria-label="Explorer" title="Explorer (${this.mod}B)"><i class="far fa-copy" aria-hidden="true"></i></button>
+                        <button type="button" class="vs-act" data-action="quick" aria-label="Go to file" title="Go to File (${this.mod}P)"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></button>
+                        <div class="vs-act-end">${this.links().map(([label, href, icon]) => `<a class="vs-act" href="${href}" ${this.ext(href)} aria-label="${label}" title="${label}"><i class="${icon}" aria-hidden="true"></i></a>`).join('')}</div>
+                    </nav>
+                    <aside id="vsSide" class="vs-side" aria-label="Explorer">
+                        <h2 class="vs-side-title">Explorer</h2>
+                        <div class="vs-tree">
+                            <button type="button" class="vs-row vs-row-root" data-folder aria-expanded="true" style="--d:0"><span class="vs-twist"><i class="fas fa-chevron-right vs-chev" aria-hidden="true"></i></span><span class="vs-row-name">${this.root}</span></button>
+                            <ul>${this.tree()}</ul>
+                        </div>
+                    </aside>
+                    <div class="vs-scrim" data-action="explorer" aria-hidden="true"></div>
+                    <main class="vs-main">
+                        <div id="vsTabs" class="vs-tabs" aria-label="Open editors"></div>
+                        <div id="vsCrumbs" class="vs-crumbs" aria-label="Breadcrumbs"></div>
+                        <div id="vsEditor" class="vs-editor" tabindex="-1"></div>
+                    </main>
                 </div>
-
-                <!-- Sidebar -->
-                <div class="w-64 bg-[#252526] flex flex-col">
-                    <div class="p-4 border-b border-[#1e1e1e]">
-                        <h2 class="text-xs text-gray-400 uppercase tracking-wide mb-2">Explorer</h2>
-                        <p class="text-white font-semibold">${portfolioContent.name.replace(' ', '_').toUpperCase()}_PORTFOLIO</p>
-                    </div>
-                    <div class="flex-1 overflow-y-auto">
-                        <div class="p-2">
-                            ${Object.keys(this.files).map(filename => `
-                                <div class="vscode-file flex items-center gap-2 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer rounded ${filename === this.currentFile ? 'bg-[#2a2d2e]' : ''}" data-file="${filename}">
-                                    <i class="fas ${this.files[filename].icon} text-blue-400 text-xs"></i>
-                                    <span class="text-sm">${filename}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <!-- Bottom Info -->
-                    <div class="p-4 border-t border-[#1e1e1e] text-xs text-gray-500">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fas fa-user-circle"></i>
-                            <span>${portfolioContent.name}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-code-branch"></i>
-                            <span>main</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Editor Area -->
-                <div class="flex-1 flex flex-col">
-                    <!-- Tabs -->
-                    <div class="bg-[#252526] border-b border-[#1e1e1e] flex items-center">
-                        <div class="tab-item flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] text-white border-r border-[#1e1e1e]">
-                            <i class="fas ${this.files[this.currentFile].icon} text-blue-400 text-xs"></i>
-                            <span id="currentTab">${this.currentFile}</span>
-                        </div>
-                    </div>
-
-                    <!-- Editor Content -->
-                    <div class="flex-1 overflow-y-auto bg-[#1e1e1e] p-6" id="editorContent">
-                        ${this.renderMarkdown(this.files[this.currentFile].content)}
-                    </div>
-
-                    <!-- Terminal -->
-                    <div class="h-48 bg-[#1e1e1e] border-t border-[#252526] flex flex-col">
-                        <div class="bg-[#252526] px-4 py-2 flex items-center gap-4 text-xs">
-                            <div class="flex items-center gap-2 text-white">
-                                <i class="fas fa-terminal"></i>
-                                <span>TERMINAL</span>
-                            </div>
-                            <div class="text-gray-500">PROBLEMS</div>
-                            <div class="text-gray-500">OUTPUT</div>
-                            <div class="text-gray-500">DEBUG CONSOLE</div>
-                        </div>
-                        <div class="flex-1 p-4 overflow-y-auto font-mono text-xs">
-                            <div class="text-green-400">ashutosh@portfolio:~$ ls -la</div>
-                            <div class="text-gray-400">total 7</div>
-                            <div class="text-gray-400">drwxr-xr-x  7 ashutosh  staff  224 Nov 25 2025 .</div>
-                            <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  2.1K About.md</div>
-                            <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  1.5K Skills.md</div>
-                            <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  3.2K Experience.md</div>
-                            <div class="text-gray-400">-rw-r--r--  1 ashutosh  staff  2.8K Projects.md</div>
-                            <div class="text-green-400 mt-2">ashutosh@portfolio:~$ git status</div>
-                            <div class="text-gray-400">On branch main</div>
-                            <div class="text-gray-400">Your branch is up to date with 'origin/main'.</div>
-                            <div class="text-gray-400 mt-1">nothing to commit, working tree clean</div>
-                            <div class="text-green-400 mt-2">ashutosh@portfolio:~$ echo "Welcome to my portfolio!"</div>
-                            <div class="text-white">Welcome to my portfolio!</div>
-                            <div class="text-green-400 mt-2">ashutosh@portfolio:~$ <span class="animate-pulse">▊</span></div>
-                        </div>
-                    </div>
-                </div>
+                <footer class="vs-status">
+                    <span class="vs-remote" aria-hidden="true"><i class="fas fa-code"></i></span>
+                    <span><i class="fas fa-code-branch" aria-hidden="true"></i>main</span>
+                    <span class="vs-wide"><i class="far fa-circle-xmark" aria-hidden="true"></i>0<i class="fas fa-triangle-exclamation" aria-hidden="true"></i>0</span>
+                    <span class="vs-grow"></span>
+                    <span id="vsPos" class="vs-wide"></span>
+                    <span class="vs-wide">UTF-8</span>
+                    <span id="vsLang"></span>
+                </footer>
+                <dialog id="vsQuick" class="vs-quick" aria-label="Go to file">
+                    <input type="text" role="combobox" aria-expanded="true" aria-controls="vsQuickList" aria-autocomplete="list" aria-label="File name" placeholder="Search files by name…" autocomplete="off" spellcheck="false">
+                    <ul id="vsQuickList" role="listbox" aria-label="Files"></ul>
+                </dialog>
             </div>
         `;
-        
-        this.attachEventListeners();
+        this.bind();
+        this.openFile('README.md');
+        this.opening();
     },
-    
-    renderMarkdown(content) {
-        // Simple markdown to HTML converter with table support
-        let html = content;
-        
-        // Handle tables
-        const tableRegex = /\|(.+)\|\n\|[-\s|]+\|\n((?:\|.+\|\n?)+)/g;
-        html = html.replace(tableRegex, (match, header, rows) => {
-            const headers = header.split('|').map(h => h.trim()).filter(h => h);
-            const rowData = rows.trim().split('\n').map(row => 
-                row.split('|').map(cell => cell.trim()).filter(cell => cell)
-            );
-            
-            let table = '<table class="w-full my-4 border-collapse"><thead class="bg-[#2d2d2d]"><tr>';
-            headers.forEach(h => {
-                table += `<th class="border border-gray-700 px-4 py-2 text-left text-cyan-400">${h}</th>`;
-            });
-            table += '</tr></thead><tbody>';
-            rowData.forEach(row => {
-                table += '<tr class="border-b border-gray-800">';
-                row.forEach(cell => {
-                    table += `<td class="border border-gray-700 px-4 py-2 text-gray-300">${cell}</td>`;
-                });
-                table += '</tr>';
-            });
-            table += '</tbody></table>';
-            return table;
+
+    // Opening (~2.7s, after the theme chooser closes), like a workspace loading: the chrome, the activity bar, the explorer
+    // tree row by row, the tabs, then README renders block by block
+    opening() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const q = sel => [...document.querySelectorAll(`#vsRoot ${sel}`)], ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const rise = (els, at, step, from, duration = 600) => els.map((el, i) =>
+            el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
+        this.stopOpening = playOpening([
+            ...rise(q('.vs-title > *'), 0, 120, 'translateY(-6px)'),
+            ...rise(q('.vs-status > *'), 100, 60, 'translateY(6px)', 500),
+            ...rise(q('.vs-act'), 200, 70, 'scale(0.6)', 500),
+            ...rise(q('.vs-side-title, .vs-row'), 350, 55, 'translateX(-12px)', 500),
+            ...rise(q('.vs-tab'), 900, 160, 'translateY(-8px)'),
+            ...rise(q('.vs-crumb'), 1150, 90, 'translateX(-6px)', 400),
+            ...rise(q('.vs-view > *').slice(0, 14), 1300, 100, 'translateY(14px)', 700)
+        ]);
+    },
+
+    // ---------- workspace: path -> { lang, code?, view() } ----------
+
+    workspace() {
+        const c = portfolioContent, files = {};
+        const md = view => ({ lang: 'Markdown', view });
+        files['README.md'] = md(() => this.readme());
+        files['experience.md'] = md(() => this.experience());
+        c.projects.forEach(p => { files[`projects/${this.slug(p.title)}.md`] = md(() => this.project(p)); });
+        if (c.currentlyReading.length) files['reading.md'] = md(() => this.reading());
+        files['skills.json'] = { lang: 'JSON', code: true, view: () => this.code(this.json()) };
+        files['education.yml'] = { lang: 'YAML', code: true, view: () => this.code(this.yaml()) };
+        if (c.resume) files[c.resume.split('/').pop()] = { lang: 'PDF', view: () => this.binary() };
+
+        // Explorer order: folders first, then files, case-insensitive
+        const byName = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' });
+        const paths = Object.keys(files);
+        this.paths = [...paths.filter(p => p.includes('/')).sort(byName), ...paths.filter(p => !p.includes('/')).sort(byName)];
+        return files;
+    },
+
+    tree() {
+        const dirs = [...new Set(this.paths.filter(p => p.includes('/')).map(p => p.split('/')[0]))];
+        const row = (p, d) => `<li><button type="button" class="vs-row" data-open="${p}" style="--d:${d}"><span class="vs-twist"></span>${this.icon(p)}<span class="vs-row-name">${p.split('/').pop()}</span></button></li>`;
+        return dirs.map(dir => `
+            <li>
+                <button type="button" class="vs-row" data-folder aria-expanded="true" style="--d:1"><span class="vs-twist"><i class="fas fa-chevron-right vs-chev" aria-hidden="true"></i></span><span class="vs-row-name">${dir}</span></button>
+                <ul>${this.paths.filter(p => p.startsWith(`${dir}/`)).map(p => row(p, 2)).join('')}</ul>
+            </li>`).join('') + this.paths.filter(p => !p.includes('/')).map(p => row(p, 1)).join('');
+    },
+
+    // ---------- Markdown files (shown as VS Code's Markdown preview) ----------
+
+    readme() {
+        const c = portfolioContent, s = c.stats;
+        return `
+            <header class="vs-md-head">
+                ${c.picture ? `<img src="${c.picture}" alt="" class="vs-md-avatar" onerror="this.remove()">` : ''}
+                <div><h1>${c.name}</h1><p>${c.title} · ${c.location}</p></div>
+            </header>
+            <blockquote><p>${c.tagline}</p></blockquote>
+            <p>${c.about.bio}</p>
+            <h2>At a glance</h2>
+            <table>
+                <thead><tr><th>Impact</th><th class="vs-num">Result</th></tr></thead>
+                <tbody>${c.impact.map(m => `<tr><td>${m.label}</td><td class="vs-num">${m.value}</td></tr>`).join('')}</tbody>
+            </table>
+            <p><strong>${s.years}</strong> years · <strong>${s.companies}</strong> companies · <strong>${s.projects}</strong> projects · <strong>${s.skills}</strong> skills</p>
+            <h2>Interests</h2>
+            <p class="vs-chips">${c.about.interests.map(i => `<code>${i}</code>`).join(' ')}</p>
+            <h2>Contact</h2>
+            <ul>
+                ${this.links().map(([label, href]) => `<li><strong>${label}:</strong> <a href="${href}" ${this.ext(href)}>${href.replace(/^(mailto:|https?:\/\/(www\.)?)/, '')}</a></li>`).join('')}
+                ${c.resume ? `<li><strong>Résumé:</strong> <a ${this.resumeAttrs()}>${c.resume.split('/').pop()}</a></li>` : ''}
+            </ul>
+            ${c.about.funFact ? `<hr><p class="vs-md-dim">${c.about.funFact}</p>` : ''}`;
+    },
+
+    experience() {
+        return `<h1>Experience</h1>${portfolioContent.experience.map(e => `
+            <h2>${e.position}</h2>
+            <p><strong>${e.company}</strong> · ${e.location} · <span class="vs-num">${e.period}</span></p>
+            <ul>${e.achievements.map(a => `<li>${a}</li>`).join('')}</ul>
+            <p class="vs-chips">${e.technologies.map(t => `<code>${t}</code>`).join(' ')}</p>`).join('')}`;
+    },
+
+    project(p) {
+        return `
+            <h1>${p.title}</h1>
+            <p>${p.description}</p>
+            ${p.site ? `<p><strong>Live:</strong> <a href="https://${p.site}" target="_blank" rel="noopener">${p.site}</a></p>` : ''}
+            <h2>Highlights</h2>
+            <ul>${p.highlights.map(h => `<li>${h}</li>`).join('')}</ul>
+            <h2>Stack</h2>
+            <p class="vs-chips">${p.tags.map(t => `<code>${t}</code>`).join(' ')}</p>`;
+    },
+
+    reading() {
+        return `<h1>Reading</h1>${portfolioContent.currentlyReading.map(b => `
+            <h2>${b.title}</h2>
+            <p><em>${b.author}</em> · ${b.status === 'completed' ? `finished ${b.endDate}` : `in progress, <span class="vs-num">${b.progress}%</span>`}</p>
+            <blockquote><p>${b.notes}</p></blockquote>
+            ${b.link ? `<p><a href="${b.link}" target="_blank" rel="noopener">${b.link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></p>` : ''}`).join('')}`;
+    },
+
+    // The PDF opens like any binary file in VS Code: no viewer, just the way out
+    binary() {
+        return `
+            <div class="vs-binary">
+                <p>The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding.</p>
+                <div class="vs-binary-actions">
+                    <a href="${portfolioContent.resume}" target="_blank" rel="noopener" class="vs-btn">Open in browser</a>
+                    <a ${this.resumeAttrs()} class="vs-btn vs-btn-primary"><i class="fas fa-arrow-down" aria-hidden="true"></i>Download</a>
+                </div>
+            </div>`;
+    },
+
+    // ---------- source files (syntax-highlighted lines: [indent, html]) ----------
+
+    json() {
+        const p = s => this.t('p', s), groups = this.skills();
+        return [[0, p('{')],
+            ...groups.map(([label, list], i) => [1, `${this.t('key', JSON.stringify(label))}${p(': [')}${list.map(s => this.t('str', JSON.stringify(s))).join(p(', '))}${p(i < groups.length - 1 ? '],' : ']')}`]),
+            [0, p('}')]];
+    },
+
+    yaml() {
+        const c = portfolioContent;
+        const sections = {
+            education: c.education.map(e => ({ degree: e.degree, institution: e.institution, years: e.year, gpa: e.gpa, location: e.location, highlights: e.achievements })),
+            certifications: c.certifications.map(x => ({ title: x.title, issuer: x.issuer, year: x.year, url: x.link })),
+            patents: c.patents.map(x => ({ title: x.title, number: x.number, status: x.status, year: x.year, url: x.link }))
+        };
+        return [[0, this.t('cmt', '# Education, certifications and patents')],
+            ...Object.entries(sections).filter(([, v]) => v.length).flatMap(([k, v]) => [[0, ''], ...this.yamlLines({ [k]: v })])];
+    },
+
+    // Indent is in 2-space steps: a list item's "- " sits one step in, its other keys two
+    yamlLines(obj, ind = 0, out = []) {
+        for (const [k, v] of Object.entries(obj)) {
+            if (v == null || v === '' || (Array.isArray(v) && !v.length)) continue;
+            const key = this.t('ykey', k) + this.t('p', ':');
+            if (!Array.isArray(v)) { out.push([ind, `${key} ${this.scalar(v)}`]); continue; }
+            out.push([ind, key]);
+            for (const item of v) {
+                const at = out.length;
+                if (typeof item === 'object') this.yamlLines(item, ind + 2, out); else out.push([ind + 2, this.scalar(item)]);
+                out[at] = [ind + 1, this.t('p', '- ') + out[at][1]];
+            }
+        }
+        return out;
+    },
+
+    scalar(v) {
+        const s = String(v);
+        if (/^https?:\/\//.test(s)) return `<a href="${this.esc(s)}" target="_blank" rel="noopener" class="vs-t-str vs-url">${this.esc(s)}</a>`;
+        return this.t(/^\d+(\.\d+)?$/.test(s) ? 'num' : 'str', s);
+    },
+
+    code(lines) {
+        return `<div class="vs-code">${lines.map(([ind, html], i) => `<div class="vs-line" data-line="${i + 1}"><span class="vs-ln" aria-hidden="true">${i + 1}</span><span class="vs-src" style="--ind:${ind}">${html}</span></div>`).join('')}</div>`;
+    },
+
+    // Skill categories overlap in content.js, so each skill is listed once, under its first category
+    skills() {
+        const c = portfolioContent, seen = new Set();
+        return Object.entries(c.skills)
+            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
+            .filter(([, list]) => list.length);
+    },
+
+    // ---------- small pieces ----------
+
+    t(kind, s) {
+        return `<span class="vs-t-${kind}">${this.esc(s)}</span>`;
+    },
+
+    esc(s) {
+        return String(s).replace(/[&<>"]/g, ch => `&#${ch.charCodeAt(0)};`);
+    },
+
+    slug(title) {
+        return title.split(' - ')[0].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    },
+
+    // Seti file icons (VS Code's default icon theme)
+    icon(path) {
+        const [glyph, color] = path === 'README.md' ? ['<i class="fas fa-circle-info"></i>', '#519aba'] : {
+            md: ['<i class="fab fa-markdown"></i>', '#519aba'],
+            json: ['{}', '#cbcb41'],
+            yml: ['<i class="fas fa-list"></i>', '#a074c4'],
+            pdf: ['<i class="fas fa-file-pdf"></i>', '#cc3e44']
+        }[path.split('.').pop()] || ['<i class="far fa-file"></i>', '#9d9d9d'];
+        return `<span class="vs-ico" style="color:${color}" aria-hidden="true">${glyph}</span>`;
+    },
+
+    links() {
+        const c = portfolioContent;
+        return [['GitHub', c.social.github, 'fab fa-github'], ['LinkedIn', c.social.linkedin, 'fab fa-linkedin-in'], ['Website', c.social.portfolio, 'fas fa-globe'], ['Email', c.email && `mailto:${c.email}`, 'far fa-envelope']]
+            .filter(([, href]) => href);
+    },
+
+    ext(href) {
+        return href.startsWith('http') ? 'target="_blank" rel="noopener"' : '';
+    },
+
+    // download is ignored on some origins (e.g. file://); a new tab keeps the portfolio open either way
+    resumeAttrs() {
+        const r = portfolioContent.resume;
+        return `href="${r}" download="${r.split('/').pop()}" target="_blank" rel="noopener"`;
+    },
+
+    phone() {
+        return window.matchMedia('(max-width: 767px)').matches;
+    },
+
+    // ---------- behaviour ----------
+
+    openFile(path) {
+        const editor = document.getElementById('vsEditor');
+        if (this.active) this.scroll[this.active] = editor.scrollTop;
+        if (!this.tabs.includes(path)) this.tabs.push(path);
+        this.active = path;
+        const f = this.files[path];
+        editor.innerHTML = `<div class="vs-view ${f.lang === 'Markdown' ? 'vs-md' : ''}">${f.view()}</div>`;
+        editor.scrollTop = this.scroll[path] || 0;
+        this.paint();
+        if (this.phone()) this.toggleSide(false);
+    },
+
+    closeTab(path) {
+        const i = this.tabs.indexOf(path);
+        this.tabs.splice(i, 1);
+        delete this.scroll[path];
+        if (path !== this.active) return this.paint();
+        this.active = null;
+        const next = this.tabs[Math.min(i, this.tabs.length - 1)];
+        next ? this.openFile(next) : this.empty();
+    },
+
+    // All tabs closed: VS Code's empty editor with its shortcuts
+    empty() {
+        document.getElementById('vsEditor').innerHTML = `
+            <div class="vs-view vs-empty">
+                <i class="fas fa-code vs-empty-logo" aria-hidden="true"></i>
+                <button type="button" data-action="quick"><span>Go to File</span><kbd class="vs-kbd">${this.mod}P</kbd></button>
+                <button type="button" data-action="explorer"><span>Toggle Explorer</span><kbd class="vs-kbd">${this.mod}B</kbd></button>
+                <button type="button" data-open="README.md"><span>Open README.md</span></button>
+            </div>`;
+        this.paint();
+    },
+
+    // Tabs, breadcrumbs, explorer selection and status bar follow the active file
+    paint() {
+        const f = this.files[this.active];
+        document.getElementById('vsTabs').innerHTML = this.tabs.map(p => `
+            <div class="vs-tab" ${p === this.active ? 'aria-current="true"' : ''}>
+                <button type="button" class="vs-tab-open" data-open="${p}" title="${p}">${this.icon(p)}${p.split('/').pop()}</button>
+                <button type="button" class="vs-tab-close" data-close="${p}" aria-label="Close ${p.split('/').pop()}"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            </div>`).join('');
+        document.querySelector('#vsTabs [aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        const parts = this.active ? [this.root, ...this.active.split('/')] : [];
+        document.getElementById('vsCrumbs').innerHTML = parts.map((s, i) => `<span class="vs-crumb">${i === parts.length - 1 ? this.icon(this.active) : ''}${s}</span>`)
+            .join('<i class="fas fa-chevron-right vs-crumb-sep" aria-hidden="true"></i>');
+        document.querySelectorAll('#vsRoot .vs-row[data-open]').forEach(b => b.setAttribute('aria-current', b.dataset.open === this.active));
+        document.getElementById('vsPos').textContent = f?.code ? 'Ln 1, Col 1' : '';
+        document.getElementById('vsLang').textContent = f?.lang || '';
+    },
+
+    // Desktop: shows/hides the sidebar. Phones: slides the explorer drawer in/out
+    toggleSide(open = !this.sideOpen) {
+        this.sideOpen = open;
+        document.getElementById('vsRoot').classList.toggle('side-open', open);
+        document.querySelectorAll('#vsRoot [data-action="explorer"][aria-expanded]').forEach(b => b.setAttribute('aria-expanded', open));
+    },
+
+    quickOpen() {
+        const quick = document.getElementById('vsQuick'), input = quick.querySelector('input');
+        input.value = '';
+        this.filter('');
+        if (!quick.open) quick.showModal();
+        input.focus();
+    },
+
+    // Fuzzy match like VS Code: the typed letters appear in order anywhere in the path
+    filter(q) {
+        const needle = q.toLowerCase().replace(/\s+/g, '');
+        this.matches = this.paths.filter(p => {
+            let i = 0;
+            for (const ch of p.toLowerCase()) if (ch === needle[i]) i++;
+            return i === needle.length;
         });
-        
-        html = html
-            .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-4 text-blue-400">$1</h1>')
-            .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mb-3 mt-6 text-green-400">$1</h2>')
-            .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold mb-2 mt-4 text-yellow-400">$1</h3>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em class="text-gray-400">$1</em>')
-            .replace(/^- (.*$)/gim, '<div class="ml-4 mb-1 text-gray-300">• $1</div>')
-            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-blue-400 hover:underline hover:text-blue-300">$1 <i class="fas fa-external-link-alt text-xs"></i></a>')
-            .replace(/^---$/gim, '<hr class="my-6 border-gray-700">')
-            .replace(/\n\n/g, '</p><p class="mb-3 text-gray-300">')
-            .replace(/`([^`]+)`/g, '<code class="bg-[#2d2d2d] px-2 py-1 rounded text-yellow-300">$1</code>');
-        
-        return `<div class="prose prose-invert max-w-none"><p class="mb-3 text-gray-300">${html}</p></div>`;
+        document.getElementById('vsQuickList').innerHTML = this.matches.map((p, i) => `
+            <li id="vsQ${i}" class="vs-q-item" role="option" data-open="${p}" aria-selected="false">${this.icon(p)}<span class="vs-q-name">${p.split('/').pop()}</span><span class="vs-q-dir">${p.includes('/') ? p.split('/')[0] : ''}</span></li>`).join('')
+            || '<li class="vs-q-none">No matching results</li>';
+        this.highlight(0);
     },
-    
-    attachEventListeners() {
-        const fileItems = document.querySelectorAll('.vscode-file');
-        fileItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const filename = e.currentTarget.dataset.file;
-                this.switchFile(filename);
-            });
+
+    highlight(i) {
+        this.pick = i;
+        const input = document.querySelector('#vsQuick input'), li = document.getElementById(`vsQ${i}`);
+        document.querySelectorAll('#vsQuickList [role="option"]').forEach((el, j) => el.setAttribute('aria-selected', j === i));
+        li?.scrollIntoView({ block: 'nearest' });
+        li ? input.setAttribute('aria-activedescendant', li.id) : input.removeAttribute('aria-activedescendant');
+    },
+
+    selectLine(line) {
+        document.querySelector('#vsEditor .vs-line.is-active')?.classList.remove('is-active');
+        line.classList.add('is-active');
+        document.getElementById('vsPos').textContent = `Ln ${line.dataset.line}, Col 1`;
+    },
+
+    bind() {
+        const root = document.getElementById('vsRoot'), quick = document.getElementById('vsQuick'), input = quick.querySelector('input');
+        root.addEventListener('click', (e) => {
+            if (e.target === quick) return quick.close(); // backdrop
+            const el = e.target.closest('[data-open], [data-close], [data-action], [data-folder], .vs-line');
+            if (!el) return;
+            if (el.dataset.close) return this.closeTab(el.dataset.close);
+            if (el.dataset.open) {
+                if (quick.open) quick.close();
+                return this.openFile(el.dataset.open);
+            }
+            if (el.dataset.action === 'explorer') return this.toggleSide();
+            if (el.dataset.action === 'quick') return this.quickOpen();
+            if (el.hasAttribute('data-folder')) {
+                const open = el.getAttribute('aria-expanded') !== 'true';
+                el.setAttribute('aria-expanded', open);
+                el.nextElementSibling.hidden = !open;
+                return;
+            }
+            if (!e.target.closest('a')) this.selectLine(el);
         });
+
+        input.addEventListener('input', () => this.filter(input.value));
+        input.addEventListener('keydown', (e) => {
+            if (!this.matches.length) return;
+            if (e.key === 'Enter') {
+                quick.close();
+                return this.openFile(this.matches[this.pick]);
+            }
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+            e.preventDefault();
+            this.highlight((this.pick + (e.key === 'ArrowDown' ? 1 : -1) + this.matches.length) % this.matches.length);
+        });
+
+        this.onKey = (e) => {
+            if (e.key === 'Escape' && this.sideOpen && this.phone()) return this.toggleSide(false);
+            const k = (e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase();
+            if (k !== 'p' && k !== 'b') return;
+            e.preventDefault();
+            if (document.querySelector('dialog[open]')) return; // theme chooser or quick open already up
+            k === 'p' ? this.quickOpen() : this.toggleSide();
+        };
+        window.addEventListener('keydown', this.onKey);
     },
-    
-    switchFile(filename) {
-        this.currentFile = filename;
-        const editorContent = document.getElementById('editorContent');
-        const currentTab = document.getElementById('currentTab');
-        
-        // Update content with fade effect
-        editorContent.style.opacity = '0';
-        setTimeout(() => {
-            editorContent.innerHTML = this.renderMarkdown(this.files[filename].content);
-            currentTab.textContent = filename;
-            editorContent.style.opacity = '1';
-            
-            // Update active file in sidebar
-            document.querySelectorAll('.vscode-file').forEach(el => {
-                el.classList.remove('bg-[#2a2d2e]');
-            });
-            document.querySelector(`[data-file="${filename}"]`).classList.add('bg-[#2a2d2e]');
-        }, 150);
+
+    cleanup() {
+        this.stopOpening?.();
+        window.removeEventListener('keydown', this.onKey);
+        this.onKey = null;
     }
 };
 

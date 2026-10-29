@@ -64,10 +64,10 @@ ${portfolioContent.skills.frameworks.map(skill => `• **${skill}** - Extensive 
 ${portfolioContent.skills.cloud.map(skill => `• **${skill}** - Infrastructure and deployment`).join('\n')}
 
 ## Assessment Summary
-Total Skills: ${Object.values(portfolioContent.skills).flat().length}
+Total Skills: ${portfolioContent.stats.skills}
 Skill Diversity: High
 Domain Coverage: Full-stack ML Engineer
-Experience Level: Senior Professional`
+Experience Level: ${portfolioContent.stats.years}+ years`
         },
         
         projects: {
@@ -86,7 +86,6 @@ ${portfolioContent.projects.map(p => `- ${p.title}`).join('\n')}`,
 
 ${portfolioContent.projects.slice(0, 4).map(project => `
 ## ${project.title}
-**Timeline:** ${project.period}
 
 ${project.description}
 
@@ -209,7 +208,7 @@ ${portfolioContent.patents.map(patent => `
 ${patent.description}
 
 #### Technical Significance
-This patent represents a significant contribution to the field of Natural Language Processing, specifically in the domain of textual entailment - a fundamental task that involves determining whether one piece of text logically follows from another.
+This patent represents a significant contribution to the field of Natural Language Processing, specifically in the domain of ${patent.title.toLowerCase()}.
 
 #### Innovation Highlights
 • Novel approach to determining semantic relationships in text
@@ -230,7 +229,7 @@ This patent represents a significant contribution to the field of Natural Langua
 
 **Patent Count:** ${portfolioContent.patents.length}  
 **Primary Domain:** Natural Language Processing  
-**Research Areas:** Textual Entailment, Semantic Analysis
+**Research Areas:** ${portfolioContent.patents.map(p => p.title).join(", ")}
 
 ### What This Means
 
@@ -291,10 +290,10 @@ Provide: Hiring recommendation with confidence score and key hiring arguments.`,
 
 ### Unique Differentiators
 
-**🏆 Patent Holder:** ${portfolioContent.patents.length} USPTO patent in NLP/Textual Entailment
-**📚 Certified Expert:** ${portfolioContent.certifications.length} specialized certifications from Coursera, NPTEL, edX
-**💼 Proven Leader:** Manager-level experience leading cross-functional teams
-**💰 Business Impact:** 14+ FTE equivalent savings through automation
+**🏆 Patent Holder:** ${portfolioContent.patents.length} USPTO patent(s): ${portfolioContent.patents.map(p => p.title).join(", ")}
+**📚 Certified Expert:** ${portfolioContent.certifications.length} specialized certifications from ${[...new Set(portfolioContent.certifications.map(c => c.issuer))].join(", ")}
+**💼 Proven Leader:** ${portfolioContent.experience[0].position}-level experience leading cross-functional teams
+**💰 Business Impact:** ${portfolioContent.impact.map(i => `${i.value} ${i.label.toLowerCase()}`).join(" · ")}
 
 ---
 
@@ -377,11 +376,11 @@ Provide: Hiring recommendation with confidence score and key hiring arguments.`,
                                 <div class="mt-6 pt-4 border-t border-slate-800">
                                     <div class="text-xs text-slate-500 mb-2">SOCIAL LINKS</div>
                                     <div class="flex flex-col gap-2">
-                                        <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
+                                        <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
                                             <i class="fab fa-github"></i>
                                             <span>GitHub</span>
                                         </a>
-                                        <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
+                                        <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
                                             <i class="fab fa-linkedin"></i>
                                             <span>LinkedIn</span>
                                         </a>

@@ -1,390 +1,287 @@
-// Minimalist Apple-Style AI Persona Card Theme
+// Contact Card theme - the résumé as an iPhone contact card (iOS Contacts). A Contact Poster puts the caricature in front
+// of the name (the poster's depth effect); under it come the action buttons, grouped fields, Notes, and rows that push
+// detail pages. Share Contact hands over a real vCard. Opens after the theme chooser closes: the name rises letter by
+// letter, the caricature steps in front of it, then the card fills in
 const AppleTheme = {
-    name: "Apple Persona",
-    
-    currentView: 'card',
-    
+    name: "Contact Card",
+    token: 0,
+
     render() {
-        const container = document.getElementById('themeContainer');
-        container.innerHTML = `
-            <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6">
-                <div class="w-full max-w-6xl">
-                    <!-- Main Card -->
-                    <div id="mainCard" class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden transition-all duration-700 ease-out">
-                        <div class="grid md:grid-cols-2">
-                            <!-- Left: Hero Image/Visual -->
-                            <div class="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-12 flex flex-col justify-center items-center text-white relative overflow-hidden">
-                                <div class="absolute inset-0 bg-black/10"></div>
-                                <div class="relative z-10 text-center">
-                                    <div class="w-32 h-32 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center mb-6 mx-auto border-4 border-white/30 shadow-2xl">
-                                        <span class="text-6xl font-bold">${portfolioContent.name.split(' ').map(n => n[0]).join('')}</span>
-                                    </div>
-                                    <h1 class="text-5xl font-bold mb-3 tracking-tight">${portfolioContent.name}</h1>
-                                    <p class="text-xl opacity-90 font-medium">${portfolioContent.about.tagline}</p>
-                                    
-                                    <div class="mt-8 flex flex-wrap gap-3 justify-center">
-                                        ${portfolioContent.about.interests.slice(0, 3).map(interest => 
-                                            `<span class="px-4 py-2 bg-white/20 backdrop-blur rounded-full text-sm font-medium">${interest}</span>`
-                                        ).join('')}
-                                    </div>
-                                </div>
-                                
-                                <!-- Floating orbs decoration -->
-                                <div class="absolute top-10 left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl animate-pulse"></div>
-                                <div class="absolute bottom-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                            </div>
-                            
-                            <!-- Right: Info -->
-                            <div class="p-12">
-                                <div class="space-y-8">
-                                    <!-- About -->
-                                    <div>
-                                        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">About</h2>
-                                        <p class="text-gray-700 leading-relaxed">${portfolioContent.about.bio.substring(0, 200)}...</p>
-                                    </div>
-                                    
-                                    <!-- Quick Stats -->
-                                    <div class="grid grid-cols-3 gap-4">
-                                        <div class="text-center p-4 bg-gray-50 rounded-2xl">
-                                            <div class="text-3xl font-bold text-blue-600">${Object.values(portfolioContent.skills).flat().length}+</div>
-                                            <div class="text-xs text-gray-600 mt-1 font-medium">Skills</div>
-                                        </div>
-                                        <div class="text-center p-4 bg-gray-50 rounded-2xl">
-                                            <div class="text-3xl font-bold text-purple-600">${portfolioContent.projects.length}</div>
-                                            <div class="text-xs text-gray-600 mt-1 font-medium">Projects</div>
-                                        </div>
-                                        <div class="text-center p-4 bg-gray-50 rounded-2xl">
-                                            <div class="text-3xl font-bold text-pink-600">${portfolioContent.experience.length}+</div>
-                                            <div class="text-xs text-gray-600 mt-1 font-medium">Years</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Action Buttons -->
-                                    <div class="flex gap-3">
-                                        <button id="viewDetails" class="flex-1 bg-black hover:bg-gray-800 text-white rounded-full py-4 font-semibold text-sm transition-all shadow-lg">
-                                            View Details
-                                        </button>
-                                        <a href="mailto:${portfolioContent.email}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-4 font-semibold text-sm text-center transition-all shadow-lg">
-                                            Contact
-                                        </a>
-                                    </div>
-                                    
-                                    <!-- Social Links -->
-                                    <div class="flex justify-center gap-4 pt-4">
-                                        <a href="https://github.com/${portfolioContent.social.github}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
-                                            <i class="fab fa-github text-gray-700 text-xl"></i>
-                                        </a>
-                                        <a href="https://linkedin.com/in/${portfolioContent.social.linkedin}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
-                                            <i class="fab fa-linkedin text-gray-700 text-xl"></i>
-                                        </a>
-                                        ${portfolioContent.social.twitter ? `
-                                            <a href="https://twitter.com/${portfolioContent.social.twitter}" target="_blank" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
-                                                <i class="fab fa-twitter text-gray-700 text-xl"></i>
-                                            </a>
-                                        ` : ''}
-                                    </div>
-                                </div>
+        const c = portfolioContent;
+        this.token++;
+        this.anims = [];
+        this.openId = null;
+        this.fast = this.calm();
+        this.pages = this.book();
+        const [first, ...rest] = c.name.split(' ');
+        const letters = word => [...word].map(ch => `<span class="ap-letter">${this.esc(ch)}</span>`).join('');
+        const host = url => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+        const urls = [['homepage', c.social.portfolio], ['GitHub', c.social.github], ['LinkedIn', c.social.linkedin],
+            ['Twitter', c.social.twitter && `https://twitter.com/${c.social.twitter}`]].filter(([, url]) => url);
+        const actions = [['mail', 'fas fa-envelope', `mailto:${c.email}`], ['GitHub', 'fab fa-github', c.social.github],
+            ['LinkedIn', 'fab fa-linkedin-in', c.social.linkedin], c.resume && ['résumé', 'fas fa-file-arrow-down', c.resume]].filter(Boolean);
+
+        document.getElementById('themeContainer').innerHTML = `
+            <div id="apRoot" lang="en" class="${this.fast ? '' : 'is-waiting'}">
+                <div class="ap-bar" aria-hidden="true">${this.esc(c.name)}</div>
+                <section class="ap-poster" aria-label="Contact poster">
+                    <h1 class="ap-name" aria-label="${this.esc(c.name)}">
+                        <span aria-hidden="true">${letters(first)}</span>
+                        <span aria-hidden="true">${letters(rest.join(' '))}</span>
+                    </h1>
+                    <div class="ap-figure">${caricatureSVG(`Caricature of ${this.esc(c.name)}`)}</div>
+                </section>
+                <div id="apMain" class="ap-main">
+                    <main class="ap-card" tabindex="-1">
+                        <div class="ap-head">
+                            <p class="ap-title">${this.esc(c.title)}</p>
+                            <p class="ap-org">${this.esc(c.specialization)} · ${this.esc(c.experience[0].company)}</p>
+                        </div>
+                        <nav class="ap-actions" aria-label="Contact actions">${actions.map(([label, icon, href]) => `
+                            <a class="ap-action" href="${href}" ${this.external(href, label === 'résumé')}><i class="${icon}" aria-hidden="true"></i><span>${label}</span></a>`).join('')}
+                        </nav>
+                        <div class="ap-group">${this.field('work', c.email, `mailto:${c.email}`)}</div>
+                        <div class="ap-group">${urls.map(([label, url]) => this.field(label, host(url), url)).join('')}</div>
+                        <div class="ap-group">${this.field('home', c.location.split(', '), `https://maps.apple.com/?q=${encodeURIComponent(c.location)}`)}</div>
+                        <div class="ap-group">
+                            <div class="ap-row ap-field ap-notes">
+                                <span class="ap-label">Notes</span>
+                                <p>${this.esc(c.about.tagline)}.</p>
+                                <p>${this.esc(c.about.bio)}</p>
+                                <p>${c.impact.map(i => `${this.esc(i.value)} – ${this.esc(i.label)}`).join('<br>')}</p>
+                                <p>${this.esc(c.about.funFact)}</p>
+                                <p>Off the clock: ${this.esc(c.hobbies.join(', '))}.</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Detailed View (Hidden Initially) -->
-                    <div id="detailView" class="mt-8 hidden opacity-0 transition-opacity duration-500">
-                        <div class="bg-white rounded-[2.5rem] shadow-2xl p-12">
-                            <button id="backToCard" class="mb-6 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-all inline-flex items-center gap-2">
-                                <i class="fas fa-arrow-left"></i>
-                                Back to Card
-                            </button>
-                            
-                            <!-- Skills Section -->
-                            <div class="mb-12">
-                                <h2 class="text-3xl font-bold text-gray-900 mb-6">Technical Expertise</h2>
-                                <p class="text-gray-600 mb-6">Comprehensive skill set organized by domain</p>
-                                
-                                <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-                                    <table class="w-full">
-                                        <thead>
-                                            <tr class="bg-gray-50 border-b border-gray-200">
-                                                <th class="text-left px-6 py-4 font-bold text-gray-900 text-sm uppercase tracking-wider w-1/4">Category</th>
-                                                <th class="text-left px-6 py-4 font-bold text-gray-900 text-sm uppercase tracking-wider">Technologies</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${Object.entries(portfolioContent.skills).map(([category, skills], idx) => `
-                                                <tr class="${idx !== Object.keys(portfolioContent.skills).length - 1 ? 'border-b border-gray-100' : ''}">
-                                                    <td class="px-6 py-4 font-semibold text-gray-800 align-top">
-                                                        ${category.toUpperCase().replace('_', ' ')}
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <div class="flex flex-wrap gap-2">
-                                                            ${skills.map(skill => 
-                                                                `<span class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-all cursor-default">${skill}</span>`
-                                                            ).join('')}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Experience Section with Service Record Popup -->
-                            <div class="mb-12">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h2 class="text-3xl font-bold text-gray-900">Experience</h2>
-                                    <button id="viewServiceRecord" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-all shadow-md">
-                                        <i class="fas fa-list-check mr-2"></i>
-                                        View Full Service Record
-                                    </button>
-                                </div>
-                                <div class="space-y-8">
-                                    ${portfolioContent.experience.slice(0, 2).map(exp => `
-                                        <div class="relative pl-8 border-l-2 border-gray-200">
-                                            <div class="absolute -left-[9px] top-0 w-4 h-4 bg-blue-600 rounded-full"></div>
-                                            <h3 class="text-xl font-bold text-gray-900">${exp.position}</h3>
-                                            <div class="text-sm text-gray-600 mt-1 mb-3">
-                                                ${exp.company} • ${exp.period}${exp.location ? ` • ${exp.location}` : ''}
-                                            </div>
-                                            <ul class="space-y-2 text-sm text-gray-700">
-                                                ${exp.achievements.slice(0, 2).map(item => 
-                                                    `<li class="flex items-start gap-2">
-                                                        <i class="fas fa-check text-blue-600 mt-1 text-xs"></i>
-                                                        <span>${item}</span>
-                                                    </li>`
-                                                ).join('')}
-                                            </ul>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <!-- Projects Section -->
-                            <div class="mb-12">
-                                <h2 class="text-3xl font-bold text-gray-900 mb-6">Featured Projects</h2>
-                                <div class="grid md:grid-cols-2 gap-6">
-                                    ${portfolioContent.projects.slice(0, 4).map(project => `
-                                        <div class="bg-gray-50 rounded-3xl p-6 hover:shadow-lg transition-all">
-                                            <h3 class="text-lg font-bold text-gray-900 mb-2">${project.title}</h3>
-                                            <p class="text-sm text-gray-600 mb-4">${project.description.substring(0, 100)}...</p>
-                                            <div class="flex flex-wrap gap-2">
-                                                ${project.tags.slice(0, 4).map(tag => 
-                                                    `<span class="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700">${tag}</span>`
-                                                ).join('')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <!-- Education & Contact Section -->
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Education</h2>
-                                    ${portfolioContent.education.map(edu => `
-                                        <div class="bg-gray-50 rounded-3xl p-6">
-                                            <h3 class="text-lg font-bold text-gray-900">${edu.degree}</h3>
-                                            <div class="text-sm text-gray-600 mt-1">
-                                                ${edu.institution} • ${edu.year}
-                                            </div>
-                                            ${edu.description ? `<p class="text-sm text-gray-700 mt-3">${edu.description}</p>` : ''}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Get in Touch</h2>
-                                    <button id="viewContact" class="w-full bg-gradient-to-br from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-3xl p-6 text-left transition-all shadow-lg">
-                                        <i class="fas fa-address-card text-2xl mb-3"></i>
-                                        <h3 class="text-lg font-bold">Contact Information</h3>
-                                        <p class="text-sm opacity-90 mt-1">View all contact details</p>
-                                    </button>
-                                </div>
-                            </div>
+                        <div class="ap-group">${this.pages.map(p => `
+                            <button type="button" class="ap-row ap-more" data-page="${p.id}"><span>${p.title}</span><span class="ap-detail">${p.value}</span><i class="fas fa-chevron-right" aria-hidden="true"></i></button>`).join('')}
                         </div>
-                    </div>
+                        <div class="ap-group">
+                            <button type="button" class="ap-row ap-link" data-action="share">Share Contact</button>
+                            ${c.resume ? `<a class="ap-row ap-link" href="${c.resume}" ${this.external(c.resume, true)}>Download Résumé</a>` : ''}
+                        </div>
+                    </main>
                 </div>
-                
-                <!-- Service Record Modal -->
-                <div id="serviceRecordModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-                    <div class="bg-white rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-[2.5rem] flex items-center justify-between">
-                            <h2 class="text-2xl font-bold text-gray-900">Complete Service Record</h2>
-                            <button class="closeModal w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all">
-                                <i class="fas fa-times text-gray-700"></i>
-                            </button>
-                        </div>
-                        <div class="p-8 space-y-6">
-                            ${portfolioContent.experience.map((exp, idx) => `
-                                <div class="pb-6 ${idx !== portfolioContent.experience.length - 1 ? 'border-b border-gray-200' : ''}">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div>
-                                            <h3 class="text-xl font-bold text-gray-900">${exp.position}</h3>
-                                            <div class="text-sm text-gray-600 mt-1">
-                                                ${exp.company} • ${exp.period}${exp.location ? ` • ${exp.location}` : ''}
-                                            </div>
-                                        </div>
-                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                                            ${exp.period.split('-')[0].trim()}
-                                        </span>
-                                    </div>
-                                    <ul class="space-y-2 text-sm text-gray-700">
-                                        ${exp.achievements.map(item => 
-                                            `<li class="flex items-start gap-2">
-                                                <i class="fas fa-check-circle text-blue-600 mt-1"></i>
-                                                <span>${item}</span>
-                                            </li>`
-                                        ).join('')}
-                                    </ul>
-                                    ${exp.technologies && exp.technologies.length > 0 ? `
-                                        <div class="mt-3 flex flex-wrap gap-2">
-                                            ${exp.technologies.map(tech => 
-                                                `<span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-700">${tech}</span>`
-                                            ).join('')}
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
+                <section id="apPage" class="ap-page" aria-labelledby="apPageTitle" hidden>
+                    <div class="ap-nav">
+                        <button type="button" class="ap-back" data-action="back" aria-label="Back to ${this.esc(first)}"><i class="fas fa-chevron-left" aria-hidden="true"></i><span>${this.esc(first)}</span></button>
+                        <h2 id="apPageTitle" class="ap-nav-title"></h2>
                     </div>
-                </div>
-                
-                <!-- Contact Modal -->
-                <div id="contactModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-                    <div class="bg-white rounded-[2.5rem] max-w-2xl w-full shadow-2xl">
-                        <div class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-8 py-6 rounded-t-[2.5rem] flex items-center justify-between">
-                            <h2 class="text-2xl font-bold">Contact Information</h2>
-                            <button class="closeModal w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="p-8 space-y-4">
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-envelope text-blue-600 text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 font-semibold uppercase">Email</div>
-                                    <a href="mailto:${portfolioContent.email}" class="text-gray-900 font-medium hover:text-blue-600">${portfolioContent.email}</a>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-phone text-green-600 text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 font-semibold uppercase">Phone</div>
-                                    <a href="tel:${portfolioContent.phone}" class="text-gray-900 font-medium hover:text-green-600">${portfolioContent.phone}</a>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-map-marker-alt text-purple-600 text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 font-semibold uppercase">Location</div>
-                                    <div class="text-gray-900 font-medium">${portfolioContent.location}</div>
-                                </div>
-                            </div>
-                            <div class="pt-4 border-t border-gray-200">
-                                <div class="text-xs text-gray-500 font-semibold uppercase mb-3">Social Links</div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <a href="${portfolioContent.social.github}" target="_blank" class="flex items-center gap-3 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl transition-all">
-                                        <i class="fab fa-github text-xl"></i>
-                                        <span class="text-sm font-medium">GitHub</span>
-                                    </a>
-                                    <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex items-center gap-3 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all">
-                                        <i class="fab fa-linkedin text-xl"></i>
-                                        <span class="text-sm font-medium">LinkedIn</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.attachEventListeners();
+                    <div id="apPageBody" class="ap-page-body"></div>
+                </section>
+            </div>`;
+
+        this.root = document.getElementById('apRoot');
+        this.main = document.getElementById('apMain');
+        this.page = document.getElementById('apPage');
+        this.bind();
+        // The shell paints the page with the chooser tile's (poster) colour after render; the card's grey goes on top
+        const t = this.token;
+        queueMicrotask(() => { if (t === this.token) this.paint(); });
+        this.intro(t);
     },
-    
-    attachEventListeners() {
-        const viewDetailsBtn = document.getElementById('viewDetails');
-        const backBtn = document.getElementById('backToCard');
-        const mainCard = document.getElementById('mainCard');
-        const detailView = document.getElementById('detailView');
-        
-        if (viewDetailsBtn) {
-            viewDetailsBtn.addEventListener('click', () => {
-                mainCard.style.transform = 'scale(0.95)';
-                mainCard.style.opacity = '0';
-                
-                setTimeout(() => {
-                    mainCard.classList.add('hidden');
-                    detailView.classList.remove('hidden');
-                    setTimeout(() => {
-                        detailView.style.opacity = '1';
-                    }, 50);
-                }, 300);
-            });
-        }
-        
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                detailView.style.opacity = '0';
-                
-                setTimeout(() => {
-                    detailView.classList.add('hidden');
-                    mainCard.classList.remove('hidden');
-                    mainCard.style.transform = 'scale(1)';
-                    mainCard.style.opacity = '1';
-                }, 300);
-            });
-        }
-        
-        // Service Record Modal
-        const viewServiceRecordBtn = document.getElementById('viewServiceRecord');
-        const serviceRecordModal = document.getElementById('serviceRecordModal');
-        
-        if (viewServiceRecordBtn) {
-            viewServiceRecordBtn.addEventListener('click', () => {
-                serviceRecordModal.classList.remove('hidden');
-            });
-        }
-        
-        // Contact Modal
-        const viewContactBtn = document.getElementById('viewContact');
-        const contactModal = document.getElementById('contactModal');
-        
-        if (viewContactBtn) {
-            viewContactBtn.addEventListener('click', () => {
-                contactModal.classList.remove('hidden');
-            });
-        }
-        
-        // Close modals
-        document.querySelectorAll('.closeModal').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.closest('[id$="Modal"]');
-                if (modal) {
-                    modal.classList.add('hidden');
-                }
-            });
+
+    // ---------- detail pages: one per disclosure row, every fact from portfolioContent ----------
+
+    book() {
+        const c = portfolioContent, s = c.stats, e = x => this.esc(x);
+        const item = (title, ...subs) => `<div class="ap-row ap-item"><strong>${e(title)}</strong>${subs.filter(Boolean).map(x => `<span class="ap-sub">${e(x)}</span>`).join('')}</div>`;
+        const link = (href, title, ...subs) => `<a class="ap-row ap-item ap-out" href="${href}" ${this.external(href)}><strong>${e(title)}</strong>${subs.filter(Boolean).map(x => `<span class="ap-sub">${e(x)}</span>`).join('')}</a>`;
+        const text = x => `<div class="ap-row ap-text">${e(x)}</div>`;
+        const seen = new Set();
+        const skills = Object.entries(c.skills)
+            .map(([key, list]) => [c.skillLabels[key] || key, list.filter(x => !seen.has(x.toLowerCase()) && seen.add(x.toLowerCase()))])
+            .filter(([, list]) => list.length);
+
+        return [
+            { id: 'experience', title: 'Experience', value: `${s.years} yrs`,
+                html: this.caption(`${s.years} years across ${s.companies} companies`) + c.experience.map(x => this.group(x.company,
+                    [item(x.position, `${x.period} · ${x.location}`), ...x.achievements.map(text)], x.technologies.join(' · '))).join('') },
+            { id: 'projects', title: 'Projects', value: s.projects,
+                html: c.projects.map(p => this.group('', [item(p.title, p.highlights.join(' · ')), text(p.description),
+                    p.site && this.field('website', p.site, `https://${p.site}`)], p.tags.join(' · '))).join('') },
+            { id: 'skills', title: 'Skills', value: s.skills,
+                html: this.caption(`${s.skills} skills, each listed once`) + skills.map(([label, list]) => this.group(label,
+                    [`<div class="ap-row ap-text ap-skills">${list.map(x => `<span>${e(x)}</span>`).join(', ')}</div>`])).join('') },
+            { id: 'education', title: 'Education', value: c.education.length,
+                html: c.education.map(x => this.group('', [item(x.degree, x.institution), item(x.year, `GPA ${x.gpa}`, x.location),
+                    ...(x.achievements.length ? x.achievements : [x.description].filter(Boolean)).map(text)])).join('')
+                    + this.group(c.patents.length > 1 ? 'Patents' : 'Patent', c.patents.map(p => link(p.link, p.title, `${p.number} · ${p.status} ${p.year}`, p.description)))
+                    + this.group('Certifications', c.certifications.map(x => link(x.link, x.title, `${x.issuer} · ${x.year}`))) },
+            { id: 'reading', title: 'Reading List', value: c.currentlyReading.length,
+                html: this.group('', c.currentlyReading.map(r => link(r.link, r.title, r.author,
+                    r.status === 'completed' ? 'Finished' : `${r.progress}% read`, r.notes))) }
+        ];
+    },
+
+    group(header, rows, footer = '') {
+        rows = rows.filter(Boolean);
+        if (!rows.length) return '';
+        return `${header ? `<h3 class="ap-section">${this.esc(header)}</h3>` : '<div class="ap-gap"></div>'}<div class="ap-group">${rows.join('')}</div>${footer ? `<p class="ap-footer">${this.esc(footer)}</p>` : ''}`;
+    },
+
+    // A labelled field, as Contacts shows one: label above, value (one line or several) in the tint colour
+    field(label, value, href) {
+        return `<a class="ap-row ap-field" href="${href}" ${this.external(href)}><span class="ap-label">${label}</span><span class="ap-value">${[].concat(value).map(v => this.esc(v)).join('<br>')}</span></a>`;
+    },
+
+    caption(s) {
+        return `<p class="ap-caption">${this.esc(s)}</p>`;
+    },
+
+    external(href, download = false) {
+        if (download) return `download target="_blank" rel="noopener"`;
+        return /^https?:/.test(href) ? 'target="_blank" rel="noopener"' : '';
+    },
+
+    esc(s) {
+        return String(s).replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`);
+    },
+
+    // ---------- behaviour ----------
+
+    bind() {
+        this.root.addEventListener('click', (e) => {
+            const row = e.target.closest('[data-page]');
+            if (row) return this.open(row.dataset.page, row);
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (action === 'back') this.back();
+            else if (action === 'share') this.share();
         });
-        
-        // Close modals on backdrop click
-        [serviceRecordModal, contactModal].forEach(modal => {
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
+
+        this.onKey = (e) => {
+            if (e.key === 'Escape' && this.openId && !document.getElementById('themeChooser')?.open) this.back();
+        };
+        window.addEventListener('keydown', this.onKey);
+
+        // Phones: once the poster scrolls away, a compact bar keeps the name on screen, as in Contacts
+        this.observer = new IntersectionObserver(([entry]) => this.root.classList.toggle('is-compact', !entry.isIntersecting), { rootMargin: '-44px 0px 0px 0px' });
+        this.observer.observe(this.root.querySelector('.ap-poster'));
+    },
+
+    // Push a detail page: it slides in from the right while the card drifts left, like a navigation push on iOS
+    open(id, from) {
+        const page = this.pages.find(p => p.id === id);
+        if (!page || this.openId) return;
+        this.openId = id;
+        this.opener = from;
+        document.getElementById('apPageTitle').textContent = page.title;
+        document.getElementById('apPageBody').innerHTML = page.html;
+        this.page.hidden = false;
+        this.page.scrollTop = 0;
+        this.main.inert = true;
+        this.slide(true);
+        this.page.querySelector('.ap-back').focus({ preventScroll: true });
+    },
+
+    back() {
+        if (!this.openId) return;
+        this.openId = null;
+        this.main.inert = false;
+        this.slide(false, () => { this.page.hidden = true; });
+        this.opener?.focus({ preventScroll: true });
+    },
+
+    slide(push, done) {
+        this.pageAnims?.forEach(a => a.cancel());
+        if (this.calm()) return done?.();
+        const timing = { duration: 460, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' };
+        const page = [{ transform: 'translateX(100%)' }, { transform: 'none' }], card = [{ transform: 'none' }, { transform: 'translateX(-30%)' }];
+        if (!push) [page, card].forEach(k => k.reverse());
+        this.pageAnims = [this.page.animate(page, timing), this.main.animate(card, timing)];
+        this.pageAnims[0].onfinish = () => done?.();
+    },
+
+    vcard() {
+        const c = portfolioContent;
+        const v = s => String(s).replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n');
+        const [first, ...rest] = c.name.split(' ');
+        const [city, country] = c.location.split(', ');
+        const urls = [['homepage', c.social.portfolio], ['GitHub', c.social.github], ['LinkedIn', c.social.linkedin]].filter(([, url]) => url);
+        return ['BEGIN:VCARD', 'VERSION:3.0', `N:${v(rest.join(' '))};${v(first)};;;`, `FN:${v(c.name)}`,
+            `ORG:${v(c.experience[0].company)}`, `TITLE:${v(c.title)}`, `EMAIL;TYPE=INTERNET,WORK:${c.email}`,
+            // item.X-ABLabel is how Contacts names a URL ("GitHub") when it saves a card
+            ...urls.flatMap(([label, url], i) => [`item${i + 1}.URL:${url}`, `item${i + 1}.X-ABLabel:${v(label)}`]),
+            `ADR;TYPE=HOME:;;;${v(city)};;;${v(country || '')}`, `NOTE:${v(c.about.shortBio)}`, 'END:VCARD', ''].join('\r\n');
+    },
+
+    // Share Contact: the share sheet where the browser can share files (phones), otherwise the .vcf downloads
+    async share() {
+        const file = new File([this.vcard()], `${portfolioContent.name}.vcf`, { type: 'text/vcard' });
+        if (navigator.canShare?.({ files: [file] })) {
+            try {
+                return await navigator.share({ files: [file], title: portfolioContent.name });
+            } catch (error) {
+                if (error.name === 'AbortError') return;
             }
-        });
+        }
+        if (this.vcardUrl) URL.revokeObjectURL(this.vcardUrl);
+        this.vcardUrl = URL.createObjectURL(file);
+        Object.assign(document.createElement('a'), { href: this.vcardUrl, download: file.name }).click();
     },
-    
+
+    // Page background and scrollbars follow the card's grey (light or dark, as the OS is)
+    paint() {
+        document.body.style.backgroundColor = getComputedStyle(this.root).getPropertyValue('--bg').trim();
+        document.documentElement.style.colorScheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    },
+
+    calm() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    },
+
+    // ---------- opening: the name rises letter by letter, the caricature steps in front of it, the card fills in ----------
+
+    async intro(t) {
+        const live = () => t === this.token;
+        if (this.fast) return;
+        // Nothing plays behind the theme chooser. On page load it opens right after this first render, so look a microtask later
+        await null;
+        if (!live()) return;
+        const chooser = document.getElementById('themeChooser');
+        if (chooser?.open) {
+            await new Promise(r => { this.onChooser = r; chooser.addEventListener('close', r, { once: true }); });
+            if (!live()) return;
+        }
+        this.onSkip = () => this.skip();
+        window.addEventListener('keydown', this.onSkip);
+        window.addEventListener('pointerdown', this.onSkip);
+
+        this.root.classList.remove('is-waiting');
+        const spring = 'cubic-bezier(0.34, 1.4, 0.64, 1)', ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const letters = [...this.root.querySelectorAll('.ap-letter')], figureAt = 200 + letters.length * 60;
+        const card = [this.root.querySelector('.ap-head'), ...this.root.querySelectorAll('.ap-action, .ap-card > .ap-group')];
+        this.anims = [
+            ...letters.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(45%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 800, delay: 150 + i * 60, easing: spring, fill: 'backwards' })),
+            this.root.querySelector('.ap-figure').animate([{ opacity: 0, transform: 'translateY(18%) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 1000, delay: figureAt, easing: spring, fill: 'backwards' }),
+            ...card.map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 600, delay: figureAt + 380 + i * 80, easing: ease, fill: 'backwards' }))
+        ];
+        await Promise.all(this.anims.map(a => a.finished)).catch(() => {});
+        if (live()) this.endIntro();
+    },
+
+    skip() {
+        this.anims.forEach(a => a.finish());
+        this.endIntro();
+    },
+
+    endIntro() {
+        window.removeEventListener('keydown', this.onSkip);
+        window.removeEventListener('pointerdown', this.onSkip);
+        this.onSkip = null;
+    },
+
     cleanup() {
-        // No cleanup needed
+        this.token++;
+        this.endIntro();
+        window.removeEventListener('keydown', this.onKey);
+        this.onKey = null;
+        this.observer?.disconnect();
+        this.observer = null;
+        if (this.vcardUrl) URL.revokeObjectURL(this.vcardUrl);
+        this.vcardUrl = null;
+        document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
+        this.onChooser = null;
     }
 };
 
