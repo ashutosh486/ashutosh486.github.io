@@ -4010,6 +4010,11 @@ button.shell-ui {
     background: var(--hover);
 }
 
+#bkRoot .bk-theme:focus-visible {
+    outline-offset: -2px;
+    border-radius: 0;
+}
+
 .bk-theme[aria-checked="true"]::before {
     content: '✓';
     position: absolute;
@@ -4237,12 +4242,12 @@ button.shell-ui {
 .bk-nav-btn {
     display: grid;
     place-items: center;
-    width: 90px;
-    height: 54px;
+    width: 64px;
+    height: 44px;
     border-radius: 5px;
     background: var(--sidebar-bg);
     color: var(--icons) !important;
-    font-size: 2.5em;
+    font-size: 1.5em;
     text-decoration: none !important;
 }
 
@@ -4257,16 +4262,18 @@ button.shell-ui {
     display: none;
 }
 
+/* A small box mid-height in mdBook's 90px side gutters */
 .bk-nav-side {
     position: fixed;
-    top: var(--menu-h);
-    bottom: 80px; /* stops above the theme switcher */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 90px;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    border-radius: 6px;
     color: var(--icons) !important;
-    font-size: 2.5em;
+    font-size: 1.5em;
     text-decoration: none !important;
 }
 
@@ -4275,11 +4282,11 @@ button.shell-ui {
     color: var(--icons-hover) !important;
 }
 
-.bk-nav-side.bk-prev { left: 0; }
-.bk-nav-side.bk-next { right: 0; }
+.bk-nav-side.bk-prev { left: 21px; }
+.bk-nav-side.bk-next { right: 21px; }
 
 .sidebar-visible .bk-nav-side.bk-prev {
-    left: var(--sidebar-w);
+    left: calc(var(--sidebar-w) + 21px);
 }
 
 @media (min-width: 1080px) {
