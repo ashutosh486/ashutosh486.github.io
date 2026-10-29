@@ -29,7 +29,7 @@ class PortfolioController {
             paper: { label: 'Paper', blurb: 'An arXiv preprint in a PDF viewer', icon: 'fas fa-file-pdf', bg: '#525659', fg: '#ffffff' },
             book: { label: 'Book', blurb: 'An mdBook, read chapter by chapter', icon: 'fas fa-book-open', bg: '#ffffff', fg: '#20609f' },
             apple: { label: 'Contact Card', blurb: 'An iPhone contact card', icon: 'fas fa-address-card', bg: '#2f6f62', fg: '#ffffff' },
-            scifi: { label: 'Sci-Fi', blurb: 'A starship personnel console', icon: 'fas fa-satellite-dish', bg: '#000000', fg: '#22d3ee' }
+            scifi: { label: 'Sci-Fi', blurb: 'A starship crew records terminal', icon: 'fas fa-satellite-dish', bg: '#0b0700', fg: '#ffb000' }
         };
 
         this.currentTheme = null;

@@ -50,6 +50,7 @@ node tests/notebook.test.mjs   # desktop + 390px phone
 node tests/paper.test.mjs      # desktop + 390px phone
 node tests/book.test.mjs       # desktop + 390px phone
 node tests/apple.test.mjs      # desktop + 390px phone
+node tests/scifi.test.mjs      # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -70,7 +71,7 @@ node tests/apple.test.mjs      # desktop + 390px phone
 | Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
 | Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
-| Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
+| Sci-Fi Console | ✅ | **Rebuilt, in review** | `theme/scifi` | Amber CRT crew records terminal |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -625,6 +626,31 @@ Checked by `tests/apple.test.mjs` at 1440px and 390px:
 - A page slides in, the card goes inert and focus lands on Back. On desktop the page opens beside the poster. Escape and Back return to the card with focus on the row.
 - The vCard has the right name, fields and CRLF line ends, and no phone number.
 - There is no horizontal overflow, and the switcher corner stays clear at the end of the card and of a page. On phones the compact bar shows after scrolling and targets are 44px; on desktop the poster stays in place. Cleanup removes the listeners and the observer, and there are no runtime errors. The shell, ChatGPT and Book suites still pass.
+
+### Sci-Fi Console (`theme/scifi`): rebuilt from scratch
+
+#### Sci-Fi Console before
+
+- A dense cyan HUD: every panel had a 2px cyan border and a cyan glow, over a canvas of drifting, linked particles.
+- It showed made-up facts: a random "ID", "CLEARANCE: ALPHA", "STATUS: AVAILABLE", and progress bars at fixed 95%/87%/92%.
+- Project descriptions were cut at 120 characters with "...". There was no keyboard navigation, no opening, and the corner under the switcher wasn't kept clear.
+
+#### Sci-Fi Console after
+
+**A starship's crew records terminal on an amber phosphor CRT** (cassette futurism: one colour at a few strengths, VT323 type, phosphor glow, scanlines, vignette and a faint refresh band rolling down the glass). It's menu-driven, so it doesn't overlap the Terminal theme's typed commands.
+- **Layout:** a status bar (name, live ship time as year.day-of-year), a numbered menu with the selected item in inverse video, the record screen, and a key bar whose right end stays clear of the switcher. On desktop the screen sits inside a dark bezel and the panel scrolls; on phones it's full-bleed, the menu becomes a sticky row of 44px tabs and the page scrolls.
+- **Screens:** Dossier (caricature in amber with a scan bar, record fields, profile, commendations from `impact`, fun fact, focus, off duty), Service record, Missions (`MSN-00n`, full descriptions), Systems (`stats.skills` modules, each skill once), Training (education, patent, certificates with links), Archive (reading list) and Comms (email, GitHub, LinkedIn, homepage, résumé PDF, location). No phone number. Colour emoji are left out on screen (the fun fact's 🚀).
+- **Keys:** 1–7 open a screen from anywhere; the menu is a tablist (arrows wrap, Home/End). A new screen prints in line by line (transform and opacity).
+- **Opening (after the theme chooser closes):** the tube powers on from a bright line, a self-test prints (the counts are real: postings, missions, modules), then the console draws in. A key press or click skips it. With reduced motion everything shows at once.
+
+#### Sci-Fi Console verified
+
+Checked by `tests/scifi.test.mjs` at 1440px and 390px:
+- Nothing plays behind the chooser, closing it starts the boot, the boot finishes and its printout goes, and a key press skips it.
+- The dossier shows the caricature (no photo), and no cyan is left.
+- Keys 1–7 open each screen, with the panel labelled by the focused tab. The facts from `content.js` appear across the screens; the phone number and colour emoji don't. Systems lists every skill once. The résumé link uses the `content.js` path.
+- Arrow keys move along the menu and wrap; a new screen prints in.
+- There is no horizontal overflow on any screen, and the switcher corner stays clear at the end of a screen. On phones the menu sticks to the top and a new screen starts under it; on desktop the console fills the window. Cleanup removes the listeners and the clock, and there are no runtime errors. The shell suite still passes.
 
 ## Shared backlog (shell / cross-theme)
 
