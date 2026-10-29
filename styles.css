@@ -4369,3 +4369,309 @@ button.shell-ui {
         transition: none;
     }
 }
+
+/* Contact Card theme: iOS Contacts. System colours, the SF font stack and list metrics are iOS's own; the poster is a Contact Poster */
+#apRoot {
+    --poster: #2f6f62;
+    --name-size: clamp(60px, 18vw, 76px);
+    --bg: #f2f2f7;
+    --cell: #ffffff;
+    --label: #000000;
+    --secondary: rgba(60, 60, 67, 0.6);
+    --tertiary: rgba(60, 60, 67, 0.3);
+    --sep: rgba(60, 60, 67, 0.29);
+    --tint: #007aff;
+    --hover: rgba(0, 0, 0, 0.03);
+    --pressed: #d1d1d6;
+    --bar: rgba(249, 249, 249, 0.82);
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--label);
+    font: 17px/22px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+    letter-spacing: -0.41px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+    #apRoot {
+        --bg: #000000;
+        --cell: #1c1c1e;
+        --label: #ffffff;
+        --secondary: rgba(235, 235, 245, 0.6);
+        --tertiary: rgba(235, 235, 245, 0.3);
+        --sep: rgba(84, 84, 88, 0.65);
+        --tint: #0a84ff;
+        --hover: rgba(255, 255, 255, 0.04);
+        --pressed: #3a3a3c;
+        --bar: rgba(22, 22, 23, 0.82);
+    }
+}
+
+html:has(#apRoot) { scrollbar-color: rgba(128, 128, 128, 0.45) transparent; }
+#apRoot :focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
+#apRoot .ap-card:focus { outline: none; }
+
+/* Poster: name on top, caricature in front of its lower half */
+.ap-poster {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-top: calc(56px + env(safe-area-inset-top));
+    overflow: hidden;
+    background: var(--poster);
+    color: #ffffff;
+}
+
+.ap-name {
+    font: 700 var(--name-size)/0.9 ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.ap-name > span { display: block; white-space: nowrap; }
+.ap-letter { display: inline-block; }
+
+.ap-figure {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 440px);
+    margin-top: calc(var(--name-size) * -0.42);
+}
+
+.ap-figure .cc {
+    --cc-desk: rgba(0, 0, 0, 0.28);
+    --cc-code: rgba(255, 255, 255, 0.55);
+    --cc-steam: rgba(255, 255, 255, 0.5);
+    width: 100%;
+    height: auto;
+    margin-bottom: -5%; /* the desk sits on the poster's bottom edge */
+}
+
+/* Card */
+.ap-card {
+    padding-bottom: 96px;
+}
+
+.ap-head {
+    padding: 18px 16px 0;
+    text-align: center;
+}
+
+.ap-title { font-size: 17px; font-weight: 600; }
+.ap-org { margin-top: 2px; font-size: 15px; letter-spacing: -0.24px; color: var(--secondary); }
+
+.ap-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 16px;
+}
+
+.ap-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 60px;
+    border-radius: 12px;
+    background: var(--cell);
+    color: var(--tint);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0;
+    text-decoration: none;
+    transition: background-color 0.15s;
+}
+
+.ap-action i { font-size: 19px; }
+
+.ap-group {
+    margin: 0 16px 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--cell);
+}
+
+.ap-row {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 16px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color 0.15s;
+}
+
+.ap-row + .ap-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 0;
+    border-top: 0.5px solid var(--sep);
+}
+
+a.ap-row, button.ap-row { cursor: pointer; }
+
+@media (hover: hover) {
+    a.ap-row:hover, button.ap-row:hover, .ap-action:hover { background-color: var(--hover); }
+    .ap-action:hover { background-color: color-mix(in srgb, var(--cell), var(--label) 4%); }
+}
+
+a.ap-row:active, button.ap-row:active, .ap-action:active { background-color: var(--pressed); }
+
+.ap-field {
+    flex-direction: column;
+    gap: 1px;
+    padding: 9px 16px 10px;
+}
+
+.ap-label { font-size: 15px; line-height: 20px; letter-spacing: -0.24px; }
+.ap-value { color: var(--tint); overflow-wrap: anywhere; }
+.ap-notes p + p { margin-top: 10px; }
+.ap-notes .ap-label { margin-bottom: 2px; }
+
+.ap-more { align-items: center; gap: 8px; }
+.ap-more > span:first-child { flex: 1; }
+.ap-detail { color: var(--secondary); }
+.ap-more i, .ap-out::after { color: var(--tertiary); font-size: 13px; }
+.ap-link { align-items: center; color: var(--tint); }
+
+/* Compact bar (phones): fades in once the poster has scrolled away */
+.ap-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(44px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    border-bottom: 0.5px solid var(--sep);
+    background: var(--bar);
+    font-weight: 600;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+#apRoot.is-compact .ap-bar { opacity: 1; transform: none; }
+
+/* Detail page, pushed over the card */
+.ap-page {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--bg);
+    box-shadow: -1px 0 0 var(--sep), -8px 0 24px rgba(0, 0, 0, 0.08);
+    scrollbar-color: rgba(128, 128, 128, 0.45) transparent;
+}
+
+.ap-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: calc(44px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 8px 0;
+    border-bottom: 0.5px solid var(--sep);
+    background: var(--bar);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.ap-back {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 44px;
+    padding: 0 8px 0 4px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--tint);
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+}
+
+.ap-back i { font-size: 18px; }
+.ap-back:active { opacity: 0.4; }
+.ap-nav-title { font-size: 17px; font-weight: 600; }
+
+.ap-page-body {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 4px 0 96px;
+}
+
+.ap-caption { padding: 16px 32px 0; font-size: 13px; line-height: 18px; letter-spacing: -0.08px; color: var(--secondary); text-align: center; }
+.ap-gap { height: 18px; }
+
+.ap-section {
+    padding: 22px 32px 7px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+    letter-spacing: -0.08px;
+    text-transform: uppercase;
+    color: var(--secondary);
+}
+
+.ap-footer {
+    margin: -14px 0 0;
+    padding: 7px 32px 4px;
+    font-size: 13px;
+    line-height: 18px;
+    letter-spacing: -0.08px;
+    color: var(--secondary);
+}
+
+.ap-item { flex-direction: column; gap: 2px; }
+.ap-item strong { font-weight: 600; }
+.ap-sub, .ap-text, .ap-notes p { font-size: 15px; line-height: 20px; letter-spacing: -0.24px; }
+.ap-sub { color: var(--secondary); }
+.ap-out { padding-right: 36px; }
+.ap-out::after { content: '\f35d'; position: absolute; top: 14px; right: 16px; font: 900 12px 'Font Awesome 6 Free'; }
+
+/* Wide screens: poster stays on the left, the card scrolls on the right */
+@media (min-width: 900px) {
+    #apRoot {
+        --poster-w: clamp(400px, 42vw, 640px);
+        --name-size: clamp(64px, 6.2vw, 104px);
+        display: grid;
+        grid-template-columns: var(--poster-w) minmax(0, 1fr);
+    }
+
+    .ap-poster { position: sticky; top: 0; z-index: 2; height: 100vh; }
+    .ap-figure { width: min(100%, calc((100vh - 1.4 * var(--name-size) - 56px) * 1.25)); }
+    .ap-main { overflow-x: clip; }
+    .ap-card { max-width: 640px; margin: 0 auto; padding: 40px 8px 96px; }
+    .ap-group { margin-inline: 20px; }
+    .ap-actions { padding-inline: 20px; }
+    .ap-page { left: var(--poster-w); }
+    .ap-bar { display: none; }
+}
+
+/* Waits behind the theme chooser; the opening animates these in */
+#apRoot.is-waiting :is(.ap-letter, .ap-figure, .ap-head, .ap-action, .ap-card > .ap-group) { opacity: 0; }

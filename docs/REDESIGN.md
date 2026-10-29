@@ -49,6 +49,7 @@ node tests/terminal.test.mjs   # desktop + 390px phone
 node tests/notebook.test.mjs   # desktop + 390px phone
 node tests/paper.test.mjs      # desktop + 390px phone
 node tests/book.test.mjs       # desktop + 390px phone
+node tests/apple.test.mjs      # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -68,7 +69,7 @@ node tests/book.test.mjs       # desktop + 390px phone
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
 | Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
-| Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
+| Contact Card (was Apple Persona Card) | ✅ | **Rebuilt, in review** | `theme/apple` | iOS Contacts card with a Contact Poster |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
@@ -597,6 +598,33 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 - Print loads the résumé PDF from `content.js`, and cleanup removes the frame.
 - No horizontal overflow, and the switcher corner is clear at the end of a chapter. Cleanup removes the listeners, and there are no runtime errors.
 - Also fixed in Notebook and Paper (same pattern): if the theme was switched away within a microtask of rendering, the old theme's opening still ran and threw. All three now check the render token after `await null`. All other suites still pass.
+
+### Contact Card (`theme/apple`): rebuilt from scratch
+
+#### Contact Card before
+
+- "Apple Persona Card": a white card whose left half was a blue-purple-pink gradient with blurred, pulsing orbs and the initials in a frosted circle. Stats were coloured blue, purple and pink.
+- "View Details" opened a Tailwind table of skills and other lists under the card. The bio was cut at 200 characters with "...".
+
+#### Contact Card after
+
+**Looks like iOS Contacts** (a contact card with a Contact Poster). It uses iOS's system colours (light and dark, following the OS), the SF font stack, inset grouped lists and the 44px rows. The theme key stays `apple` so links keep working. The chooser shows it as "Contact Card" on the poster colour.
+- **Poster:** the name in large rounded type with the caricature standing in front of its lower half, like the poster's depth effect. On wide screens (900px and up) the poster stays on the left and the card scrolls on the right.
+- **Card:** job title, then specialization · company. Below that sit four action buttons (mail, GitHub, LinkedIn, résumé) and the fields: work email, URLs (homepage, GitHub, LinkedIn), home address (opens Apple Maps). Notes holds the tagline, bio, impact numbers, fun fact and hobbies. Then come the disclosure rows and Share Contact / Download Résumé.
+- **Detail pages:** Experience (shows `stats.years`), Projects, Skills, Education and Reading List push in from the right like an iOS navigation push, while the card drifts left (transform only). Each page has a "‹ <first name>" Back button. Escape also goes back, and focus returns to the row. Each role, project and degree is its own group, with technologies and tags as the group footer. Skills lists each skill once. Education also covers the patent and certifications (with links).
+- **Share Contact:** builds a vCard from `content.js` (name, title, company, email, labelled URLs, city, short bio; no phone number). It opens the share sheet where the browser can share files (phones). Otherwise it downloads `<name>.vcf`, which iOS and macOS open in Contacts.
+- **Phones:** once the poster scrolls away, a compact blurred bar keeps the name at the top, as in Contacts. Rows, action buttons and Back are at least 44px.
+- **Opening (after the theme chooser closes):** the name rises letter by letter with a slight spring, then the caricature steps up in front of it, then the card fills in group by group. A key press or click skips it. With reduced motion everything shows at once.
+
+#### Contact Card verified
+
+Checked by `tests/apple.test.mjs` at 1440px and 390px:
+- Nothing plays behind the chooser, closing it starts the opening, and a key press skips it.
+- The poster shows the name and caricature (no photo), and the caricature overlaps the name.
+- The facts from `content.js` appear across the card and all pages, and the phone number does not. Skills lists every skill once (`stats.skills`). The résumé links use the `content.js` path.
+- A page slides in, the card goes inert and focus lands on Back. On desktop the page opens beside the poster. Escape and Back return to the card with focus on the row.
+- The vCard has the right name, fields and CRLF line ends, and no phone number.
+- There is no horizontal overflow, and the switcher corner stays clear at the end of the card and of a page. On phones the compact bar shows after scrolling and targets are 44px; on desktop the poster stays in place. Cleanup removes the listeners and the observer, and there are no runtime errors. The shell, ChatGPT and Book suites still pass.
 
 ## Shared backlog (shell / cross-theme)
 
