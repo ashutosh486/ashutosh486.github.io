@@ -4878,13 +4878,10 @@ html:has(#sfRoot) { scrollbar-color: var(--line, rgba(255, 176, 0, 0.28)) transp
 .sf-date { color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
 .sf-entry-title { font-size: 28px; line-height: 1.1; }
 
-.sf-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(11em, 1fr));
-    gap: 2px 16px;
-}
-
-.sf-grid li::before { content: '■ '; color: var(--dim); }
+/* Systems: one row per category, its skills inline */
+.sf-skills ul { display: inline; }
+.sf-skills li { display: inline; white-space: nowrap; } /* lines break only between skills, after the dot */
+.sf-skills li:not(:last-child)::after { content: '\00a0·'; color: var(--dim); }
 
 /* Key bar: the right end stays clear of the theme switcher */
 .sf-keys {

@@ -60,7 +60,7 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
 
     // Systems lists each skill once
     await b.evaluate(`dispatchEvent(new KeyboardEvent('keydown', { key: '4' }))`); await sleep(100);
-    const listed = await b.evaluate(`[...document.querySelectorAll('.sf-grid li')].map(x => x.textContent.toLowerCase())`);
+    const listed = await b.evaluate(`[...document.querySelectorAll('.sf-skills li')].map(x => x.textContent.toLowerCase())`);
     assert.equal(listed.length, new Set(listed).size, `${label}: each skill listed once`);
     assert.equal(listed.length, c.stats.skills, `${label}: every skill listed`);
 

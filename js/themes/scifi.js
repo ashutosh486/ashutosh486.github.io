@@ -96,8 +96,10 @@ const SciFiTheme = {
                     <p class="sf-dim">Systems: ${e(p.tags.join(', '))}</p>
                     ${p.site ? `<p>Uplink: ${link(`https://${p.site}`, p.site)}</p>` : ''}
                 </article>`).join('')) },
-            { id: 'systems', title: 'Systems', html: screen('Systems check', `${s.skills} modules online`, skills.map(([label, items]) => `
-                ${h(label)}<ul class="sf-grid">${items.map(x => `<li>${e(x)}</li>`).join('')}</ul>`).join('')) },
+            { id: 'systems', title: 'Systems', html: screen('Systems check', `${s.skills} modules online`, `
+                <dl class="sf-fields sf-skills">${skills.map(([label, items]) => `
+                    <div><dt>${e(label)}</dt><dd><ul>${items.map(x => `<li>${e(x)}</li>`).join(' ')}</ul></dd></div>`).join('')}
+                </dl>`) },
             { id: 'training', title: 'Training', html: screen('Training', `${c.education.length} academies · ${c.certifications.length} certificates`, c.education.map(x => `
                 <article class="sf-entry">
                     <p class="sf-date">${e(x.year)}</p>
