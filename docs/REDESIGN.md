@@ -621,7 +621,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 Checked by `tests/apple.test.mjs` at 1440px and 390px:
 - Nothing plays behind the chooser, closing it starts the opening, and a key press skips it.
 - The poster shows the name and caricature (no photo), and the caricature overlaps the name.
-- The facts from `content.js` appear across the card and all pages, and the phone number does not. Skills lists every skill once (`stats.skills`). The résumé links use the `content.js` path.
+- The facts from `content.js` appear across the card and all pages, and the phone number does not. Skills lists every skill once (`stats.skills`), as a comma list (owner found the commas missing in round 1: the row was a flex box, so each skill became a flex item). The résumé links use the `content.js` path.
 - A page slides in, the card goes inert and focus lands on Back. On desktop the page opens beside the poster. Escape and Back return to the card with focus on the row.
 - The vCard has the right name, fields and CRLF line ends, and no phone number.
 - There is no horizontal overflow, and the switcher corner stays clear at the end of the card and of a page. On phones the compact bar shows after scrolling and targets are 44px; on desktop the poster stays in place. Cleanup removes the listeners and the observer, and there are no runtime errors. The shell, ChatGPT and Book suites still pass.

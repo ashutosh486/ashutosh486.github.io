@@ -4651,6 +4651,7 @@ a.ap-row:active, button.ap-row:active, .ap-action:active { background-color: var
 .ap-item strong { font-weight: 600; }
 .ap-sub, .ap-text, .ap-notes p { font-size: 15px; line-height: 20px; letter-spacing: -0.24px; }
 .ap-sub { color: var(--secondary); }
+.ap-skills { display: block; } /* inline text, so the ", " between skills survives and long lists wrap */
 .ap-out { padding-right: 36px; }
 .ap-out::after { content: '\f35d'; position: absolute; top: 14px; right: 16px; font: 900 12px 'Font Awesome 6 Free'; }
 

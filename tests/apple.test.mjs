@@ -57,6 +57,7 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     const listed = await b.evaluate(`[...document.querySelectorAll('.ap-skills span')].map(x => x.textContent.toLowerCase())`);
     assert.equal(listed.length, new Set(listed).size, `${label}: each skill listed once`);
     assert.equal(listed.length, c.stats.skills, `${label}: every skill listed`);
+    assert.ok(await b.evaluate(`[...document.querySelectorAll('.ap-skills')].every(row => row.children.length < 2 || row.innerText.includes(', '))`), `${label}: skills read as a comma list`);
     await back();
     assert.ok(await b.evaluate(`(l => l.length === 2 && l.every(a => a.getAttribute('href') === portfolioContent.resume && a.target === '_blank'))(document.querySelectorAll('.ap-card a[download]'))`), `${label}: résumé links use the content.js path and open in a new tab`);
 
