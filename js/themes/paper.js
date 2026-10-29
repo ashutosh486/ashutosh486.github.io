@@ -373,6 +373,7 @@ const PaperTheme = {
         if (this.fast) return this.sync();
         // Nothing plays behind the theme chooser. On page load it opens right after this first render, so look a microtask later
         await null;
+        if (!live()) return;
         const chooser = document.getElementById('themeChooser');
         if (chooser?.open) {
             await new Promise(r => { this.onChooser = r; chooser.addEventListener('close', r, { once: true }); });

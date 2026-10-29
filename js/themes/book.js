@@ -1,721 +1,603 @@
-// Markdown Book Theme (GitBook-Style)
+// Book theme - the résumé as an mdBook. Chapters are written in Markdown from portfolioContent and rendered by a small
+// Markdown renderer. Everything in the menu bar works: sidebar toggle, mdBook's five themes, search (S or /), print (the
+// whole book) and the GitHub link; ← → turn chapters. Opens with the chapter's Markdown typing out, then rendering
 const BookTheme = {
     name: "Markdown Book",
-    
-    currentChapter: 'intro',
-    
-    chapters: [
-        { id: 'intro', title: 'Introduction', icon: 'fa-book-open' },
-        { id: 'about', title: 'About the Author', icon: 'fa-user' },
-        { id: 'skills', title: 'Technical Skills', icon: 'fa-code' },
-        { id: 'experience', title: 'Work Experience', icon: 'fa-briefcase' },
-        { id: 'projects', title: 'Notable Projects', icon: 'fa-rocket' },
-        { id: 'reading', title: 'Currently Reading', icon: 'fa-book' },
-        { id: 'education', title: 'Education & Learning', icon: 'fa-graduation-cap' },
-        { id: 'contact', title: 'Get in Touch', icon: 'fa-envelope' }
-    ],
-    
+    token: 0,
+    current: 'intro',
+    palettes: [['light', 'Light'], ['rust', 'Rust'], ['coal', 'Coal'], ['navy', 'Navy'], ['ayu', 'Ayu']],
+
     render() {
-        const container = document.getElementById('themeContainer');
-        container.innerHTML = `
-            <div class="min-h-screen bg-white text-gray-900 flex h-screen overflow-hidden">
-                <!-- Sidebar TOC (Fixed, Non-Scrollable) -->
-                <div id="sidebar" class="w-72 border-r border-gray-200 bg-gray-50 flex flex-col transition-all duration-300 fixed lg:relative h-full z-40 overflow-hidden">
-                    <div class="p-6 border-b border-gray-200 bg-white flex-shrink-0">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-                                ${portfolioContent.name.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <div>
-                                <h1 class="text-lg font-bold text-gray-900">${portfolioContent.name}</h1>
-                                <p class="text-xs text-gray-500">Professional Portfolio</p>
-                            </div>
-                        </div>
-                        <button id="closeSidebar" class="lg:hidden absolute top-4 right-4 text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <nav class="flex-1 overflow-y-auto p-4 flex-shrink min-h-0">
-                        <div class="space-y-1">
-                            ${this.chapters.map(chapter => `
-                                <button 
-                                    class="chapter-link w-full text-left px-3 py-2 rounded-lg transition-all ${this.currentChapter === chapter.id ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}"
-                                    data-chapter="${chapter.id}"
-                                >
-                                    <i class="fas ${chapter.icon} w-5 mr-2 text-sm"></i>
-                                    <span class="text-sm">${chapter.title}</span>
-                                </button>
-                            `).join('')}
-                        </div>
-                    </nav>
-                    
-                    <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
-                        <div class="flex items-center gap-2 mb-3">
-                            <a href="${portfolioContent.social.github}" target="_blank" class="flex-1 px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-center text-sm transition-colors">
-                                <i class="fab fa-github mr-1"></i> GitHub
-                            </a>
-                            <a href="${portfolioContent.social.linkedin}" target="_blank" class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center text-sm transition-colors">
-                                <i class="fab fa-linkedin mr-1"></i> LinkedIn
-                            </a>
-                        </div>
-                        <a href="mailto:${portfolioContent.email}" class="block w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-center text-sm font-semibold transition-all shadow-md">
-                            <i class="fas fa-envelope mr-1"></i> Contact Me
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Mobile Menu Button -->
-                <button id="openSidebar" class="lg:hidden fixed bottom-6 left-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg z-30 flex items-center justify-center transition-transform hover:scale-110">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                
-                <!-- Main Content (Only this scrolls) -->
-                <div class="flex-1 overflow-y-auto h-full">
-                    <div class="max-w-4xl mx-auto px-6 py-12">
-                        <div id="content" class="prose prose-lg max-w-none">
-                            <!-- Content will be dynamically inserted -->
-                        </div>
-                        
-                        <!-- Chapter Navigation -->
-                        <div class="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center">
-                            <button id="prevChapter" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fas fa-arrow-left mr-2"></i>
-                                Previous
-                            </button>
-                            <div class="text-sm text-gray-500">
-                                Chapter <span id="chapterNum">1</span> of ${this.chapters.length}
-                            </div>
-                            <button id="nextChapter" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                Next
-                                <i class="fas fa-arrow-right ml-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.attachEventListeners();
-        this.renderChapter(this.currentChapter);
-    },
-    
-    attachEventListeners() {
-        // Chapter navigation
-        document.querySelectorAll('.chapter-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                const chapterId = e.currentTarget.dataset.chapter;
-                this.navigateToChapter(chapterId);
-            });
-        });
-        
-        // Previous/Next buttons
-        const prevBtn = document.getElementById('prevChapter');
-        const nextBtn = document.getElementById('nextChapter');
-        
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                const currentIndex = this.chapters.findIndex(c => c.id === this.currentChapter);
-                if (currentIndex > 0) {
-                    this.navigateToChapter(this.chapters[currentIndex - 1].id);
-                }
-            });
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                const currentIndex = this.chapters.findIndex(c => c.id === this.currentChapter);
-                if (currentIndex < this.chapters.length - 1) {
-                    this.navigateToChapter(this.chapters[currentIndex + 1].id);
-                }
-            });
-        }
-        
-        // Mobile sidebar toggle
-        const sidebar = document.getElementById('sidebar');
-        const openBtn = document.getElementById('openSidebar');
-        const closeBtn = document.getElementById('closeSidebar');
-        
-        if (openBtn) {
-            openBtn.addEventListener('click', () => {
-                sidebar.classList.remove('-translate-x-full');
-            });
-        }
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-            });
-        }
-    },
-    
-    navigateToChapter(chapterId) {
-        this.currentChapter = chapterId;
-        this.renderChapter(chapterId);
-        
-        // Update sidebar active state
-        document.querySelectorAll('.chapter-link').forEach(link => {
-            if (link.dataset.chapter === chapterId) {
-                link.classList.add('bg-blue-100', 'text-blue-700', 'font-semibold');
-                link.classList.remove('text-gray-700', 'hover:bg-gray-100');
-            } else {
-                link.classList.remove('bg-blue-100', 'text-blue-700', 'font-semibold');
-                link.classList.add('text-gray-700', 'hover:bg-gray-100');
-            }
-        });
-        
-        // Update prev/next buttons
-        const currentIndex = this.chapters.findIndex(c => c.id === chapterId);
-        const prevBtn = document.getElementById('prevChapter');
-        const nextBtn = document.getElementById('nextChapter');
-        
-        if (prevBtn) prevBtn.disabled = currentIndex === 0;
-        if (nextBtn) nextBtn.disabled = currentIndex === this.chapters.length - 1;
-        
-        document.getElementById('chapterNum').textContent = currentIndex + 1;
-        
-        // Scroll to top
-        document.querySelector('.overflow-y-auto').scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Close mobile sidebar
-        if (window.innerWidth < 1024) {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-        }
-    },
-    
-    renderChapter(chapterId) {
-        const contentDiv = document.getElementById('content');
-        let content = '';
-        
-        switch(chapterId) {
-            case 'intro':
-                content = `
-                    <h1>Welcome to My Professional Portfolio</h1>
-                    <p class="lead text-xl text-gray-600 mb-6">
-                        A comprehensive guide to my experience, skills, and projects in the field of software engineering and machine learning.
-                    </p>
-                    
-                    <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
-                        <p class="text-sm text-blue-900">
-                            <strong>📘 About This Book:</strong> This interactive portfolio is structured like a technical book, 
-                            allowing you to navigate through different chapters to learn about my professional journey.
-                        </p>
-                    </div>
-                    
-                    <h2>What You'll Find Here</h2>
-                    <ul>
-                        <li><strong>Technical Expertise:</strong> Deep dive into my skills across ML, software engineering, and cloud technologies</li>
-                        <li><strong>Work History:</strong> Detailed accounts of my professional experience and contributions</li>
-                        <li><strong>Project Showcase:</strong> Real-world applications and implementations</li>
-                        <li><strong>Educational Background:</strong> Academic achievements and continuous learning</li>
-                    </ul>
-                    
-                    <h2>Quick Stats</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-6 not-prose">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-blue-600">${portfolioContent.stats.skills}+</div>
-                            <div class="text-sm text-gray-600 mt-1">Skills</div>
-                        </div>
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-purple-600">${portfolioContent.projects.length}</div>
-                            <div class="text-sm text-gray-600 mt-1">Projects</div>
-                        </div>
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-green-600">${portfolioContent.stats.years}+</div>
-                            <div class="text-sm text-gray-600 mt-1">Years Exp.</div>
-                        </div>
-                        <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-lg text-center">
-                            <div class="text-3xl font-bold text-pink-600">${portfolioContent.education.length}</div>
-                            <div class="text-sm text-gray-600 mt-1">Degrees</div>
-                        </div>
-                    </div>
-                    
-                    <blockquote>
-                        <p>"${portfolioContent.about.tagline}"</p>
-                    </blockquote>
-                `;
-                break;
-                
-            case 'about':
-                content = `
-                    <h1>About the Author</h1>
-                    <p class="lead text-xl text-gray-600 italic">"${portfolioContent.about.tagline}"</p>
-                    <p class="text-gray-700 mt-4">${portfolioContent.about.bio}</p>
-                    
-                    <h2>Core Interests</h2>
-                    <div class="flex flex-wrap gap-2 my-4 not-prose">
-                        ${portfolioContent.about.interests.map(interest => 
-                            `<span class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">${interest}</span>`
-                        ).join('')}
-                    </div>
-                    
-                    <h2>Professional Philosophy</h2>
-                    <p>I believe in building intelligent solutions that make a tangible impact. My approach combines deep technical expertise with a pragmatic focus on delivering real-world value. Whether it's developing GenAI applications, optimizing ML pipelines, or architecting scalable systems, I'm driven by the challenge of turning complex problems into elegant solutions.</p>
-                    
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-lg my-6 border-l-4 border-blue-600">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Key Strengths</h3>
-                        <ul class="space-y-2 text-gray-700">
-                            <li>✅ <strong>ML/AI Mastery:</strong> Deep foundation in machine learning, NLP, and GenAI</li>
-                            <li>✅ <strong>Full-Stack Capabilities:</strong> End-to-end development from concept to deployment</li>
-                            <li>✅ <strong>Cloud & MLOps:</strong> Expertise in scalable infrastructure and production ML</li>
-                            <li>✅ <strong>Innovation Focus:</strong> Passion for building solutions that drive real impact</li>
-                        </ul>
-                    </div>
-                    
-                    <h2>Fun Facts</h2>
-                    <p>${portfolioContent.about.funFact}</p>
-                    
-                    <div class="mt-12 pt-6 border-t border-gray-200 not-prose">
-                        <div class="text-center">
-                            <p class="text-gray-500 text-sm mb-3">With gratitude and excitement for the journey ahead,</p>
-                            <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2" style="font-family: 'Brush Script MT', cursive;">
-                                ${portfolioContent.name}
-                            </div>
-                            <p class="text-gray-600 text-sm">${portfolioContent.title}</p>
-                            <p class="text-gray-500 text-xs mt-1">${portfolioContent.location}</p>
-                        </div>
-                    </div>
-                `;
-                break;
-                
-            case 'skills':
-                content = `
-                    <h1>Technical Skills</h1>
-                    <p class="lead text-xl text-gray-600">A comprehensive overview of my technical expertise across multiple domains.</p>
-                    
-                    <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
-                        <p class="text-sm text-blue-900">
-                            <strong>📚 Format:</strong> Skills organized in a clear table format for easy reference.
-                        </p>
-                    </div>
-                    
-                    <h2>Skills Matrix</h2>
-                    <div class="not-prose my-6">
-                        <table class="w-full border-collapse border border-gray-300 text-sm">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold text-gray-900 w-1/4">Category</th>
-                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold text-gray-900">Technologies & Tools</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${Object.entries(portfolioContent.skills).map(([category, skills], idx) => `
-                                    <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
-                                        <td class="border border-gray-300 px-4 py-3 font-semibold text-gray-800 align-top">
-                                            ${category.toUpperCase().replace('_', ' ')}
-                                        </td>
-                                        <td class="border border-gray-300 px-4 py-3 text-gray-700">
-                                            ${skills.map(skill => 
-                                                `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium mr-2 mb-2">${skill}</span>`
-                                            ).join('')}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <h2>Proficiency Overview</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
-                            <h3 class="font-bold text-blue-900 mb-2">Core Strengths</h3>
-                            <ul class="space-y-1 text-sm text-blue-800">
-                                <li>• Machine Learning & Deep Learning</li>
-                                <li>• Natural Language Processing</li>
-                                <li>• Full-Stack Development</li>
-                                <li>• Cloud Infrastructure</li>
+        const c = portfolioContent;
+        this.token++;
+        this.anims = [];
+        this.marks = false;
+        this.fast = this.calm();
+        this.wide = window.matchMedia('(min-width: 1080px)');
+        this.chapters = this.book();
+        this.byId = Object.fromEntries(this.chapters.map(ch => [ch.id, ch]));
+        if (!this.byId[this.current]) this.current = 'intro';
+        this.index = this.searchIndex();
+        const palette = this.readPalette(), open = this.wide.matches, firstSuffix = this.chapters.find(ch => ch.suffix);
+
+        document.getElementById('themeContainer').innerHTML = `
+            <div id="bkRoot" lang="en" data-theme="${palette}" class="${this.fast ? '' : 'is-waiting'}${open ? ' sidebar-visible' : ''}">
+                <nav id="bkSidebar" class="bk-sidebar" aria-label="Table of contents" ${open ? '' : 'inert'}>
+                    <ol class="bk-chapter">${this.chapters.map(ch => `
+                        ${ch === firstSuffix ? '<li class="bk-spacer" aria-hidden="true"></li>' : ''}
+                        <li class="${ch.num.split('.').length > 2 ? 'bk-sub' : ''}"><a href="#book" data-ch="${ch.id}">${ch.num ? `<strong aria-hidden="true">${ch.num}</strong> ` : ''}${ch.title}</a></li>`).join('')}
+                    </ol>
+                </nav>
+                <div class="bk-page">
+                    <div id="bkMenu" class="bk-menu">
+                        <div class="bk-buttons">
+                            <button type="button" class="bk-icon" data-action="sidebar" aria-controls="bkSidebar" aria-expanded="${open}" aria-label="Toggle Table of Contents" title="Toggle Table of Contents"><i class="fas fa-bars" aria-hidden="true"></i></button>
+                            <button type="button" class="bk-icon" data-action="themes" aria-controls="bkThemes" aria-haspopup="menu" aria-expanded="false" aria-label="Change theme" title="Change theme"><i class="fas fa-paintbrush" aria-hidden="true"></i></button>
+                            <ul id="bkThemes" class="bk-themes" role="menu" aria-label="Themes" hidden>
+                                ${this.palettes.map(([key, label]) => `<li role="none"><button type="button" role="menuitemradio" class="bk-theme" data-palette="${key}" aria-checked="${key === palette}">${label}</button></li>`).join('')}
                             </ul>
+                            <button type="button" class="bk-icon" data-action="search" aria-controls="bkSearch" aria-expanded="false" aria-keyshortcuts="S /" aria-label="Toggle Searchbar" title="Search. (Shortkey: s)"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></button>
                         </div>
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
-                            <h3 class="font-bold text-purple-900 mb-2">Total Arsenal</h3>
-                            <div class="text-4xl font-bold text-purple-700">${portfolioContent.stats.skills}+</div>
-                            <p class="text-sm text-purple-800 mt-1">Technologies & Tools</p>
-                        </div>
-                    </div>
-                    
-                    <blockquote>
-                        <p>💡 <strong>Note:</strong> I'm constantly learning and expanding my skill set. These skills represent my current expertise, with many more in development.</p>
-                    </blockquote>
-                `;
-                break;
-                
-            case 'experience':
-                content = `
-                    <h1>Work Experience</h1>
-                    <p class="lead text-xl text-gray-600 italic mb-8">A chronological journey through my professional career, showcasing growth, impact, and continuous learning.</p>
-                    
-                    ${portfolioContent.experience.map((exp, idx) => `
-                        <article class="my-12 ${idx > 0 ? 'border-t-2 border-gray-200 pt-12' : ''}">
-                            <!-- Header Section -->
-                            <header class="mb-6">
-                                <h2 class="mb-2">${exp.position}</h2>
-                                <div class="flex flex-wrap items-center gap-3 text-base text-gray-600 not-prose">
-                                    <span class="font-bold text-blue-600">${exp.company}</span>
-                                    <span class="text-gray-400">•</span>
-                                    <time datetime="${exp.period}" class="font-medium">${exp.period}</time>
-                                    ${exp.location ? `
-                                        <span class="text-gray-400">•</span>
-                                        <span class="flex items-center gap-1">
-                                            <i class="fas fa-map-marker-alt text-gray-400 text-sm"></i>
-                                            ${exp.location}
-                                        </span>
-                                    ` : ''}
-                                </div>
-                            </header>
-                            
-                            <!-- Main Content -->
-                            <section>
-                                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <i class="fas fa-star text-yellow-500 text-sm"></i>
-                                    Key Contributions & Impact
-                                </h3>
-                                <ul class="space-y-3 mb-6">
-                                    ${exp.achievements.map(item => `
-                                        <li class="leading-relaxed text-gray-700">${item}</li>
-                                    `).join('')}
-                                </ul>
-                            </section>
-                            
-                            ${exp.technologies && exp.technologies.length > 0 ? `
-                                <!-- Tech Stack -->
-                                <footer class="mt-6 pt-4 border-t border-gray-100">
-                                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Tech Stack</h4>
-                                    <div class="flex flex-wrap gap-2 not-prose">
-                                        ${exp.technologies.map(tech => 
-                                            `<span class="px-3 py-1.5 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:shadow-md transition-shadow">${tech}</span>`
-                                        ).join('')}
-                                    </div>
-                                </footer>
-                            ` : ''}
-                        </article>
-                    `).join('')}
-                    
-                    <div class="bg-blue-50 border-l-4 border-blue-600 p-6 my-8 rounded-r-lg">
-                        <p class="text-blue-900">
-                            <strong>💼 Career Insight:</strong> This experience represents ${portfolioContent.stats.years}+ years of hands-on work in AI/ML and software engineering, with a consistent focus on innovation, leadership, and measurable business impact.
-                        </p>
-                    </div>
-                `;
-                break;
-                
-            case 'projects':
-                content = `
-                    <h1>Notable Projects</h1>
-                    <p class="lead text-xl text-gray-600 italic mb-8">Showcase of significant projects that demonstrate technical innovation, problem-solving, and real-world impact.</p>
-                    
-                    ${portfolioContent.projects.map((project, idx) => `
-                        <article class="my-10 ${idx > 0 ? 'border-t-2 border-gray-200 pt-10' : ''} hover:bg-gray-50 rounded-lg p-6 transition-all">
-                            <!-- Project Header -->
-                            <header class="mb-4">
-                                <div class="flex items-start justify-between gap-4 mb-3">
-                                    <h2 class="flex-1 mb-0">${project.title}</h2>
-                                    <span class="flex-shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full text-xs font-bold">
-                                        Project #${idx + 1}
-                                    </span>
-                                </div>
-                                ${project.site ? `
-                                    <div class="mt-2">
-                                        <a href="https://${project.site}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
-                                            <i class="fas fa-globe"></i>
-                                            <span>${project.site}</span>
-                                            <i class="fas fa-external-link-alt text-xs"></i>
-                                        </a>
-                                    </div>
-                                ` : ''}
-                            </header>
-                            
-                            <!-- Description -->
-                            <div class="mb-6">
-                                <p class="text-lg text-gray-700 leading-relaxed">${project.description}</p>
-                            </div>
-                            
-                            ${project.highlights ? `
-                                <!-- Impact & Highlights -->
-                                <div class="mb-6 bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-r-lg p-4">
-                                    <h3 class="text-base font-bold text-green-900 mb-3 flex items-center gap-2">
-                                        <i class="fas fa-trophy text-yellow-500"></i>
-                                        Impact & Achievements
-                                    </h3>
-                                    <ul class="space-y-2 text-sm">
-                                        ${project.highlights.map(h => `
-                                            <li class="flex items-start gap-2 text-green-900">
-                                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                                <span>${h}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ul>
-                                </div>
-                            ` : ''}
-                            
-                            <!-- Tech Stack -->
-                            <footer class="flex flex-wrap items-center gap-3">
-                                <span class="text-sm font-semibold text-gray-600">Built with:</span>
-                                ${project.tags.map(tag => 
-                                    `<span class="px-3 py-1.5 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 text-purple-700 rounded-lg text-sm font-medium">${tag}</span>`
-                                ).join('')}
-                            </footer>
-                        </article>
-                    `).join('')}
-                    
-                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 border-l-4 border-purple-600 p-6 my-8 rounded-r-lg">
-                        <p class="text-purple-900">
-                            <strong>🚀 Portfolio Note:</strong> These ${portfolioContent.projects.length} projects represent a curated selection of work spanning GenAI, ML/AI, automation, and full-stack development—demonstrating versatility and depth across the technical spectrum.
-                        </p>
-                    </div>
-                `;
-                break;
-                
-            case 'reading':
-                content = `
-                    <h1>📚 Currently Reading</h1>
-                    <p class="lead text-xl text-gray-600 italic mb-8">Books I'm actively engaging with to expand my technical and professional knowledge.</p>
-                    
-                    ${portfolioContent.currentlyReading.map((book, idx) => `
-                        <article class="my-8 ${idx > 0 ? 'border-t-2 border-gray-200 pt-8' : ''} hover:bg-gray-50 rounded-lg p-6 transition-all">
-                            <!-- Book Header -->
-                            <header class="mb-4">
-                                <div class="flex items-start justify-between gap-4 mb-3">
-                                    <div class="flex-1">
-                                        <h2 class="mb-1">${book.title}</h2>
-                                        <p class="text-lg text-gray-600 italic">by ${book.author}</p>
-                                    </div>
-                                    <span class="flex-shrink-0 px-3 py-1 ${book.status === 'completed' ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} text-white rounded-full text-sm font-bold">
-                                        ${book.status === 'completed' ? '✅ Completed' : '📖 In Progress'}
-                                    </span>
-                                </div>
-                            </header>
-                            
-                            <!-- Reading Progress -->
-                            ${book.status === 'in-progress' ? `
-                                <div class="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-r-lg p-4">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-semibold text-blue-900">Reading Progress</span>
-                                        <span class="text-sm font-bold text-blue-700">${book.progress}%</span>
-                                    </div>
-                                    <div class="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
-                                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${book.progress}%"></div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <!-- Reading Dates -->
-                            <div class="mb-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-calendar-alt text-gray-500"></i>
-                                    <span><strong>Started:</strong> ${new Date(book.startDate).toLocaleDateString()}</span>
-                                </div>
-                                ${book.endDate ? `
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-calendar-check text-green-500"></i>
-                                        <span><strong>Finished:</strong> ${new Date(book.endDate).toLocaleDateString()}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            
-                            <!-- Notes -->
-                            <div class="mb-4">
-                                <blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-700">
-                                    ${book.notes}
-                                </blockquote>
-                            </div>
-                            
-                            <!-- External Link -->
-                            ${book.link ? `
-                                <footer class="mt-4">
-                                    <a href="${book.link}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
-                                        <i class="fas fa-external-link-alt"></i>
-                                        <span>Learn More</span>
-                                    </a>
-                                </footer>
-                            ` : ''}
-                        </article>
-                    `).join('')}
-                    
-                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 border-l-4 border-purple-600 p-6 my-8 rounded-r-lg">
-                        <p class="text-purple-900">
-                            <strong>📖 Reading Philosophy:</strong> Continuous learning through books is essential in the fast-evolving tech landscape. These readings help me stay current with best practices, deepen understanding of complex systems, and broaden my technical perspective.
-                        </p>
-                    </div>
-                `;
-                break;
-                
-            case 'education':
-                content = `
-                    <h1>Education & Learning</h1>
-                    <p class="lead text-xl text-gray-600 italic mb-8">Academic foundation combined with continuous learning—the cornerstone of technical excellence.</p>
-                    
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 mb-10 border-l-4 border-blue-600">
-                        <h2 class="text-2xl font-bold text-blue-900 mb-2">Academic Credentials</h2>
-                        ${portfolioContent.education.map((edu, idx) => `
-                            <div class="mt-6 ${idx > 0 ? 'pt-6 border-t border-blue-200' : ''}">
-                                <h3 class="text-xl font-bold text-blue-800 mb-2">${edu.degree}</h3>
-                                <div class="flex flex-wrap items-center gap-3 text-base text-blue-700 mb-3 not-prose">
-                                    <span class="font-semibold">${edu.institution}</span>
-                                    <span>•</span>
-                                    <span>${edu.year}</span>
-                                    ${edu.gpa ? `
-                                        <span>•</span>
-                                        <span class="font-medium">GPA: ${edu.gpa}</span>
-                                    ` : ''}
-                                    ${edu.location ? `
-                                        <span>•</span>
-                                        <span>${edu.location}</span>
-                                    ` : ''}
-                                </div>
-                                
-                                ${edu.description ? `<p class="text-blue-800 mb-3">${edu.description}</p>` : ''}
-                                
-                                ${edu.achievements && edu.achievements.length > 0 ? `
-                                    <div class="mt-3">
-                                        <h4 class="text-sm font-semibold text-blue-900 uppercase tracking-wider mb-2">Key Highlights</h4>
-                                        <ul class="space-y-2 text-sm">
-                                            ${edu.achievements.map(a => `
-                                                <li class="flex items-start gap-2 text-blue-800">
-                                                    <i class="fas fa-graduation-cap text-blue-600 mt-0.5"></i>
-                                                    <span>${a}</span>
-                                                </li>
-                                            `).join('')}
-                                        </ul>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <!-- Certifications -->
-                    <div class="mb-10">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Professional Certifications</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
-                            ${portfolioContent.certifications.map(cert => `
-                                <div class="bg-white border-2 border-gray-200 hover:border-purple-400 rounded-xl p-5 transition-all hover:shadow-lg">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-certificate text-purple-600 text-xl"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-base font-bold text-gray-900 mb-1 leading-tight">${cert.title}</h3>
-                                            <p class="text-sm text-gray-600 mb-2">${cert.issuer} • ${cert.year}</p>
-                                            ${cert.link ? `
-                                                <a href="${cert.link}" target="_blank" class="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                    Verify Certificate
-                                                </a>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                        <h1 class="bk-title">${c.name}</h1>
+                        <div class="bk-buttons bk-buttons-r">
+                            <button type="button" class="bk-icon" data-action="print" aria-label="Print this book" title="Print this book"><i class="fas fa-print" aria-hidden="true"></i></button>
+                            <a class="bk-icon" href="${c.social.github}" target="_blank" rel="noopener" aria-label="Git repository" title="Git repository"><i class="fab fa-github" aria-hidden="true"></i></a>
                         </div>
                     </div>
-                    
-                    <!-- Patents -->
-                    ${portfolioContent.patents && portfolioContent.patents.length > 0 ? `
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 mb-10 border-l-4 border-yellow-500">
-                        <h2 class="text-2xl font-bold text-yellow-900 mb-6 flex items-center gap-2">
-                            <i class="fas fa-lightbulb text-yellow-600"></i>
-                            Intellectual Property
-                        </h2>
-                        ${portfolioContent.patents.map(patent => `
-                            <div class="bg-white/50 rounded-xl p-6 backdrop-blur">
-                                <h3 class="text-xl font-bold text-yellow-900 mb-2">${patent.title}</h3>
-                                <div class="flex flex-wrap items-center gap-3 text-sm text-yellow-800 mb-3">
-                                    <span class="font-mono font-semibold">${patent.number}</span>
-                                    <span>•</span>
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">${patent.status}</span>
-                                    <span>•</span>
-                                    <span>${patent.year}</span>
-                                </div>
-                                <p class="text-yellow-900 mb-3">${patent.description}</p>
-                                ${patent.link ? `
-                                    <a href="${patent.link}" target="_blank" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                                        <i class="fas fa-file-pdf"></i>
-                                        View Patent Document
-                                    </a>
-                                ` : ''}
-                            </div>
-                        `).join('')}
+                    <div id="bkSearch" class="bk-search" hidden>
+                        <form role="search" onsubmit="return false"><input id="bkSearchbar" type="search" placeholder="Search this book…" aria-label="Search this book" aria-controls="bkResults" autocomplete="off" spellcheck="false"></form>
+                        <div class="bk-results" hidden><p class="bk-results-head" aria-live="polite"></p><ul id="bkResults"></ul></div>
                     </div>
-                    ` : ''}
-                    
-                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg my-8">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
-                            <i class="fas fa-book-reader text-blue-600 mr-2"></i>
-                            Continuous Learning
-                        </h3>
-                        <p class="text-gray-700">
-                            Beyond formal education, I actively pursue knowledge through online courses, 
-                            technical books, research papers, and hands-on projects. Staying current with 
-                            the latest advancements in AI and software engineering is a core part of my 
-                            professional development.
-                        </p>
-                    </div>
-                `;
-                break;
-                
-            case 'contact':
-                content = `
-                    <h1>Get in Touch</h1>
-                    <p class="text-xl text-gray-600">
-                        I'm always interested in new opportunities, collaborations, and conversations about technology.
-                    </p>
-                    
-                    <div class="grid md:grid-cols-2 gap-6 my-8 not-prose">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
-                            <i class="fas fa-envelope text-3xl text-blue-600 mb-3"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Email</h3>
-                            <a href="mailto:${portfolioContent.email}" class="text-blue-600 hover:underline">${portfolioContent.email}</a>
+                    <div class="bk-content">
+                        <div class="bk-stack">
+                            <pre id="bkSrc" class="bk-src" aria-hidden="true" hidden></pre>
+                            <main id="bkMain" tabindex="-1"></main>
                         </div>
-                        
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
-                            <i class="fab fa-linkedin text-3xl text-purple-600 mb-3"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">LinkedIn</h3>
-                            <a href="${portfolioContent.social.linkedin}" target="_blank" class="text-purple-600 hover:underline">
-                                ${portfolioContent.social.linkedin.replace('https://', '')}
-                            </a>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl">
-                            <i class="fab fa-github text-3xl text-gray-900 mb-3"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">GitHub</h3>
-                            <a href="${portfolioContent.social.github}" target="_blank" class="text-gray-900 hover:underline">
-                                ${portfolioContent.social.github.replace('https://', '')}
-                            </a>
-                        </div>
-                        
-                        ${portfolioContent.social.twitter ? `
-                            <div class="bg-gradient-to-br from-sky-50 to-sky-100 p-6 rounded-xl">
-                                <i class="fab fa-twitter text-3xl text-sky-600 mb-3"></i>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Twitter</h3>
-                                <a href="https://twitter.com/${portfolioContent.social.twitter}" target="_blank" class="text-sky-600 hover:underline">
-                                    @${portfolioContent.social.twitter}
-                                </a>
-                            </div>
-                        ` : ''}
+                        <nav class="bk-nav" aria-label="Chapter navigation"></nav>
                     </div>
-                    
-                    <blockquote>
-                        <p>
-                            "Whether you're looking for a dedicated engineer to join your team, 
-                            a collaborator for an exciting project, or just want to discuss the 
-                            latest in AI and software development, I'd love to hear from you!"
-                        </p>
-                    </blockquote>
-                    
-                    <div class="text-center my-8">
-                        <a href="mailto:${portfolioContent.email}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold text-lg transition-all shadow-lg">
-                            <i class="fas fa-paper-plane"></i>
-                            Send Me a Message
-                        </a>
-                    </div>
-                `;
-                break;
-        }
-        
-        contentDiv.innerHTML = content;
+                    <nav class="bk-nav-wide" aria-label="Chapter navigation"></nav>
+                </div>
+                <div id="bkPrint" class="bk-print"></div>
+            </div>`;
+
+        this.root = document.getElementById('bkRoot');
+        this.main = document.getElementById('bkMain');
+        this.go(this.current, { quiet: true });
+        this.bind();
+        // The shell paints the page with the chooser tile's colour after render; the book's palette goes on top
+        const t = this.token;
+        queueMicrotask(() => { if (t === this.token) this.paint(); });
+        this.intro(t);
     },
-    
+
+    // ---------- the book: one Markdown chapter per section, every fact from portfolioContent ----------
+
+    book() {
+        const c = portfolioContent, s = c.stats, first = c.name.split(' ')[0], list = [];
+        const code = items => items.map(t => `\`${t}\``).join(' ');
+        const host = url => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+        const add = (id, title, md, num = '', suffix = false) => list.push({ id, title, md: md.trim(), num, suffix });
+        let n = 0;
+
+        add('intro', 'Introduction', `
+# ${c.name}
+
+![Caricature of ${first} working at a laptop](caricature.svg)
+
+**${c.title}** at ${c.experience[0].company} · ${c.location}
+
+> ${c.about.tagline}
+
+${c.about.bio}
+
+## At a glance
+
+- **${s.years} years** of experience across **${s.companies} companies**
+- **${s.projects} projects**, in [Projects](projects.md)
+- **${s.skills} skills**, in [Skills](skills.md)
+
+## Impact
+
+${c.impact.map(i => `- **${i.value}** – ${i.label}`).join('\n')}
+
+> ${c.about.funFact}
+
+## Outside work
+
+${c.hobbies.map(h => `- ${h}`).join('\n')}
+
+## Reading this book
+
+Start with [Experience](experience.md), or pick a chapter from the sidebar. Press ← and → to turn chapters, and S to search.`);
+
+        const top = ++n;
+        add('experience', 'Experience', `
+# Experience
+
+${s.years} years across ${s.companies} companies, newest role first.
+
+${c.experience.map((e, i) => `- [${e.position}](experience-${i + 1}.md), ${e.company} · ${e.period}`).join('\n')}`, `${top}.`);
+        c.experience.forEach((e, i) => add(`experience-${i + 1}`, e.position, `
+# ${e.position}
+
+**${e.company}** · ${e.period} · ${e.location}
+
+${e.achievements.map(a => `- ${a}`).join('\n')}
+
+## Stack
+
+${code(e.technologies)}`, `${top}.${i + 1}.`));
+
+        add('projects', 'Projects', `
+# Projects
+
+${c.projects.map(p => `## ${p.title}
+
+${p.description}
+
+${p.highlights.map(h => `- ${h}`).join('\n')}
+
+Built with ${code(p.tags)}${p.site ? `
+
+Live at [${p.site}](https://${p.site})` : ''}`).join('\n\n')}`, `${++n}.`);
+
+        add('skills', 'Skills', `
+# Skills
+
+${s.skills} skills, each listed once under its first group.
+
+| Group | Skills |
+| --- | --- |
+${this.skills().map(([label, items]) => `| ${label} | ${items.map(t => `\`${t}\``).join(', ')} |`).join('\n')}`, `${++n}.`);
+
+        add('education', 'Education', `
+# Education
+
+${c.education.map(e => `## ${e.degree}
+
+**${e.institution}** · ${e.year} · ${e.location}${e.gpa ? `
+
+GPA ${e.gpa}` : ''}${e.description ? `
+
+${e.description}` : ''}${e.achievements.length ? `
+
+${e.achievements.map(a => `- ${a}`).join('\n')}` : ''}`).join('\n\n')}
+
+## Patents
+
+${c.patents.map(p => `- [${p.title}](${p.link}), ${p.number} · ${p.status} ${p.year}`).join('\n')}
+
+## Certifications
+
+${c.certifications.map(x => `- [${x.title}](${x.link}), ${x.issuer} · ${x.year}`).join('\n')}`, `${++n}.`);
+
+        add('reading', 'Reading List', `
+# Reading List
+
+${c.currentlyReading.map(b => `## ${b.title}
+
+*${b.author}* · ${b.status === 'completed' ? 'Finished' : `In progress, ${b.progress}%`}
+
+> ${b.notes}
+
+[${host(b.link)}](${b.link})`).join('\n\n')}`, `${++n}.`);
+
+        const links = [['Email', `mailto:${c.email}`, c.email], ['GitHub', c.social.github], ['LinkedIn', c.social.linkedin], ['Website', c.social.portfolio], ['Twitter', c.social.twitter]]
+            .filter(([, url]) => url).map(([label, url, text]) => `- ${label}: [${text || host(url)}](${url})`);
+        if (c.resume) links.push(`- Résumé: [${c.resume.split('/').pop()}](${c.resume})`);
+        add('contact', 'Contact', `
+# Contact
+
+${links.join('\n')}`, '', true);
+        return list;
+    },
+
+    // Skill categories overlap in content.js, so each skill is listed once, under its first category
+    skills() {
+        const c = portfolioContent, seen = new Set();
+        return Object.entries(c.skills)
+            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
+            .filter(([, list]) => list.length);
+    },
+
+    // ---------- Markdown: headings, paragraphs, lists, quotes, tables, images; inline code, bold, italic, links ----------
+
+    block: /^(#{1,3} |>|- |\||!\[.*\]\(.*\)$)/,
+
+    md(src, prefix = '') {
+        const lines = src.split('\n'), out = [];
+        const take = test => { const got = []; while (lines.length && test(lines[0])) got.push(lines.shift()); return got; };
+        while (lines.length) {
+            const line = lines[0];
+            let m;
+            if (!line.trim()) lines.shift();
+            else if ((m = line.match(/^(#{1,3}) (.*)/))) {
+                lines.shift();
+                const id = prefix + this.slug(m[2]), h = m[1].length;
+                out.push(`<h${h} id="${id}"><a class="bk-header" href="#${id}">${this.inline(m[2])}</a></h${h}>`);
+            } else if (line.startsWith('>')) out.push(`<blockquote>${this.md(take(l => l.startsWith('>')).map(l => l.replace(/^> ?/, '')).join('\n'), prefix)}</blockquote>`);
+            else if (line.startsWith('- ')) out.push(`<ul>${take(l => l.startsWith('- ')).map(l => `<li>${this.inline(l.slice(2))}</li>`).join('')}</ul>`);
+            else if (line.startsWith('|')) {
+                const [head, , ...rows] = take(l => l.startsWith('|')).map(l => l.slice(1, -1).split('|').map(cell => this.inline(cell.trim())));
+                out.push(`<div class="bk-table"><table><thead><tr>${head.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+            } else if ((m = line.match(/^!\[(.*)\]\((.*)\)$/))) {
+                lines.shift();
+                out.push(`<figure class="bk-figure">${m[2] === 'caricature.svg' ? caricatureSVG(m[1]) : `<img src="${m[2]}" alt="${m[1]}">`}</figure>`);
+            } else out.push(`<p>${this.inline([lines.shift(), ...take(l => l.trim() && !this.block.test(l))].join(' '))}</p>`);
+        }
+        return out.join('\n');
+    },
+
+    inline(s) {
+        return s.replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => this.link(text, href));
+    },
+
+    // Links to other chapters (foo.md) turn the page; everything else opens in a new tab
+    link(text, href) {
+        if (href.endsWith('.md')) return `<a href="#book" data-ch="${href.slice(0, -3)}">${text}</a>`;
+        if (href.startsWith('mailto:')) return `<a href="${href}">${text}</a>`;
+        return `<a href="${href}" target="_blank" rel="noopener"${href.endsWith('.pdf') ? ` download="${href.split('/').pop()}"` : ''}>${text}</a>`;
+    },
+
+    slug(s) {
+        return s.replace(/<[^>]+>/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
+    },
+
+    esc(s) {
+        return s.replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`);
+    },
+
+    // Raw Markdown for the opening, markup tinted like an editor
+    tint(line) {
+        return this.esc(line).replace(/^(#{1,3} |&#62; ?|- )/, '<span class="bk-mk">$1</span>')
+            .replace(/(\*\*|`|!?\[|\]\([^)]*\)?|\|)/g, '<span class="bk-mk">$1</span>');
+    },
+
+    // ---------- navigation ----------
+
+    go(id, { anchor, terms, quiet } = {}) {
+        const ch = this.byId[id];
+        if (!ch) return;
+        this.current = id;
+        this.unmark();
+        this.main.innerHTML = this.md(ch.md);
+        this.root.querySelectorAll('.bk-chapter a').forEach(a => a.dataset.ch === id ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+        const i = this.chapters.indexOf(ch), prev = this.chapters[i - 1], next = this.chapters[i + 1];
+        const arrow = (to, dir, cls) => to ? `<a href="#book" class="${cls} bk-${dir}" data-ch="${to.id}" rel="${dir}" aria-label="${dir === 'prev' ? 'Previous' : 'Next'} chapter: ${to.title}" title="${dir === 'prev' ? 'Previous' : 'Next'} chapter" aria-keyshortcuts="${dir === 'prev' ? 'ArrowLeft' : 'ArrowRight'}"><i class="fas fa-angle-${dir === 'prev' ? 'left' : 'right'}" aria-hidden="true"></i></a>` : '';
+        this.root.querySelector('.bk-nav').innerHTML = arrow(prev, 'prev', 'bk-nav-btn') + arrow(next, 'next', 'bk-nav-btn');
+        this.root.querySelector('.bk-nav-wide').innerHTML = arrow(prev, 'prev', 'bk-nav-side') + arrow(next, 'next', 'bk-nav-side');
+        if (quiet) return;
+
+        if (!this.wide.matches) this.toggleSidebar(false);
+        const target = anchor && document.getElementById(anchor);
+        if (target) target.scrollIntoView();
+        else window.scrollTo(0, 0);
+        if (terms) this.mark(terms);
+        this.main.focus({ preventScroll: true });
+        if (!this.calm()) this.main.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+    },
+
+    step(by) {
+        const next = this.chapters[this.chapters.findIndex(ch => ch.id === this.current) + by];
+        if (next) this.go(next.id);
+    },
+
+    // Wide screens: the sidebar pushes the page (FLIP, so only transforms animate). Narrow: it slides the page aside
+    toggleSidebar(show = !this.root.classList.contains('sidebar-visible')) {
+        const sidebar = document.getElementById('bkSidebar');
+        if (show === this.root.classList.contains('sidebar-visible')) return;
+        const moving = this.wide.matches ? [...this.root.querySelectorAll('.bk-content, .bk-menu > *, .bk-nav-side')] : [];
+        const before = moving.map(el => el.getBoundingClientRect().left);
+        this.root.classList.toggle('sidebar-visible', show);
+        sidebar.inert = !show;
+        this.root.querySelector('[data-action="sidebar"]').setAttribute('aria-expanded', show);
+        if (this.calm()) return;
+        moving.forEach((el, i) => {
+            const dx = before[i] - el.getBoundingClientRect().left;
+            if (dx) el.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+        });
+    },
+
+    // ---------- themes (mdBook's own five), remembered per browser ----------
+
+    readPalette() {
+        try {
+            const saved = localStorage.getItem('portfolio-book-theme');
+            if (this.palettes.some(([key]) => key === saved)) return saved;
+        } catch {
+            // Storage blocked: fall back to the OS preference, as mdBook does
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'navy' : 'light';
+    },
+
+    setPalette(key) {
+        this.root.dataset.theme = key;
+        this.root.querySelectorAll('[data-palette]').forEach(b => b.setAttribute('aria-checked', b.dataset.palette === key));
+        try {
+            localStorage.setItem('portfolio-book-theme', key);
+        } catch {
+            // Not remembered; the book still switches
+        }
+        this.paint();
+    },
+
+    // Page background, browser UI colour and scrollbars follow the palette
+    paint() {
+        const bg = getComputedStyle(this.root).getPropertyValue('--bg').trim();
+        document.body.style.backgroundColor = bg;
+        document.querySelector('meta[name="theme-color"]').content = bg;
+        document.documentElement.style.colorScheme = ['light', 'rust'].includes(this.root.dataset.theme) ? 'light' : 'dark';
+    },
+
+    togglePalettes(show) {
+        const list = document.getElementById('bkThemes');
+        list.hidden = !show;
+        this.root.querySelector('[data-action="themes"]').setAttribute('aria-expanded', show);
+        if (show) (list.querySelector('[aria-checked="true"]') || list.querySelector('button')).focus();
+    },
+
+    // ---------- search: every heading section of every chapter, all words must match ----------
+
+    searchIndex() {
+        const box = document.createElement('div'), sections = [];
+        for (const ch of this.chapters) {
+            box.innerHTML = this.md(ch.md);
+            for (const el of box.children) {
+                if (/^H[1-3]$/.test(el.tagName)) sections.push({ ch, id: el.id, heading: el.textContent, text: '' });
+                else if (sections.length && el.tagName !== 'FIGURE') sections.at(-1).text += ` ${el.textContent}`;
+            }
+        }
+        return sections;
+    },
+
+    search(query) {
+        const terms = query.toLowerCase().split(/\s+/).filter(Boolean), outer = this.root.querySelector('.bk-results');
+        this.terms = terms;
+        outer.hidden = !terms.length;
+        if (!terms.length) return;
+        const count = (hay, t) => hay.split(t).length - 1;
+        const hits = this.index.map(sec => {
+            const hay = `${sec.heading} ${sec.text}`.toLowerCase();
+            return { sec, score: terms.every(t => hay.includes(t)) ? terms.reduce((n, t) => n + count(hay, t) + 5 * count(sec.heading.toLowerCase(), t), 0) : 0 };
+        }).filter(h => h.score).sort((a, b) => b.score - a.score).slice(0, 30);
+
+        const q = query.trim();
+        this.root.querySelector('.bk-results-head').textContent = hits.length ? `${hits.length} search result${hits.length > 1 ? 's' : ''} for '${q}':` : `No search results for '${q}'.`;
+        const re = new RegExp(`(${terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+        document.getElementById('bkResults').innerHTML = hits.map(({ sec }) => {
+            const text = sec.text.trim(), at = Math.max(0, text.toLowerCase().indexOf(terms[0]) - 60);
+            const teaser = `${at ? '…' : ''}${text.slice(at, at + 180)}${text.length > at + 180 ? '…' : ''}`;
+            const label = sec.heading === sec.ch.title ? sec.ch.title : `${sec.ch.title} » ${sec.heading}`;
+            return `<li><a href="#book" data-ch="${sec.ch.id}" data-anchor="${sec.id}">${this.esc(label)}</a><span class="bk-teaser">${this.esc(teaser).replace(re, '<em>$1</em>')}</span></li>`;
+        }).join('');
+    },
+
+    toggleSearch(show) {
+        const wrap = document.getElementById('bkSearch'), input = document.getElementById('bkSearchbar');
+        wrap.hidden = !show;
+        this.root.querySelector('[data-action="search"]').setAttribute('aria-expanded', show);
+        if (show) {
+            window.scrollTo(0, 0);
+            this.root.querySelector('.bk-menu').classList.remove('is-hidden');
+            input.focus();
+            input.select();
+        }
+    },
+
+    // Search terms stay marked on the page until it's clicked, as in mdBook
+    mark(terms) {
+        const re = new RegExp(`(${terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+        const walker = document.createTreeWalker(this.main, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('svg') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        for (const node of nodes) {
+            const parts = node.data.split(re);
+            if (parts.length < 2) continue;
+            node.replaceWith(...parts.map((part, i) => {
+                if (i % 2 === 0) return part;
+                const mark = document.createElement('mark');
+                mark.textContent = part;
+                return mark;
+            }));
+            this.marks = true;
+        }
+    },
+
+    unmark() {
+        if (!this.marks) return;
+        this.main.querySelectorAll('mark').forEach(m => m.replaceWith(m.textContent));
+        this.main.normalize();
+        this.marks = false;
+    },
+
+    // ---------- events ----------
+
+    bind() {
+        const root = this.root, menu = root.querySelector('.bk-menu');
+        root.addEventListener('click', (e) => {
+            const narrowOpen = !this.wide.matches && root.classList.contains('sidebar-visible');
+            if (narrowOpen && !e.target.closest('.bk-sidebar, [data-action="sidebar"]')) {
+                e.preventDefault();
+                return this.toggleSidebar(false);
+            }
+            if (!document.getElementById('bkThemes').hidden && !e.target.closest('#bkThemes, [data-action="themes"]')) this.togglePalettes(false);
+            if (e.target.closest('#bkMain')) this.unmark();
+            const el = e.target.closest('a, button');
+            if (!el) return;
+            if (el.dataset.ch) {
+                e.preventDefault();
+                const fromSearch = !!el.closest('#bkResults');
+                if (fromSearch) this.toggleSearch(false);
+                return this.go(el.dataset.ch, { anchor: el.dataset.anchor, terms: fromSearch && this.terms });
+            }
+            if (el.classList.contains('bk-header')) {
+                // Heading links scroll without touching the URL, which keeps #book
+                e.preventDefault();
+                return el.parentElement.scrollIntoView({ behavior: this.calm() ? 'auto' : 'smooth' });
+            }
+            if (el.dataset.palette) {
+                this.setPalette(el.dataset.palette);
+                this.togglePalettes(false);
+                return root.querySelector('[data-action="themes"]').focus();
+            }
+            const action = el.dataset.action;
+            if (action === 'sidebar') this.toggleSidebar();
+            else if (action === 'themes') this.togglePalettes(document.getElementById('bkThemes').hidden);
+            else if (action === 'search') this.toggleSearch(document.getElementById('bkSearch').hidden);
+            else if (action === 'print') window.print();
+        });
+
+        document.getElementById('bkSearchbar').addEventListener('input', (e) => this.search(e.target.value));
+
+        // The menu bar slides away while reading down and comes back on the way up
+        this.lastY = window.scrollY;
+        this.onScroll = () => {
+            const y = window.scrollY;
+            menu.classList.toggle('is-bordered', y > 0);
+            if (document.getElementById('bkSearch').hidden && document.getElementById('bkThemes').hidden) menu.classList.toggle('is-hidden', y > this.lastY && y > 50);
+            this.lastY = y;
+        };
+        window.addEventListener('scroll', this.onScroll, { passive: true });
+
+        this.onKey = (e) => this.key(e);
+        window.addEventListener('keydown', this.onKey);
+
+        this.onWide = () => this.toggleSidebar(this.wide.matches);
+        this.wide.addEventListener('change', this.onWide);
+
+        // Print (the button or Ctrl+P) gives the whole book, chapter after chapter
+        this.onPrint = () => { document.getElementById('bkPrint').innerHTML = this.chapters.map(ch => `<section class="bk-print-ch">${this.md(ch.md, `${ch.id}-`)}</section>`).join(''); };
+        this.onPrinted = () => { document.getElementById('bkPrint').innerHTML = ''; };
+        window.addEventListener('beforeprint', this.onPrint);
+        window.addEventListener('afterprint', this.onPrinted);
+    },
+
+    key(e) {
+        if (document.getElementById('themeChooser')?.open || e.ctrlKey || e.metaKey || e.altKey) return;
+        const searchOpen = !document.getElementById('bkSearch').hidden, themes = document.getElementById('bkThemes');
+        const typing = e.target.id === 'bkSearchbar', results = [...document.querySelectorAll('#bkResults a')], at = results.indexOf(document.activeElement);
+
+        if (e.key === 'Escape') {
+            if (!themes.hidden) {
+                this.togglePalettes(false);
+                this.root.querySelector('[data-action="themes"]').focus();
+            } else if (searchOpen) this.toggleSearch(false);
+            else if (!this.wide.matches) this.toggleSidebar(false);
+            return;
+        }
+        if (!themes.hidden && /^Arrow(Up|Down)$/.test(e.key)) {
+            e.preventDefault();
+            const items = [...themes.querySelectorAll('button')], i = items.indexOf(document.activeElement);
+            return items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+        }
+        // Up/Down move between search results, from the search bar too
+        if (searchOpen && (typing || at >= 0) && /^Arrow(Up|Down)$/.test(e.key) && results.length) {
+            e.preventDefault();
+            const next = e.key === 'ArrowDown' ? at + 1 : at - 1;
+            return next < 0 ? document.getElementById('bkSearchbar').focus() : results[Math.min(next, results.length - 1)].focus();
+        }
+        if (typing || e.shiftKey) return;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            this.step(e.key === 'ArrowLeft' ? -1 : 1);
+        } else if (e.key === 's' || e.key === 'S' || e.key === '/') {
+            e.preventDefault();
+            this.toggleSearch(true);
+        }
+    },
+
+    calm() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    },
+
+    // ---------- opening: the chapter's Markdown types out, then renders into the page ----------
+
+    async intro(t) {
+        const live = () => t === this.token;
+        if (this.fast) return;
+        // Nothing plays behind the theme chooser. On page load it opens right after this first render, so look a microtask later
+        await null;
+        if (!live()) return;
+        const chooser = document.getElementById('themeChooser');
+        if (chooser?.open) {
+            await new Promise(r => { this.onChooser = r; chooser.addEventListener('close', r, { once: true }); });
+            if (!live()) return;
+        }
+        this.onSkip = () => this.skip();
+        window.addEventListener('keydown', this.onSkip);
+        window.addEventListener('pointerdown', this.onSkip);
+
+        const src = document.getElementById('bkSrc');
+        src.hidden = false;
+        let done = '';
+        for (const line of this.byId[this.current].md.split('\n')) {
+            // Each line types in at most 8 frames, so a long paragraph doesn't hold the page up
+            const step = Math.max(2, Math.ceil(line.length / 8));
+            for (let n = step; n < line.length && !this.fast; n += step) {
+                src.innerHTML = `${done}${this.tint(line.slice(0, n))}<span class="bk-caret"></span>`;
+                await this.frame();
+                if (!live()) return;
+            }
+            done += `${this.tint(line)}\n`;
+            src.innerHTML = `${done}<span class="bk-caret"></span>`;
+            if (this.fast || src.getBoundingClientRect().bottom > innerHeight - 40) break;
+            await this.frame();
+            if (!live()) return;
+        }
+        await this.wait(260);
+        if (!live()) return;
+
+        // The source fades as the rendered chapter rises in block by block, and the sidebar fills in
+        this.root.classList.remove('is-waiting');
+        if (this.fast) src.hidden = true;
+        else {
+            const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+            const out = src.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 220, easing: 'ease-out', fill: 'forwards' });
+            out.onfinish = () => { if (live()) src.hidden = true; };
+            this.anims = [out,
+                ...[...this.main.children].slice(0, 14).map((el, i) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 120 + i * 55, easing: ease, fill: 'backwards' })),
+                ...[...this.root.querySelectorAll('.bk-chapter li')].map((el, i) => el.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: i * 30, easing: ease, fill: 'backwards' }))];
+        }
+        this.endIntro();
+    },
+
+    skip() {
+        this.fast = true;
+        clearTimeout(this.timer);
+        cancelAnimationFrame(this.raf);
+        this.wake?.();
+        this.anims.forEach(a => a.finish());
+    },
+
+    endIntro() {
+        window.removeEventListener('keydown', this.onSkip);
+        window.removeEventListener('pointerdown', this.onSkip);
+        this.onSkip = null;
+    },
+
+    frame() {
+        if (this.fast) return Promise.resolve();
+        return new Promise(r => { this.wake = r; this.raf = requestAnimationFrame(r); });
+    },
+
+    wait(ms) {
+        if (this.fast) return Promise.resolve();
+        return new Promise(r => { this.wake = r; this.timer = setTimeout(r, ms); });
+    },
+
     cleanup() {
-        // No cleanup needed for this theme
+        this.token++;
+        clearTimeout(this.timer);
+        cancelAnimationFrame(this.raf);
+        this.endIntro();
+        for (const [type, fn] of [['scroll', this.onScroll], ['keydown', this.onKey], ['beforeprint', this.onPrint], ['afterprint', this.onPrinted]]) window.removeEventListener(type, fn);
+        this.wide?.removeEventListener('change', this.onWide);
+        this.onScroll = this.onKey = this.onPrint = this.onPrinted = this.onWide = null;
+        document.getElementById('themeChooser')?.removeEventListener('close', this.onChooser);
+        this.onChooser = null;
     }
 };
 
