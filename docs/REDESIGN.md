@@ -65,7 +65,7 @@ node tests/paper.test.mjs      # desktop + 390px phone
 | VSCode | ✅ | **Rebuilt, merged** | `theme/vscode` | Merged to `develop` |
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
-| Research Paper | ✅ | **Rebuilt, in review** | `theme/paper` | An arXiv preprint in Chrome's PDF viewer |
+| Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
 | Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
