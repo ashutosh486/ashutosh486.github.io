@@ -8,5 +8,18 @@ DirectoryIndex index.html
 RewriteEngine On
 # Patterns are relative to this file's folder, so the same file works in public_html and in public_html/about
 RewriteRule ^js/themes/(agent|aiplayground)\.js$ - [R=404,L]
-RewriteRule ^(index\.html|styles\.css|css/tailwind\.css|js/(content|caricature|main)\.js|js/themes/[a-z]+\.js|images/(favicon|apple-touch-icon)\.png|images/profile\.jpg|docs/Ashutosh_Pandey_Resume\.pdf)?$ - [L]
+# Agents that ask for Markdown get the home page as index.md (built by scripts/build-seo.js)
+RewriteCond %{HTTP_ACCEPT} text/markdown
+RewriteRule ^(index\.html)?$ index.md [L]
+RewriteRule ^(index\.(html|md)|robots\.txt|sitemap\.xml|llms\.txt|styles\.css|css/tailwind\.css|js/(content|caricature|main)\.js|js/themes/[a-z]+\.js|images/(favicon|apple-touch-icon)\.png|images/profile\.jpg|docs/Ashutosh_Pandey_Resume\.pdf)?$ - [L]
 RewriteRule ^ - [R=404,L]
+
+AddType text/markdown .md
+AddCharset utf-8 .md .txt
+# Home page: point agents at llms.txt and the Markdown version; caches must key on Accept (HTML vs Markdown)
+<IfModule mod_headers.c>
+    <FilesMatch "^index\.(html|md)$">
+        Header set Link "<llms.txt>; rel=\"describedby\"; type=\"text/plain\", <index.md>; rel=\"alternate\"; type=\"text/markdown\""
+        Header merge Vary Accept
+    </FilesMatch>
+</IfModule>
