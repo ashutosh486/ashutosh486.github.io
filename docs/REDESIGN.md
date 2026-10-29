@@ -67,7 +67,7 @@ node tests/book.test.mjs       # desktop + 390px phone
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
-| Markdown Book | ✅ | **Rebuilt, in review** | `theme/book` | mdBook; awaiting owner review |
+| Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
