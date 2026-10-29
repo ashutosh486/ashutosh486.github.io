@@ -48,6 +48,7 @@ node tests/vscode.test.mjs     # desktop + 390px phone
 node tests/terminal.test.mjs   # desktop + 390px phone
 node tests/notebook.test.mjs   # desktop + 390px phone
 node tests/paper.test.mjs      # desktop + 390px phone
+node tests/book.test.mjs       # desktop + 390px phone
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -66,7 +67,7 @@ node tests/paper.test.mjs      # desktop + 390px phone
 | Terminal | ✅ | **Rebuilt (5 rounds), merged** | `theme/terminal` | Merged to `develop` |
 | Notebook | ✅ | **Rebuilt (2 rounds), merged** | `theme/notebook` | Merged to `develop` |
 | Research Paper | ✅ | **Rebuilt (2 rounds), merged** | `theme/paper` | Merged to `develop` |
-| Markdown Book | ✅ | Not started | | Sidebar opens over content on phones; headings unstyled |
+| Markdown Book | ✅ | **Rebuilt (3 rounds), merged** | `theme/book` | Merged to `develop` |
 | Apple Persona Card | ✅ | Not started | | Purple-pink gradient hero to remove |
 | Sci-Fi Console | ✅ | Not started | | Dense; everything is cyan |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
@@ -558,6 +559,44 @@ Checked with `tests/paper.test.mjs` at 1440px and 390px:
 
 - **Outline highlight jumped ahead:** clicking Education marked References. In two columns, a later right-column heading can sit higher on screen than the left-column one being read, and the highlight went by screen height. It now follows reading order: the current section holds the first block not yet scrolled past (left column, then right). A clicked item stays marked while the page scrolls to it and until its heading leaves the screen.
 - `tests/paper.test.mjs` now jumps to Education, scrolls a little, and checks that Education stays marked.
+
+### Markdown Book (`theme/book`): rebuilt from scratch
+
+#### Markdown Book before
+
+- A GitBook-style page built from Tailwind classes: initials in a purple-blue gradient tile, a gradient "Contact Me" button, and a round floating menu button on phones.
+- On phones the sidebar opened over the content. Chapter headings had no styles (Tailwind's reset), so they looked like body text.
+- The chapters were HTML templates with some invented copy.
+
+#### Markdown Book after
+
+- **Looks like mdBook** (the Rust book): menu bar, numbered `SUMMARY.md` sidebar (Introduction, 1. Experience with 1.1–1.4 per role, 2. Projects, 3. Skills, 4. Education, 5. Reading List, then Contact after a spacer), and mdBook's own fonts (Open Sans, Source Code Pro from jsDelivr), sizes and colours. Every control works:
+  - **Sidebar toggle:** open on wide screens, where it pushes the page (the chapter re-centres with a FLIP, so only transforms animate). Under 1080px it starts closed and slides the page aside like mdBook. It closes after a pick, on a tap beside it, or on Escape.
+  - **Themes:** mdBook's five (Light, Rust, Coal, Navy, Ayu) with their real palettes. The first visit follows the OS (Navy when dark, like mdBook). The choice is remembered and also paints the page background, browser colour and scrollbars.
+  - **Search** (button, S or /): mdBook's search bar and results ("N search results for '…'", `Chapter » Heading`, teaser with the words in bold). ↑/↓ move through the results. A result opens the chapter at that heading and marks the words, and clicking the page clears the marks.
+  - **Print:** prints the résumé PDF (from `content.js`) through an off-screen frame. Where the browser has no inline PDF viewer (phones) or refuses, the PDF opens in a new tab to print from there. Ctrl+P prints the open chapter without the sidebar, menu or switcher.
+  - **GitHub** link, and **← →** arrows: a 48px box mid-height in each side gutter on wide screens (highlighted on hover), and 64×44px buttons under the chapter on narrow ones. The arrow keys turn chapters too. The theme menu draws its focus ring inside each item.
+  - The menu bar slides away while you scroll down and comes back when you scroll up.
+- **Written in Markdown:** each chapter is a Markdown string built from `content.js` and rendered by a small renderer (headings, paragraphs, lists, quotes, tables, the caricature image, inline code/bold/italic/links). Links to `foo.md` turn chapters. Heading links scroll without touching the `#book` hash.
+- **The book:** every fact comes from `content.js`. The Introduction has the caricature, title, tagline, bio, stats, impact numbers, fun fact and hobbies. Experience has every role and every achievement. Projects have their highlights, tags and sites. Skills is a table listing each skill once. Education has degrees, patents and certifications. The Reading List shows the books, and Contact lists the links and the résumé PDF. The phone number and `summary` aren't used.
+- **Opening (after the theme chooser closes):** the chapter's Markdown types out with tinted markup (`#`, `**`, `` ` ``, links), up to a screenful. Then it fades as the rendered chapter rises in block by block and the sidebar fills in. A key press or click skips it. With reduced motion, the chapter shows at once.
+- **Phones:** 44px menu buttons, sidebar links and theme items, a 16px search input, and tables that scroll inside their box.
+- **Chooser tile:** mdBook's link blue on white.
+
+#### Markdown Book verified
+
+Checked by `tests/book.test.mjs` at 1440px and 390px:
+
+- Nothing plays behind the chooser. Closing it types the Markdown (`# <name>` first), then the chapter renders. A key press skips the opening.
+- The facts from `content.js` appear across all chapters, and the phone number does not. Skills lists each skill once, and all of them (`stats.skills`). The résumé link uses the `content.js` path. The Introduction shows the caricature, not the photo.
+- The menu bar takes at most 20% of the screen. Heading links scroll and keep `#book`.
+- The sidebar is open on desktop and closed on phones, and numbered like `SUMMARY.md`. Picking Projects opens and marks it. On phones it opens, closes after a pick and closes on Escape, with 44px links and buttons. On desktop, hiding it re-centres the chapter.
+- ← and → turn chapters, and the arrows sit on the sides (desktop) or under the chapter (phone).
+- The theme menu opens on the current theme. Rust applies, paints the page, is saved, and survives a reload.
+- S opens search. "patent" finds results, and typed HTML is escaped. A result opens Education with the words marked, and a click clears the marks.
+- Print loads the résumé PDF from `content.js`, and cleanup removes the frame.
+- No horizontal overflow, and the switcher corner is clear at the end of a chapter. Cleanup removes the listeners, and there are no runtime errors.
+- Also fixed in Notebook and Paper (same pattern): if the theme was switched away within a microtask of rendering, the old theme's opening still ran and threw. All three now check the render token after `await null`. All other suites still pass.
 
 ## Shared backlog (shell / cross-theme)
 
