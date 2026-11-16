@@ -692,6 +692,11 @@ button.shell-ui {
     }
 }
 
+/* Follow-up questions only under the latest answer */
+#cgThread > :not(:last-child) .cg-asks {
+    display: none;
+}
+
 /* ChatGPT's pulsing dot at the end of a streaming answer */
 .cg-caret {
     display: inline-block;

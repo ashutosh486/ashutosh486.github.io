@@ -106,7 +106,7 @@ const ChatGPTTheme = {
                             <!-- Keeps the composer clear of the page's floating theme switcher (bottom-right) on narrower screens -->
                             <div class="cg-dock-gap" aria-hidden="true"></div>
                         </div>
-                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">AI answers from ${this.first}'s résumé<span class="hidden sm:inline"> · can make mistakes · Enter to send · Type / for commands</span></p>
+                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">AI answers from ${this.first}'s résumé · chats are saved<span class="hidden sm:inline"> · can make mistakes · Enter to send · Type / for commands</span></p>
                     </div>
                 </main>
             </div>
@@ -153,6 +153,8 @@ const ChatGPTTheme = {
             if (copy) return this.copy(copy);
             const more = e.target.closest('[data-more]');
             if (more) return this.toggleMore(more);
+            const ask = e.target.closest('[data-ask]');
+            if (ask) return this.send(ask.textContent);
             if (e.target.closest('[data-fit]')) {
                 this.input.placeholder = 'Paste the job description…';
                 return this.input.focus();
@@ -219,6 +221,7 @@ const ChatGPTTheme = {
         this.clearTimers();
         this.abort?.abort();
         this.history = [];
+        this.chatId = null; // New chat is saved as a new conversation
         this.setActive(null);
         this.toggleDrawer(false);
         this.thread.innerHTML = `
@@ -321,7 +324,7 @@ const ChatGPTTheme = {
         const paint = () => {
             body.innerHTML = this.md(reply.slice(0, shown));
             const last = body.lastElementChild; // the dot goes at the end of the last line, list item or table cell
-            const end = last?.matches('.cg-card') ? body : last?.matches('ul, ol') ? last.lastElementChild : last?.querySelector('tr:last-child > :last-child') || last || body;
+            const end = last?.matches('.cg-card, .cg-asks') ? body : last?.matches('ul, ol') ? last.lastElementChild : last?.querySelector('tr:last-child > :last-child') || last || body;
             end.insertAdjacentHTML('beforeend', '<span class="cg-caret" aria-hidden="true"></span>');
         };
         const revealed = new Promise(resolve => {
@@ -338,7 +341,9 @@ const ChatGPTTheme = {
         try {
             const res = await fetch(this.chatApi, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: this.history }), signal: abort.signal
+                // chat id: start time (so saved chats sort by date) plus a random tail
+                body: JSON.stringify({ messages: this.history, chat: this.chatId ||= `${new Date().toISOString().slice(0, 19).replace(/\D/g, '')}-${Math.random().toString(36).slice(2, 8)}` }),
+                signal: abort.signal
             });
             if (!res.ok) throw new Error(`chat ${res.status}`);
             const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -365,11 +370,13 @@ const ChatGPTTheme = {
     // The model's Markdown as HTML: paragraphs, headings, bullet and numbered lists, tables, links, **bold**, *italics*
     // and `code`. Everything is escaped first, so only the tags made here exist; links are https, mailto or tel only.
     md(text) {
-        const blocks = [], cards = new Set();
+        const blocks = [], cards = new Set(), asks = new Set();
         for (let line of this.esc(text).split('\n')) {
             // {{card:contact}} etc. become the topic's own card, each once; a tag still streaming in is hidden
             const tags = [...line.matchAll(/\{\{\s*card:(\w+)\s*\}\}/g)].map(m => m[1]);
-            line = line.replace(/\{\{\s*card:\w+\s*\}\}/g, '').replace(/\{\{[^}]*$/, '');
+            // {{ask:…}} are follow-up questions, shown as buttons under the answer
+            for (const [, q] of line.matchAll(/\{\{\s*ask:\s*([^}]+?)\s*\}\}/g)) if (asks.size < 3 && q.length <= 120) asks.add(q);
+            line = line.replace(/\{\{\s*(card|ask):[^}]*\}\}/g, '').replace(/\{\{[^}]*$/, '');
             const row = line.match(/^\s*\|(.*)\|\s*$/), item = line.match(/^\s*([-*•]|\d+[.)])\s+(.*)/), head = line.match(/^\s*#{1,6}\s+(.*)/);
             const kind = row ? 'table' : item ? (/\d/.test(item[1]) ? 'ol' : 'ul') : null, last = blocks.at(-1);
             if (kind) {
@@ -403,7 +410,8 @@ const ChatGPTTheme = {
                 <thead class="bg-white/[0.04] text-[#b4b4b4]"><tr>${header.map(cell => `<th class="px-3 py-2 font-medium">${inline(cell)}</th>`).join('')}</tr></thead>
                 <tbody class="divide-y divide-white/5">${rows.map(cells => `<tr>${cells.map(cell => `<td class="px-3 py-2 align-top">${inline(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
             </table></div>`;
-        }).join('');
+        }).join('') + (asks.size ? `<div class="cg-asks flex flex-col items-start gap-2 pt-1">${[...asks].map(q =>
+            `<button type="button" data-ask class="min-h-11 rounded-2xl border border-white/10 px-4 py-2 text-left text-sm text-[#d4d4d4] transition-colors hover:border-white/20 hover:bg-white/5">${q}</button>`).join('')}</div>` : '');
     },
 
     matchIntent(text) {
