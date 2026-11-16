@@ -1,0 +1,7 @@
+# Vercel hosts only the résumé chat API (api/chat.js and the content.js it reads);
+# the site itself is served from Hostinger / GitHub Pages, so no duplicate copy lives on vercel.app
+/*
+!/api
+!/js
+/js/*
+!/js/content.js
