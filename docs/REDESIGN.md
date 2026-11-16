@@ -103,7 +103,8 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
 | Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, merged** | `theme/motion` | Merged to `develop` |
-| Random pick, theme cursors, caricature eyes follow pointer | — | **Done, in review** | `theme/shell` | Not merged yet |
+| Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
+| Caricature moments + soul lift | — | **Done, in review** | `theme/avatar` | Not merged yet |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -762,6 +763,19 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
 - **Cursor animation:** browsers can't animate cursor images, so a click draws a ripple in the theme's style: a ring in the accent colour, a block-cursor flash in Terminal, an iPad press-and-bloom in Contact Card, and a target-lock bracket in Sci-Fi. Mouse and pen only, off with reduced motion.
 - **Caricature eye contact:** the pupils (and the head, slightly) follow the pointer in every theme that shows the caricature. After 2.5s at rest it goes back to reading the screen.
 - **Known limit:** Terminal's cursor stays green whatever colour scheme the `theme` command picks.
+
+### Caricature moments and soul lift (`theme/avatar`)
+
+- **Moments** (js/caricature.js adds `cc--*` classes; styles.css animates them; all off with reduced motion):
+  - **Idle, every 9-16s:** sips coffee (a hand lifts the mug, eyes close, then a smile) or chases a bug (it walks along the lid, he frowns, a hand flicks it away).
+  - **Eureka:** a lightbulb pops on before the "got it" smile in the 12s face cycle.
+  - **Asleep** after 40s with no input (25s at night): eyes shut, head nods, z's rise. Any input wakes him with a jolt and a "!".
+  - **Dizzy** when the pointer whips back and forth: spiral eyes, wobbling head, stars circling.
+  - **Hover:** brows up, blush, smile. **Click:** he waves.
+  - **Résumé download** (any `.pdf` link): confetti off the laptop.
+  - **Night** (visitor's clock, 9pm to 6am): desk lamp on, no flying code, and yawns join the idle moments.
+- **New colour variables** `--cc-bug`, `--cc-bulb`, `--cc-lamp`, `--cc-lamp-light` (Sci-Fi sets amber values).
+- **Soul lift** (`caricatureLift`): when the theme scrolls the caricature up off screen, his head and shoulders hop into a basket on a pulley at the right edge. The basket's height tracks scroll progress, the wheel turns with the scroll, the basket swings with scroll speed, and dragging it scrolls the page or panel. Scrolling back, he climbs out and the lift hides. The scroller is found from the scroll event itself, so no per-theme hookup. Looks: wicker basket with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal (`( / )` spinner, dashed rope, `\____/`). Hidden on phones. It shows up only where the caricature can leave the screen: in Contact Card that's tablet width (the poster stays put on wide screens), and in Sci-Fi only on short windows.
 
 ## Shared backlog (shell / cross-theme)
 

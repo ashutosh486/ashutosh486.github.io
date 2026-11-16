@@ -96,6 +96,7 @@ class PortfolioController {
                 console.error(`Error rendering theme ${themeName}:`, error);
             }
             this.currentTheme = themeName;
+            caricatureLift.reset();
             this.paintDock();
             this.syncPage();
         };
