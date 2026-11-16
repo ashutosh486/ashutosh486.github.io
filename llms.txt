@@ -1,0 +1,17 @@
+# Ashutosh Pandey
+
+> Ashutosh Pandey is a Manager - AI & Automation Specialist based in Prayagraj, India. AI and automation specialist with expertise in GenAI, NLP, and cloud technologies, driving innovation and operational efficiency.
+
+This site is an interactive portfolio with several themes. Every theme shows the same résumé data.
+
+## Profile
+
+- [Full profile in Markdown](https://ashutoshcodes.in/index.md): about, experience, projects, skills, education, certifications, contact
+- [Résumé (PDF)](https://ashutoshcodes.in/docs/Ashutosh_Pandey_Resume.pdf)
+- [Portfolio home](https://ashutoshcodes.in/)
+
+## Elsewhere
+
+- [github.com](https://github.com/ashutosh486)
+- [linkedin.com](https://linkedin.com/in/ashutosh14486)
+- [Email](mailto:ashutosh14486@gmail.com)

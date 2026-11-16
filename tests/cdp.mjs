@@ -56,8 +56,15 @@ export async function openPage(hash = '', { width = 1440, height = 900, mobile =
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: mobile ? 2 : 1, mobile });
     await send('Page.navigate', { url: INDEX + (hash ? `#${hash}` : '') });
-    await sleep(2500); // fonts + first render
-    return { send, evaluate, shot, key, errors, close: () => { ws.close(); chrome.kill(); } };
+    // Wait for the page itself (slow CDN fonts can hold it up for seconds), then let the first render settle
+    const ready = async () => {
+        await sleep(200);
+        for (let t = 0; t < 150 && await evaluate(`document.readyState === 'complete' && !!window.portfolioController`) !== true; t++) await sleep(100);
+        await sleep(500);
+    };
+    await ready();
+    const reload = async () => { await send('Page.reload'); await ready(); };
+    return { send, evaluate, shot, key, errors, reload, close: () => { ws.close(); chrome.kill(); } };
 }
 
 // Opens the page straight on `theme` with the chooser dismissed

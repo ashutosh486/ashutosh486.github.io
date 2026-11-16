@@ -10,6 +10,7 @@ const portfolioContent = {
     location: "Prayagraj, India",
     email: "ashutosh14486@gmail.com",
     phone: "+91-8004644122",
+    site: "https://ashutoshcodes.in",  // canonical address; about.ashutoshcodes.in serves the same site
     
     // Social Links
     social: {

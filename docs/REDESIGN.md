@@ -53,6 +53,19 @@ The same site is deployed to two folders: `public_html` (ashutoshcodes.in) and `
 
 **When the site starts loading a new file** (an image, a script, a font), add its path to the allow rule in `.htaccess`, or it will 404 on Hostinger. GitHub Pages ignores the file, and the GitHub repo is public either way.
 
+## Crawlers and AI agents
+
+`npm run build:seo` (scripts/build-seo.js) generates everything a reader without JavaScript gets, from `content.js`:
+
+- In `index.html`, between the `<!-- seo:… -->` markers:
+  - the meta description, canonical (`content.js` `site`) and JSON-LD (Person with `sameAs`, email and `worksFor`, WebSite, ProfilePage, the patent, the résumé PDF);
+  - a plain-HTML copy of the résumé inside `#themeContainer`, with one `<h1>`. It's hidden before first paint when JavaScript runs, and the theme replaces it.
+- `index.md`, `llms.txt` and `sitemap.xml`.
+
+Run it after every `content.js` edit; `tests/seo.test.mjs` fails while any of these is stale.
+
+`robots.txt` is hand-written: it has the Content Signals line (`search=yes, ai-input=yes, ai-train=no`) and the Sitemap line. `.htaccess` serves `index.md` to `Accept: text/markdown` and adds a `Link` header (`llms.txt`, `index.md`) and `Vary: Accept` on the home page. `main.js` registers two WebMCP tools (`get_profile`, `switch_theme`) in browsers that ship `navigator.modelContext`.
+
 ## Testing
 
 Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome.
@@ -726,6 +739,20 @@ Checked with `tests/shell.test.mjs`:
   - Every theme was exercised on the CDN: every ChatGPT topic and the unknown answer, the slash menu, every VS Code file, every Terminal command, and Model Card's show-more and Résumé tab, at 1440px and 390px. The build contains every rule the CDN generated; the 4 that looked missing were only merged by the minifier.
   - Screenshots of all 9 themes at 1440px and 390px, CDN vs build: 17 of 18 match pixel for pixel. Notebook at 1440px differs by 40 anti-aliased pixels on the switcher's blurred backdrop.
   - All theme tests pass.
+
+### Agent readiness (`theme/shell`)
+
+An agent-readiness scan of ashutoshcodes.in listed 19 issues.
+
+- **Already fixed by the `.htaccess` allowlist:** missing URLs returning 200, and `llms.txt` / MCP server card "returning HTML". The scan ran before it went live.
+- **Fixed here:** Content-Signal, sitemap and its robots.txt line, readable HTML (468 → about 5,500 characters), description and canonical, one `<h1>`, JSON-LD with several types, `sameAs`, machine-readable email, `llms.txt`, Markdown on request, `Link` header, WebMCP tools.
+- **Deliberately not done:**
+  - **No Organization node for the site:** the site is a person's, so it's described as a Person, with the employer as `worksFor` Organization.
+  - **No terms page:** it's a personal portfolio, not a business.
+  - **About and contact** are sections of the page, not separate pages.
+  - **No MCP Server Card:** there's no MCP server, and a card pointing at a made-up endpoint would mislead agents. The URL returns a real 404.
+  - **No phone number** in the JSON-LD.
+- **Tests:** `tests/cdp.mjs` now waits for the page to load instead of a fixed 2.5s (slow CDN fonts made whole batches fail), and gained `reload()`.
 
 ## Shared backlog (shell / cross-theme)
 

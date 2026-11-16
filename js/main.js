@@ -52,6 +52,8 @@ class PortfolioController {
         // Ask on every visit, with the current theme preselected, unless this browser ticked "Don't show again"
         if (!this.readSaved('portfolio-chooser-hide')) this.openChooser();
 
+        this.registerAgentTools();
+
         // Back/Forward and hand-edited URLs switch themes too
         window.addEventListener('hashchange', () => {
             const key = location.hash.slice(1);
@@ -209,6 +211,37 @@ class PortfolioController {
         this.chooser.style.transformOrigin = `${dock.left + dock.width / 2 - box.left}px ${dock.top + dock.height / 2 - box.top}px`;
         this.chooser.classList.add('is-closing');
         setTimeout(finish, 160);
+    }
+
+    // ---------- in-browser agents (WebMCP; only browsers that ship navigator.modelContext) ----------
+
+    registerAgentTools() {
+        const tools = navigator.modelContext;
+        if (!tools?.registerTool) return;
+        const text = value => ({ content: [{ type: 'text', text: typeof value === 'string' ? value : JSON.stringify(value) }] });
+        const { stats, chatCommands, skillLabels, ...profile } = portfolioContent;
+        try {
+            tools.registerTool({
+                name: 'get_profile',
+                description: `${portfolioContent.name}'s résumé as JSON: experience, projects, skills, education, certifications, patents and contact details.`,
+                inputSchema: { type: 'object', properties: {} },
+                annotations: { readOnlyHint: true },
+                execute: async () => text({ ...profile, stats })
+            });
+            tools.registerTool({
+                name: 'switch_theme',
+                description: 'Show the portfolio in another interface. Every theme has the same content.',
+                inputSchema: { type: 'object', properties: { theme: { type: 'string', enum: Object.keys(this.themes) } }, required: ['theme'] },
+                execute: async ({ theme }) => {
+                    if (!this.themes[theme]) return text(`Unknown theme "${theme}"`);
+                    this.closeChooser();
+                    this.loadTheme(theme, { pushHistory: true });
+                    return text(`Switched to ${this.themes[theme].name}`);
+                }
+            });
+        } catch (error) {
+            console.warn('WebMCP tools not registered:', error);
+        }
     }
 
     // ---------- persistence (per browser; storage can be unavailable in private mode) ----------
