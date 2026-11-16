@@ -270,6 +270,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Round 4e:** each AI answer ends with two or three `{{ask:…}}` follow-up questions, shown as buttons under the latest answer only; a tap asks it.
 - **Round 4f:** the sidebar lists the visitor's own past AI chats under Chats (localStorage `cgChats`, last 20, this browser only); a click restores the thread and the conversation carries on. The server copy in Upstash is for the owner and never shown on the page.
 - **Round 4g:** the model names each chat in its first answer (`{{title:…}}`, hidden on the page) and the sidebar uses that title, falling back to the first question.
+- **Round 4h:** a refresh reopens the chat the tab was in (sessionStorage `cgOpen`; New chat clears it, a new tab starts fresh). Saved chats and a reopened thread stay hidden behind the theme chooser and fade in with the opening.
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 

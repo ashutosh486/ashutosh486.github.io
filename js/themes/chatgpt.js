@@ -114,7 +114,10 @@ const ChatGPTTheme = {
         `;
 
         this.bind();
+        let open;
+        try { open = sessionStorage.getItem('cgOpen'); } catch { /* storage blocked: start fresh */ }
         this.showWelcome();
+        if (open) this.openChat(open); // a refresh reopens the chat this tab was in
         this.opening();
     },
 
@@ -127,7 +130,8 @@ const ChatGPTTheme = {
             el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
         this.stopOpening = playOpening([
             ...rise(q('main > header, .cg-side-head'), 0, 0, 'translateY(-8px)', 600),
-            ...rise(q('#cgSidebar nav > p, .cg-topic, .cg-profile, .cg-links'), 150, 70, 'translateX(-16px)', 600),
+            ...rise(q('#cgSidebar nav > p, .cg-topic, #cgChats, .cg-profile, .cg-links'), 150, 70, 'translateX(-16px)', 600),
+            ...rise(q('#cgThread > .cg-in'), 450, 0), // a reopened chat
             ...rise(q('#cgWelcome > .cg-block:first-child > :first-child'), 250, 0, 'scale(0.6)', 900),
             ...rise(q('#cgWelcome > .cg-block:first-child .min-w-0 > *'), 450, 220),
             ...rise(q('#cgWelcome dl'), 1100, 0, 'translateY(16px) scale(0.98)'),
@@ -322,7 +326,9 @@ const ChatGPTTheme = {
         try { localStorage.setItem('cgChats', JSON.stringify(chats.slice(0, 20))); } catch { /* private mode or full: just not listed */ }
         this.renderChats();
     },
+    // Runs whenever the open chat changes, so it also remembers which one is open (per tab) for a refresh
     renderChats() {
+        try { this.chatId ? sessionStorage.setItem('cgOpen', this.chatId) : sessionStorage.removeItem('cgOpen'); } catch { /* storage blocked */ }
         const chats = this.chats();
         document.getElementById('cgChats').innerHTML = chats.length ? `<p class="px-2 pb-1.5 pt-5 text-xs font-medium text-[#8e8e8e]">Chats</p>` + chats.map(chat => `
             <button data-chat="${this.esc(chat.id)}" ${chat.id === this.chatId ? 'aria-current="true"' : ''} class="flex min-h-11 w-full items-center rounded-lg px-2 text-left text-sm text-[#d1d1d1] transition-colors hover:bg-white/5 aria-[current=true]:bg-white/10 md:min-h-9">

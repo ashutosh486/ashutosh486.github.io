@@ -1,5 +1,5 @@
 // ChatGPT theme checks: node tests/chatgpt.test.mjs [screenshot-dir]
-import { openTheme, sleep } from './cdp.mjs';
+import { openPage, openTheme, sleep } from './cdp.mjs';
 import assert from 'node:assert';
 import { mkdirSync } from 'node:fs';
 const shots = process.argv[2] || 'tests/screenshots';
@@ -121,5 +121,21 @@ assert.equal(await b.evaluate(`document.getElementById('cgSidebar').classList.co
 await b.shot(`${out}-9-m-experience.png`);
 assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), '390x390', 'no overflow after answer');
 assert.deepEqual(b.errors.filter(e => e.includes('chatgpt.js')), [], 'no runtime errors (mobile)');
+b.close();
+// Saved chats stay hidden behind the theme chooser and arrive with the rest of the sidebar
+b = await openPage('chatgpt');
+await b.evaluate(`localStorage.setItem('cgChats', JSON.stringify([{ id: '20261117000000-abcdef', title: 'NielsenIQ Tenure',
+    messages: [{ role: 'user', content: 'how long at NielsenIQ?' }, { role: 'assistant', content: '{{title:NielsenIQ Tenure}}\\nFour years.' }] }]));
+    sessionStorage.setItem('cgOpen', '20261117000000-abcdef'); location.reload()`); await sleep(1500);
+const chatsOpacity = () => b.evaluate(`getComputedStyle(document.getElementById('cgChats')).opacity`);
+assert.equal(await b.evaluate(`document.getElementById('themeChooser').open && document.getElementById('cgChats').innerText.includes('NielsenIQ Tenure')`), true, 'chooser open, chat listed');
+assert.equal(await chatsOpacity(), '0', 'chats hidden behind the chooser');
+assert.equal(await b.evaluate(`getComputedStyle(document.querySelector('#cgThread > .cg-in')).opacity`), '0', 'reopened chat hidden behind the chooser too');
+await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(3000);
+assert.equal(await chatsOpacity(), '1', 'chats fade in with the sidebar');
+assert.equal(await b.evaluate(`[...document.querySelectorAll('#cgThread > .justify-end')].map(el => el.innerText).join() + '|' + [...document.querySelectorAll('.cg-body')].at(-1).innerText + '|' + document.querySelector('#cgChats [aria-current]')?.innerText.trim() + '|' + ChatGPTTheme.history.length`),
+    'how long at NielsenIQ?|Four years.|NielsenIQ Tenure|2', 'refresh reopens the chat this tab was in');
+await b.evaluate(`document.getElementById('cgNewChat').click(); location.reload()`); await sleep(1500);
+assert.ok(await b.evaluate(`!!document.getElementById('cgWelcome') && !document.querySelector('#cgChats [aria-current]')`), 'after New chat, a refresh starts fresh');
 b.close();
 console.log('all chatgpt checks passed');
