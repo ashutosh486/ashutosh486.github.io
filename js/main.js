@@ -45,6 +45,9 @@ class PortfolioController {
             scifi: { shape: 'reticle', accent: '#ffb000' }
         };
 
+        // Every theme opens at the top: no restored scroll position on refresh
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
         this.currentTheme = null;
         this.dock = document.getElementById('themeDock');
         this.chooser = document.getElementById('themeChooser');
@@ -96,6 +99,8 @@ class PortfolioController {
                 console.error(`Error rendering theme ${themeName}:`, error);
             }
             this.currentTheme = themeName;
+            window.scrollTo(0, 0);
+            caricatureLift.reset();
             this.paintDock();
             this.syncPage();
         };

@@ -314,6 +314,11 @@ portfolioContent.stats = {
     projects: portfolioContent.projects.length,
     companies: new Set(portfolioContent.experience.map(exp => exp.company)).size
 };
+// Skills as [label, skills] groups for themes: each skill listed once, under its first category; empty groups dropped
+const seenSkills = new Set();
+portfolioContent.skillGroups = Object.entries(portfolioContent.skills)
+    .map(([key, list]) => [portfolioContent.skillLabels[key] || key, list.filter(s => !seenSkills.has(s.toLowerCase()) && seenSkills.add(s.toLowerCase()))])
+    .filter(([, list]) => list.length);
 
 console.log('✅ portfolioContent loaded successfully');
 console.log('   Name:', portfolioContent.name);

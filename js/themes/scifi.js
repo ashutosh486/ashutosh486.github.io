@@ -52,10 +52,7 @@ const SciFiTheme = {
         const list = items => `<ul class="sf-list">${items.map(x => `<li>${x}</li>`).join('')}</ul>`;
         // Colour emoji would break the single-phosphor screen
         const plain = x => x.replace(/\s*\p{Extended_Pictographic}️?/gu, '');
-        const seen = new Set();
-        const skills = Object.entries(c.skills)
-            .map(([key, items]) => [c.skillLabels[key] || key, items.filter(x => !seen.has(x.toLowerCase()) && seen.add(x.toLowerCase()))])
-            .filter(([, items]) => items.length);
+        const skills = c.skillGroups;
         const now = c.experience[0];
         const channels = [['Email', `mailto:${c.email}`, c.email], ['GitHub', c.social.github, host(c.social.github)],
             ['LinkedIn', c.social.linkedin, host(c.social.linkedin)], ['Homepage', c.social.portfolio, host(c.social.portfolio)],

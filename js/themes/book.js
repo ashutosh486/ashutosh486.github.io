@@ -147,7 +147,7 @@ ${s.skills} skills, each listed once under its first group.
 
 | Group | Skills |
 | --- | --- |
-${this.skills().map(([label, items]) => `| ${label} | ${items.map(t => `\`${t}\``).join(', ')} |`).join('\n')}`, `${++n}.`);
+${portfolioContent.skillGroups.map(([label, items]) => `| ${label} | ${items.map(t => `\`${t}\``).join(', ')} |`).join('\n')}`, `${++n}.`);
 
         add('education', 'Education', `
 # Education
@@ -192,12 +192,6 @@ ${links.join('\n')}`, '', true);
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
-    skills() {
-        const c = portfolioContent, seen = new Set();
-        return Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length);
-    },
 
     // ---------- Markdown: headings, paragraphs, lists, quotes, tables, images; inline code, bold, italic, links ----------
 

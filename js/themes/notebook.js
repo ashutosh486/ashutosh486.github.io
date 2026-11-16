@@ -51,7 +51,7 @@ const NotebookTheme = {
 
     notebook() {
         const c = portfolioContent, md = html => ({ md: html }), esc = s => this.esc(s);
-        const skills = this.skills(), pad = Math.max(...skills.map(([label]) => label.length)) + 2;
+        const skills = portfolioContent.skillGroups, pad = Math.max(...skills.map(([label]) => label.length)) + 2;
         return [
             md(`<h1>${c.name}</h1><p>${c.title} · ${c.location}</p>`),
             { src: 'import pandas as pd\nfrom IPython.display import Markdown\nfrom portfolio import me\n\nme', kind: 'result', out: () => this.profile() },
@@ -143,12 +143,6 @@ const NotebookTheme = {
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
-    skills() {
-        const c = portfolioContent, seen = new Set();
-        return Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length);
-    },
 
     cellHtml(cell, i, blank) {
         if (cell.md) return `<div class="nb-cell nb-md" data-i="${i}" tabindex="-1"><div class="nb-row"><div class="nb-prompt"></div><div class="nb-rendered">${cell.md}</div></div></div>`;
