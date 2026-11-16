@@ -153,6 +153,7 @@ await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep
 const eyes = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('svg.cc .cc-eye-white').getBoundingClientRect())`));
 await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: eyes.x + 400, y: eyes.y + eyes.height / 2 }); await sleep(100);
 assert.ok(await b.evaluate(`document.querySelector('svg.cc').classList.contains('cc--looking')`), 'caricature looks at the pointer');
-assert.match(await b.evaluate(`document.querySelector('svg.cc .cc-look').style.transform`), /^translate\(2\.[0-9]+px/, 'pupils turn right toward a pointer on the right');
+// Pupils = paused reading pose + look offset; together they point right
+assert.ok(await b.evaluate(`(svg => new DOMMatrixReadOnly(getComputedStyle(svg.querySelector('.cc-pupils')).transform).e + parseFloat(svg.querySelector('.cc-look').style.transform.slice(10)) > 2)(document.querySelector('svg.cc'))`), 'pupils turn right toward a pointer on the right');
 b.close();
 console.log('all shell checks passed');

@@ -767,15 +767,26 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
 ### Caricature moments and soul lift (`theme/avatar`)
 
 - **Moments** (js/caricature.js adds `cc--*` classes; styles.css animates them; all off with reduced motion):
-  - **Idle, every 9-16s:** sips coffee (a hand lifts the mug, eyes close, then a smile) or chases a bug (it walks along the lid, he frowns, a hand flicks it away).
-  - **Eureka:** a lightbulb pops on before the "got it" smile in the 12s face cycle.
+  - **Idle, every 9-16s:** a coffee sip or a bug.
+    - *Coffee:* his arm rests on the mug handle. For the sip, the arm bends and lifts the mug to his mouth while his eyes close, then he smiles. The arm and mug move by SMIL in the svg, because CSS can't change a path's shape in every browser.
+    - *Bug:* a bug walks along the lid, he frowns, blows it away (puff lines), then smiles.
   - **Asleep** after 40s with no input (25s at night): eyes shut, head nods, z's rise. Any input wakes him with a jolt and a "!".
   - **Dizzy** when the pointer whips back and forth: spiral eyes, wobbling head, stars circling.
-  - **Hover:** brows up, blush, smile. **Click:** he waves.
+  - **Hover or tap:** a "Hi!" speech bubble.
   - **Résumé download** (any `.pdf` link): confetti off the laptop.
   - **Night** (visitor's clock, 9pm to 6am): desk lamp on, no flying code, and yawns join the idle moments.
-- **New colour variables** `--cc-bug`, `--cc-bulb`, `--cc-lamp`, `--cc-lamp-light` (Sci-Fi sets amber values).
-- **Soul lift** (`caricatureLift`): when the theme scrolls the caricature up off screen, his head and shoulders hop into a basket on a pulley at the right edge. The basket's height tracks scroll progress, the wheel turns with the scroll, the basket swings with scroll speed, and dragging it scrolls the page or panel. Scrolling back, he climbs out and the lift hides. The scroller is found from the scroll event itself, so no per-theme hookup. Looks: wicker basket with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal (`( / )` spinner, dashed rope, `\____/`). Hidden on phones. It shows up only where the caricature can leave the screen: in Contact Card that's tablet width (the poster stays put on wide screens), and in Sci-Fi only on short windows.
+  - **Eyes following the pointer** pause the reading animation instead of stopping it, so they glide back when the pointer rests.
+- **Owner feedback, round 2:**
+  - *Removed:* the eureka bulb, the hover blush/brows, the click wave and the laptop glow on the face (it showed as a light-blue patch).
+  - *Kept:* dizzy, which the owner liked.
+  - *Changed:* the hands were badly proportioned, so the arm and grip were redrawn, and the bug is now blown away rather than flicked.
+- **New colour variables:** `--cc-bug`, `--cc-lamp`, `--cc-lamp-light`, `--cc-bubble`, `--cc-bubble-ink` (Sci-Fi sets amber values).
+- **Soul lift** (`caricatureLift`):
+  - *When it shows:* in every theme, whenever the caricature isn't on screen. That covers themes without one (ChatGPT, Model Card, VS Code), Book chapters without it, and avatars scrolled out of view.
+  - *How it moves:* when the caricature leaves or comes back into view, the soul hops between it and the basket. The basket follows scroll progress on a spring (smooth, small bounce), the wheel turns as the rope pays out, and dragging the basket scrolls.
+  - *What it follows:* the panel that scrolls the caricature, else the page, else the largest scrolling panel. It rescans when the theme's content changes.
+  - *Looks:* the head sits in a basket wider than his shoulders, with his hands on the rim. Each theme dresses it differently: wicker with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal. Hidden on phones.
+- **VS Code:** root-level files sit flush with the `projects` folder's chevron.
 
 ## Shared backlog (shell / cross-theme)
 

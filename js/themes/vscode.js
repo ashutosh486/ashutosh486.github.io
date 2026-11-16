@@ -97,7 +97,7 @@ const VSCodeTheme = {
 
     tree() {
         const dirs = [...new Set(this.paths.filter(p => p.includes('/')).map(p => p.split('/')[0]))];
-        const row = (p, d) => `<li><button type="button" class="vs-row" data-open="${p}" style="--d:${d}"><span class="vs-twist"></span>${this.icon(p)}<span class="vs-row-name">${p.split('/').pop()}</span></button></li>`;
+        const row = (p, d) => `<li><button type="button" class="vs-row" data-open="${p}" style="--d:${d}">${d > 1 ? '<span class="vs-twist"></span>' : ''}${this.icon(p)}<span class="vs-row-name">${p.split('/').pop()}</span></button></li>`;
         return dirs.map(dir => `
             <li>
                 <button type="button" class="vs-row" data-folder aria-expanded="true" style="--d:1"><span class="vs-twist"><i class="fas fa-chevron-right vs-chev" aria-hidden="true"></i></span><span class="vs-row-name">${dir}</span></button>

@@ -1,13 +1,15 @@
 // Caricature: a plus-size developer at a laptop, as inline SVG so any theme can recolour it (--cc-* variables).
 // It reads the screen (pupils scan line by line, blinks) and its expression changes as it works: focused and muttering,
-// thinking, puzzled, then a lightbulb and a small "got it" smile. Animations live in styles.css under .cc
-// Behaviour (bottom of this file): eyes follow the pointer; it sips coffee, chases a bug off the lid, falls asleep when
-// the visitor goes idle, gets dizzy if the pointer whips around, waves when clicked, cheers a résumé download, and yawns
-// under a desk lamp at night. When its theme scrolls it away, its "soul" rides a pulley lift down the right edge.
+// thinking, puzzled, then a small "got it" smile. Animations live in styles.css under .cc
+// Behaviour (bottom of this file): eyes follow the pointer; it sips coffee, blows a bug off the lid, falls asleep when
+// the visitor goes idle, gets dizzy if the pointer whips around, says hi on hover or tap, cheers a résumé download, and
+// yawns under a desk lamp at night. Wherever it isn't on screen, its "soul" rides a pulley lift down the right edge.
 
 // Round, full-cheeked face (also clips the screen glow)
 const FACE = 'M120 28c28 0 42 20 42 44 0 14-4 24-12 30-8 7-19 10-30 10s-22-3-30-10c-8-6-12-16-12-30 0-24 14-44 42-44Z';
 // Spiral for dizzy eyes, centred on 0,0
+// Ease in and out for each leg of the coffee sip (SMIL keySplines)
+const EASE = Array(5).fill('0.45 0 0.3 1').join(';');
 const SPIRAL = 'M0 0a.8.8 0 0 1 1.6 0 1.6 1.6 0 0 1-3.2 0 2.4 2.4 0 0 1 4.8 0 3.2 3.2 0 0 1-6.4 0';
 // Confetti for a résumé download: [x, y, spin, colour var], fixed so every copy throws the same burst
 const CONFETTI = [[-46, -64, 220, 'code'], [-30, -86, -160, 'sticker'], [-12, -70, 300, 'mug'], [4, -94, -240, 'glow'],
@@ -30,7 +32,6 @@ function caricatureSVG(label = '', { head = false } = {}) {
     return `
 <svg class="${classes}" viewBox="${head ? '64 0 112 124' : '0 0 240 200'}" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'}>
     <defs>
-        <clipPath id="${id}-face"><path d="${FACE}"/></clipPath>
         <clipPath id="${id}-eyes">${eye(106)}${eye(134)}</clipPath>
     </defs>
     <g class="cc-lamp">
@@ -87,18 +88,8 @@ function caricatureSVG(label = '', { head = false } = {}) {
                 <path class="cc-m cc-m-smile" d="M110 95.5q10 7 20 0"/>
                 <ellipse class="cc-m cc-m-yawn" cx="120" cy="99" rx="3.8" ry="5.4"/>
             </g>
-            <ellipse class="cc-glow" cx="120" cy="112" rx="50" ry="34" clip-path="url(#${id}-face)"/>
         </g></g>
     </g>
-    <g class="cc-hand"><g class="cc-hand-pose">
-        <rect class="cc-shirt" x="-6.5" y="4" width="13" height="22" rx="5"/>
-        <rect class="cc-skin" x="-6" y="-6.5" width="12" height="12" rx="5"/>
-        <rect class="cc-skin" x="-6" y="-13" width="2.7" height="9" rx="1.35"/>
-        <rect class="cc-skin" x="-2.9" y="-14.5" width="2.7" height="10" rx="1.35"/>
-        <rect class="cc-skin" x="0.2" y="-14" width="2.7" height="9.5" rx="1.35"/>
-        <rect class="cc-skin" x="3.3" y="-12" width="2.7" height="8" rx="1.35"/>
-        <rect class="cc-skin" x="-11" y="-3" width="7.5" height="3" rx="1.5" transform="rotate(-35 -4 -1.5)"/>
-    </g></g>
     <rect class="cc-desk" x="6" y="178" width="228" height="8" rx="3"/>
     <path class="cc-laptop" d="M68 122h104a6 6 0 0 1 6 6v46H62v-46a6 6 0 0 1 6-6Z"/>
     <path class="cc-logo" d="M113 144l-6 5 6 5m14-10 6 5-6 5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -115,15 +106,36 @@ function caricatureSVG(label = '', { head = false } = {}) {
         `<rect class="cc-bit" x="-1.6" y="-3" width="3.2" height="6" rx="0.8" style="--x:${x}px;--y:${y}px;--r:${r}deg;fill:var(--cc-${c})"/>`).join('')}</g>
     <ellipse class="cc-contact" cx="201" cy="178" rx="13" ry="1.8"/>
     <g class="cc-mugset">
-        <path class="cc-steam" d="M196 148q-4-6 0-12t0-12m9 24q-4-6 0-12t0-12" fill="none" stroke-width="2" stroke-linecap="round"/>
-        <rect class="cc-mug" x="190" y="154" width="22" height="24" rx="4"/>
-        <path class="cc-mug-handle" d="M212 159h3a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke-width="3"/>
-        <circle class="cc-skin cc-sip-hand" cx="217" cy="164.5" r="4.8"/>
+        <path class="cc-arm-shade" d="M182 118Q210 140 219 165" fill="none" stroke-width="15.5" stroke-linecap="round">
+            <animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
+                values="M182 118Q210 140 219 165;M182 118Q212 136 213 155;M182 118Q214 150 150 93;M182 118Q214 150 150 93;M182 118Q212 138 215 159;M182 118Q210 140 219 165"/>
+        </path>
+        <path class="cc-arm" d="M182 118Q210 140 219 165" fill="none" stroke-width="12" stroke-linecap="round">
+            <animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
+                values="M182 118Q210 140 219 165;M182 118Q212 136 213 155;M182 118Q214 150 150 93;M182 118Q214 150 150 93;M182 118Q212 138 215 159;M182 118Q210 140 219 165"/>
+        </path>
+        <circle class="cc-shoulder" cx="182" cy="118.5" r="7.6"/>
+        <g>
+            <animateTransform class="cc-sip-anim" attributeName="transform" type="translate" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
+                values="0 0;-6 -10;-66 -63;-66 -63;-4 -6;0 0"/>
+            <animateTransform class="cc-sip-anim" attributeName="transform" type="rotate" additive="sum" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
+                values="0 201 166;0 201 166;-32 201 166;-32 201 166;0 201 166;0 201 166"/>
+            <path class="cc-steam" d="M196 148q-4-6 0-12t0-12m9 24q-4-6 0-12t0-12" fill="none" stroke-width="2" stroke-linecap="round"/>
+            <rect class="cc-mug" x="190" y="154" width="22" height="24" rx="4"/>
+            <path class="cc-mug-handle" d="M212 159h3a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke-width="3"/>
+            <g class="cc-grip">
+                <rect class="cc-skin" x="212.5" y="157.5" width="12.5" height="14" rx="6"/>
+                <ellipse class="cc-skin" cx="214.5" cy="157.5" rx="4.4" ry="2.8" transform="rotate(-20 214.5 157.5)"/>
+                <path class="cc-knuckle" d="M215.5 162.5h7M215.5 166.5h7" fill="none" stroke-width="1" stroke-linecap="round"/>
+            </g>
+        </g>
     </g>
-    <g class="cc-bulb">
-        <path class="cc-bulb-rays" d="M166 -3v-4M178 2l3-3M154 2l-3-3M182 13h4M146 13h4" fill="none" stroke-width="2" stroke-linecap="round"/>
-        <circle class="cc-bulb-glass" cx="166" cy="12" r="7"/>
-        <rect class="cc-bulb-base" x="162.5" y="18" width="7" height="5" rx="1.5"/>
+    <g class="cc-puff" fill="none" stroke-width="1.6" stroke-linecap="round">
+        <path d="M129 103l6 5M131 99l7 3M127 107l4 6"/>
+    </g>
+    <g class="cc-hi">
+        <path class="cc-hi-bubble" d="M18 20h40a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-4l10 9-18-9H18a8 8 0 0 1-8-8V28a8 8 0 0 1 8-8Z" stroke-width="1.5"/>
+        <text class="cc-hi-text" x="38" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700">Hi!</text>
     </g>
     <g class="cc-zzz" font-family="ui-monospace, monospace" font-weight="700">
         <text x="156" y="44" font-size="10">z</text>
@@ -142,7 +154,7 @@ function caricatureSVG(label = '', { head = false } = {}) {
 // ---------- behaviour (one set of listeners for every copy on the page) ----------
 
 const ccReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)');
-const CC_ACTIONS = ['cc--sip', 'cc--bug', 'cc--yawn', 'cc--wave', 'cc--party', 'cc--dizzy', 'cc--startle'];
+const CC_ACTIONS = ['cc--sip', 'cc--bug', 'cc--yawn', 'cc--hi', 'cc--party', 'cc--dizzy', 'cc--startle'];
 const ccTimers = new WeakMap();
 // Exposed for tests: lastActive drives sleep, next is when the next idle action plays
 const caricatureFx = { lastActive: Date.now(), next: Date.now() + 8000 };
@@ -160,22 +172,31 @@ function ccPlay(svg, action, ms, force = false) {
     svg.classList.remove(...CC_ACTIONS);
     void svg.getBoundingClientRect(); // restart the CSS animation if the same action replays
     svg.classList.add(action);
+    if (action === 'cc--sip') svg.querySelectorAll('.cc-sip-anim').forEach(a => a.beginElement());
     clearTimeout(ccTimers.get(svg));
     ccTimers.set(svg, setTimeout(() => svg.classList.remove(action), ms));
 }
 
-// Eyes (and a little of the head) follow the pointer; once it rests for 2.5s they go back to reading the screen
+// Eyes (and a little of the head) follow the pointer. The reading animation pauses where it is rather than stopping,
+// and the look is measured from that pose, so when the pointer rests (2.5s) the eyes glide back instead of jumping.
 let lookFrame = 0;
 let lookTimer = 0;
+const ccReadPose = new WeakMap();
 function lookAt(x, y) {
     document.querySelectorAll('svg.cc').forEach(svg => {
         const eyes = svg.querySelector('.cc-eye-white').getBoundingClientRect();
         if (!eyes.width) return; // copy in a hidden panel
+        if (!svg.classList.contains('cc--looking')) {
+            const t = getComputedStyle(svg.querySelector('.cc-pupils')).transform;
+            const m = new DOMMatrixReadOnly(t === 'none' ? undefined : t);
+            ccReadPose.set(svg, [m.e, m.f]);
+            svg.classList.add('cc--looking');
+        }
+        const [rx, ry] = ccReadPose.get(svg);
         const dx = x - (eyes.left + eyes.width / 2);
         const dy = y - (eyes.top + eyes.height / 2);
         const k = Math.min(1, Math.hypot(dx, dy) / 240) / (Math.hypot(dx, dy) || 1); // full glance from ~240px away
-        svg.classList.add('cc--looking');
-        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4}px, ${dy * k * 1.8}px)`;
+        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4 - rx}px, ${dy * k * 1.8 - ry}px)`;
         svg.querySelector('.cc-turn').style.transform = `translate(${dx * k * 2}px, ${dy * k * 1.2}px)`;
     });
     clearTimeout(lookTimer);
@@ -218,7 +239,7 @@ function ccWatchShake(e) {
     }
 }
 
-// Idle life: every 9-16s a visible caricature sips coffee, chases a bug, or (at night) yawns; after 40s (25s at
+// Idle life: every 9-16s a visible caricature sips coffee, blows a bug away, or (at night) yawns; after 40s (25s at
 // night) with no sign of the visitor it falls asleep
 function ccTick() {
     if (ccReduced.matches || document.hidden) return;
@@ -238,18 +259,23 @@ function ccTick() {
     });
 }
 
-// ---------- the soul lift: when the theme scrolls the caricature away, its soul rides a pulley down the right edge ----------
+// ---------- the soul lift: wherever the caricature isn't on screen, its soul rides a pulley down the right edge ----------
 
 // Copied from the theme's caricature so the soul wears the same colours
 const CC_VARS = ['skin', 'skin-shade', 'hair', 'hair-shine', 'shirt', 'shirt-shade', 'collar', 'eye', 'mouth', 'blush', 'laptop',
-    'laptop-shade', 'desk', 'mug', 'steam', 'glow', 'code', 'sticker', 'bug', 'bulb', 'lamp', 'lamp-light'].map(v => `--cc-${v}`);
+    'laptop-shade', 'desk', 'mug', 'steam', 'glow', 'code', 'sticker', 'bug', 'lamp', 'lamp-light', 'bubble', 'bubble-ink'].map(v => `--cc-${v}`);
+
+const scrolls = el => /(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 1;
 
 const caricatureLift = {
     el: null,
     avatar: null,
     scroller: null,
-    away: false,
-    lastTop: 0,
+    away: null,
+    y: 56, // basket position, eased toward target with a spring so it settles with a small bounce
+    v: 0,
+    target: 56,
+    frame: 0,
 
     build() {
         this.el = document.createElement('div');
@@ -258,7 +284,12 @@ const caricatureLift = {
         this.el.innerHTML = `
             <div class="lift-pulley"><span class="lift-wheel"></span></div>
             <div class="lift-rope"></div>
-            <div class="lift-car"><div class="lift-hanger"></div><div class="lift-soul">${caricatureSVG('', { head: true })}</div><div class="lift-basket"></div></div>`;
+            <div class="lift-car">
+                <div class="lift-hanger"></div>
+                <div class="lift-soul">${caricatureSVG('', { head: true })}</div>
+                <div class="lift-basket"></div>
+                <span class="lift-hand lift-hand-l"></span><span class="lift-hand lift-hand-r"></span>
+            </div>`;
         document.body.append(this.el);
         this.car = this.el.querySelector('.lift-car');
         this.soul = this.el.querySelector('.lift-soul');
@@ -268,7 +299,7 @@ const caricatureLift = {
             if (!this.scroller) return;
             e.preventDefault();
             this.car.setPointerCapture(e.pointerId);
-            const grab = e.clientY - this.car.getBoundingClientRect().top;
+            const grab = e.clientY - this.y;
             const move = (ev) => {
                 const [top, bottom] = this.track();
                 const max = this.scroller.scrollHeight - this.scroller.clientHeight;
@@ -283,66 +314,108 @@ const caricatureLift = {
             this.car.addEventListener('pointerup', up, { once: true });
             this.car.addEventListener('pointercancel', up, { once: true });
         });
+
+        // Themes swap content (book chapters, Sci-Fi screens, terminal output), so look again after changes
+        let queued = 0;
+        const rescan = () => queued || (queued = requestAnimationFrame(() => { queued = 0; this.scan(); }));
+        // (the caricature's own class changes, like eyes following the pointer, don't count)
+        new MutationObserver(muts => muts.some(m => !m.target.closest?.('svg.cc')) && rescan()).observe(document.getElementById('themeContainer'), { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
+        window.addEventListener('resize', rescan);
     },
 
     // Where the basket can travel: under the pulley down to just above the theme switcher
     track() {
         const dock = document.getElementById('themeDock')?.getBoundingClientRect();
-        const floor = (dock ? dock.top : innerHeight) - 12 - this.car.offsetHeight;
+        const floor = (dock ? dock.top : innerHeight) - 14 - this.car.offsetHeight;
         return [56, Math.max(80, floor)];
     },
 
-    // Theme switched: the new theme has its own caricature (or none)
+    // Theme switched: start over with the new theme's caricature (or none) and its scroller
     reset() {
+        if (!this.el) this.build();
         this.avatar = this.scroller = null;
-        this.away = false;
-        this.el?.classList.remove('is-on');
+        this.away = null;
+        this.el.classList.remove('is-on');
+        requestAnimationFrame(() => this.scan());
+    },
+
+    // The scroller is the panel that scrolls the caricature, else the page if it scrolls, else the biggest scrolling panel
+    scan() {
+        const root = document.getElementById('themeContainer');
+        const avatar = root.querySelector('svg.cc') || null;
+        let scroller = null;
+        for (let el = avatar?.parentElement; el && el !== root.parentElement && !scroller; el = el.parentElement) if (scrolls(el)) scroller = el;
+        const page = document.scrollingElement;
+        if (!scroller && page.scrollHeight > page.clientHeight + 1) scroller = page;
+        if (!scroller) {
+            const big = [...root.querySelectorAll('*')].filter(el => el.clientHeight > innerHeight * 0.3 && el.clientWidth > innerWidth * 0.3 && scrolls(el));
+            scroller = big.sort((a, b) => b.clientHeight * b.clientWidth - a.clientHeight * a.clientWidth)[0] || page;
+        }
+        if (avatar !== this.avatar) {
+            // The soul wears the theme's colours: on its own svg (its .cc rule would beat inherited values) and on the car (hands)
+            const style = avatar && getComputedStyle(avatar);
+            [this.soul.querySelector('svg'), this.car].forEach(el => CC_VARS.forEach(v => (style ? el.style.setProperty(v, style.getPropertyValue(v)) : el.style.removeProperty(v))));
+        }
+        this.avatar = avatar;
+        this.scroller = scroller;
+        this.update();
     },
 
     onScroll(e) {
         const box = e.target === document ? document.scrollingElement : e.target;
-        if (!(box instanceof Element) || box.closest('.lift')) return;
-        if (box !== this.scroller) {
-            const avatar = box.querySelector('svg.cc:not(.cc--soul)');
-            if (!avatar) return;
-            if (!this.el) this.build();
-            this.scroller = box;
-            this.avatar = avatar;
-            const style = getComputedStyle(avatar);
-            // On the soul's own svg: its .cc rule would override values inherited from the wrapper
-            const soul = this.soul.querySelector('svg');
-            CC_VARS.forEach(v => soul.style.setProperty(v, style.getPropertyValue(v)));
-        }
-        this.update();
+        if (!this.el || !(box instanceof Element) || box.closest('.lift')) return;
+        // A panel that only now got long enough to scroll (chat thread, terminal output) takes over from one that can't
+        if (box !== this.scroller && !scrolls(this.scroller) && box.clientHeight > innerHeight * 0.3) this.scroller = box;
+        if (box === this.scroller) this.update();
     },
 
     update() {
         const s = this.scroller;
-        const a = this.avatar.getBoundingClientRect();
-        if (!a.width || !this.avatar.isConnected) return;
-        const view = s === document.scrollingElement ? 0 : s.getBoundingClientRect().top;
-        const away = a.bottom < view + 8; // scrolled up past the top, not merely below the fold
+        if (!s) return;
+        // Visible area: the viewport, cut down to the scrolling panel
+        const view = s === document.scrollingElement ? { top: 0, bottom: innerHeight } : s.getBoundingClientRect();
+        const a = this.avatar?.isConnected ? this.avatar.getBoundingClientRect() : null;
+        const shown = !!a && a.width > 0 && a.bottom > Math.max(0, view.top) + 8 && a.top < Math.min(innerHeight, view.bottom) - 8;
         const max = s.scrollHeight - s.clientHeight;
         const [top, bottom] = this.track();
-        const y = top + (max > 0 ? s.scrollTop / max : 0) * (bottom - top);
-        this.el.style.setProperty('--y', `${y}px`);
-        this.el.style.setProperty('--spin', `${s.scrollTop * 0.8}deg`);
-        this.el.dataset.spin = Math.floor(s.scrollTop / 24) % 4;
-        // The basket swings with the scroll speed and settles once it stops
-        if (!ccReduced.matches) {
-            this.el.style.setProperty('--swing', `${Math.max(-9, Math.min(9, (s.scrollTop - this.lastTop) * -0.25))}deg`);
-            clearTimeout(this.settle);
-            this.settle = setTimeout(() => this.el.style.setProperty('--swing', '0deg'), 120);
-        }
-        this.lastTop = s.scrollTop;
-        if (away !== this.away) this.hop(away, a);
+        this.target = top + (max > 0 ? Math.min(1, s.scrollTop / max) : 0) * (bottom - top);
+        if (this.away === null) this.y = this.target; // first paint: no travel
+        this.animate();
+        if (!shown !== this.away) this.hop(!shown, a && a.width > 0 ? a : null);
     },
 
-    // The soul leaves the caricature and lands in the basket, or climbs back out
+    animate() {
+        if (ccReduced.matches || this.el.classList.contains('is-dragging')) {
+            this.y = this.target;
+            this.v = 0;
+            return this.paint();
+        }
+        if (this.frame) return;
+        const step = () => {
+            // Spring toward the target, a little under-damped: smooth travel and a soft bounce as it stops
+            this.v = (this.v + (this.target - this.y) * 0.09) * 0.72;
+            this.y += this.v;
+            this.paint();
+            this.frame = Math.abs(this.target - this.y) < 0.1 && Math.abs(this.v) < 0.05 ? 0 : requestAnimationFrame(step);
+            if (!this.frame) { this.y = this.target; this.paint(); }
+        };
+        this.frame = requestAnimationFrame(step);
+    },
+
+    paint() {
+        this.el.style.setProperty('--y', `${this.y.toFixed(2)}px`);
+        // The wheel turns as the rope pays out (radius ~14px), and the basket tilts a touch with its speed
+        this.el.style.setProperty('--spin', `${(this.y * 4).toFixed(1)}deg`);
+        this.el.style.setProperty('--swing', `${Math.max(-6, Math.min(6, this.v * -0.6)).toFixed(2)}deg`);
+        this.el.dataset.spin = Math.floor(this.y / 8) % 4;
+    },
+
+    // The soul leaves the caricature and lands in the basket, or climbs back into it
     hop(away, a) {
+        const first = this.away === null;
         this.away = away;
         if (away) this.el.classList.add('is-on');
-        if (ccReduced.matches) return away || this.el.classList.remove('is-on');
+        if (ccReduced.matches || first || !a) return away || this.el.classList.remove('is-on');
         const t = this.soul.getBoundingClientRect();
         const scale = Math.max(0.6, Math.min(3, (a.width * 0.45) / t.width));
         const dx = a.left + a.width * 0.5 - (t.left + t.width / 2);
@@ -353,11 +426,7 @@ const caricatureLift = {
             { transform: 'none', opacity: 1 }
         ];
         const anim = this.soul.animate(away ? frames : frames.reverse(), { duration: away ? 750 : 600, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' });
-        if (away) {
-            anim.finished.then(() => this.car.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(6px)' }, { transform: 'translateY(0)' }], { duration: 300, easing: 'ease-out' }), () => {});
-        } else {
-            anim.finished.then(() => !this.away && this.el.classList.remove('is-on'), () => {});
-        }
+        if (!away) anim.finished.then(() => !this.away && this.el.classList.remove('is-on'), () => {});
     }
 };
 
@@ -372,7 +441,7 @@ if (typeof window !== 'undefined') {
         lookFrame = requestAnimationFrame(() => lookAt(e.clientX, e.clientY));
     }, { passive: true });
     ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(type => window.addEventListener(type, ccWake, { passive: true, capture: true }));
-    // Capture sees every scroll, including the panels themes scroll inside
+    // Capture sees every scroll, including the panels themes scroll inside (and Space, arrows, Page Down)
     document.addEventListener('scroll', (e) => {
         ccWake();
         caricatureLift.onScroll(e);
@@ -380,8 +449,9 @@ if (typeof window !== 'undefined') {
     document.addEventListener('click', (e) => {
         if (ccReduced.matches) return;
         if (e.target.closest?.('a[href$=".pdf"]')) visibleCCs().forEach(svg => ccPlay(svg, 'cc--party', 1900, true));
+        // A tap says hi too (touch screens have no hover)
         const svg = e.target.closest?.('svg.cc');
-        if (svg && !svg.closest('.lift')) ccPlay(svg, 'cc--wave', 1900, true);
+        if (svg && !svg.closest('.lift')) ccPlay(svg, 'cc--hi', 1900, true);
     });
     setInterval(ccTick, 1000);
 }

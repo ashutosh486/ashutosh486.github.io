@@ -1745,9 +1745,10 @@ button.shell-ui {
     --cc-code: #4ade80;
     --cc-sticker: #f2c14e;
     --cc-bug: #d94848;
-    --cc-bulb: #ffd84d;
     --cc-lamp: #4b5563;
     --cc-lamp-light: #ffe9a8;
+    --cc-bubble: #ffffff;
+    --cc-bubble-ink: #241e1b;
     display: block;
     overflow: visible;
 }
@@ -1778,7 +1779,6 @@ button.shell-ui {
 .cc-mug { fill: var(--cc-mug); }
 .cc-mug-handle { stroke: var(--cc-mug); }
 .cc-steam { stroke: var(--cc-steam); }
-.cc-glow { fill: var(--cc-glow); opacity: 0.08; }
 .cc-sticker-a { fill: var(--cc-code); }
 .cc-sticker-b { fill: var(--cc-sticker); }
 .cc-code { fill: var(--cc-code); opacity: 0; }
@@ -1798,7 +1798,7 @@ button.shell-ui {
 .cc-brow-r { transform: translateY(1px) rotate(-6deg); }
 .cc-pupils { transform: translate(0, 1px); }
 /* Following the pointer (js/caricature.js moves .cc-look and .cc-turn): the pupils stop scanning the screen */
-.cc--looking .cc-pupils { animation: none; transform: none; }
+.cc--looking .cc-pupils { animation-play-state: paused; }
 .cc-m-think,
 .cc-m-frown,
 .cc-m-smile { opacity: 0; }
@@ -1817,7 +1817,6 @@ button.shell-ui {
     .cc-m-frown { animation: cc-m-frown 12s infinite; }
     .cc-m-smile { animation: cc-m-smile 12s infinite; }
     .cc-mumble { animation: cc-mumble 3s ease-in-out infinite; }
-    .cc-glow { animation: cc-glow 2.6s ease-in-out infinite; }
     .cc-steam { animation: cc-steam 2.8s ease-in-out infinite; }
     .cc-code { opacity: 1; }
     .cc-code text { opacity: 0; animation: cc-code 3.6s ease-out infinite; }
@@ -1891,11 +1890,6 @@ button.shell-ui {
     84% { transform: none; }
 }
 
-@keyframes cc-glow {
-    0%, 100% { opacity: 0.04; }
-    50% { opacity: 0.12; }
-}
-
 @keyframes cc-steam {
     0% { opacity: 0; transform: translateY(6px); }
     40% { opacity: 1; }
@@ -1916,35 +1910,46 @@ button.shell-ui {
 .cc-bug-shell { fill: var(--cc-bug); }
 .cc-bug-head { fill: var(--cc-eye); }
 .cc-bug-legs { stroke: var(--cc-eye); }
-.cc-bulb-glass { fill: var(--cc-bulb); }
-.cc-bulb-base { fill: var(--cc-laptop-shade); }
-.cc-bulb-rays { stroke: var(--cc-bulb); }
 .cc-zzz,
 .cc-bang { fill: var(--cc-code); }
-.cc-star { fill: var(--cc-bulb); }
+.cc-star { fill: var(--cc-sticker); }
 .cc-spiral { stroke: var(--cc-eye); }
 .cc-m-yawn { fill: var(--cc-mouth); stroke: none; }
+.cc-arm { stroke: var(--cc-shirt); }
+.cc-arm-shade { stroke: var(--cc-shirt-shade); }
+.cc-shoulder { fill: var(--cc-shirt); } /* blends the arm into the shirt */
+.cc-knuckle { stroke: var(--cc-skin-shade); }
+.cc-puff { stroke: var(--cc-steam); }
+.cc-hi-bubble { fill: var(--cc-bubble); stroke: var(--cc-bubble-ink); }
+.cc-hi-text { fill: var(--cc-bubble-ink); }
 
-/* Props wait off stage: the hand behind the laptop lid, the rest invisible */
-.cc-hand { transform: translate(96px, 150px); }
+/* Props wait off stage */
 .cc-bug { opacity: 0; transform: translate(176px, 119.4px); }
 .cc-lamp,
 .cc-bit,
-.cc-sip-hand,
-.cc-bulb,
 .cc-zzz,
 .cc-bang,
 .cc-orbit,
 .cc-spirals,
-.cc-m-yawn { opacity: 0; }
-.cc-mugset,
-.cc-bulb,
+.cc-m-yawn,
+.cc-puff,
+.cc-hi { opacity: 0; }
 .cc-bang,
 .cc-m-yawn {
     transform-box: fill-box;
     transform-origin: center;
 }
-.cc-bulb { transform-origin: 50% 100%; }
+.cc-hi {
+    transform: scale(0.6);
+    transform-box: fill-box;
+    transform-origin: 90% 100%;
+}
+
+/* "Hi!" in a speech bubble: on hover, or for a moment after a tap */
+@media (hover: hover) {
+    .cc:not(.cc--soul, .cc--asleep):hover .cc-hi { opacity: 1; transform: none; }
+}
+.cc--hi .cc-hi { opacity: 1; transform: none; }
 
 /* Night (visitor's clock, 9pm to 6am): the desk lamp is on and the code stops flying */
 .cc--night .cc-lamp { opacity: 1; }
@@ -1952,54 +1957,36 @@ button.shell-ui {
 
 @media (prefers-reduced-motion: no-preference) {
     .cc:not(.cc--soul) { cursor: var(--cursor-pointer, pointer); }
-    .cc-look,
-    .cc-turn { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-
-    /* Eureka: a lightbulb pops on as the puzzled face turns into "got it" (same 12s cycle as the face) */
-    .cc-bulb { animation: cc-bulb 12s infinite; }
-    .cc-bulb-rays { animation: cc-rays 0.5s steps(2) infinite; }
-
-    /* Hover: brows up, a blush and a smile */
-    .cc-blush { transition: opacity 0.3s; }
-    .cc:not(.cc--asleep, .cc--dizzy, .cc--bug, .cc--sip, .cc--yawn, .cc--startle):hover .cc-blush { opacity: 0.7; }
-    .cc:not(.cc--asleep, .cc--dizzy, .cc--bug, .cc--sip, .cc--yawn, .cc--startle):hover :is(.cc-brow-l, .cc-brow-r) { animation: none; transform: translateY(-2.5px); }
-    .cc:not(.cc--asleep, .cc--dizzy, .cc--bug, .cc--sip, .cc--yawn, .cc--startle):hover .cc-m { animation: none; opacity: 0; }
-    .cc:not(.cc--asleep, .cc--dizzy, .cc--bug, .cc--sip, .cc--yawn, .cc--startle):hover .cc-m-smile { opacity: 1; }
+    .cc-hi { transition: opacity 0.2s, transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); }
 
     /* Every action takes over the mouth; each then shows the one it needs */
-    :is(.cc--sip, .cc--bug, .cc--yawn, .cc--wave, .cc--party, .cc--dizzy, .cc--startle, .cc--asleep) .cc-m { animation: none; opacity: 0; }
+    :is(.cc--sip, .cc--bug, .cc--yawn, .cc--party, .cc--dizzy, .cc--startle, .cc--asleep) .cc-m { animation: none; opacity: 0; }
 
-    /* Coffee: a hand takes the mug up for a sip, eyes closed, then a happy smile */
-    .cc--sip .cc-mugset { animation: cc-sip 2.8s ease-in-out; }
-    .cc--sip .cc-sip-hand { animation: cc-sip-hand 2.8s; }
+    /* Coffee (the arm and mug move by SMIL in the svg): eyes close for the sip, head leans in, then a happy smile */
     .cc--sip .cc-steam { animation: none; opacity: 0; }
     .cc--sip .cc-eyes { animation: cc-sip-eyes 2.8s; }
     .cc--sip .cc-head { animation: cc-sip-head 2.8s ease-in-out; }
     .cc--sip .cc-m-smile { animation: cc-sip-smile 2.8s; }
 
-    /* Bug: one walks along the lid, he frowns, a hand flicks it away, he smiles */
+    /* Bug: one walks along the lid, he frowns, blows it away, smiles */
     .cc--bug .cc-bug { animation: cc-bug-walk 4.2s linear forwards; }
     .cc--bug .cc-bug-body { animation: cc-bug-spin 4.2s linear; }
     .cc--bug .cc-bug-legs { animation: cc-bug-legs 0.16s steps(2) infinite; }
-    .cc--bug .cc-hand { animation: cc-flick 4.2s ease-in-out; }
-    .cc--bug .cc-hand-pose { animation: cc-flick-pose 4.2s ease-in-out; }
     .cc--bug .cc-pupils { animation: cc-bug-eyes 4.2s ease-in-out; }
     .cc--bug .cc-m-frown { animation: cc-bug-frown 4.2s; }
+    .cc--bug .cc-m-think { animation: cc-bug-blow 4.2s; }
     .cc--bug .cc-m-smile { animation: cc-bug-smile 4.2s; }
+    .cc--bug .cc-puff { animation: cc-puff 4.2s; }
 
     /* Yawn (night only): head back, eyes squeezed, mouth wide */
     .cc--yawn .cc-m-yawn { animation: cc-yawn 2.4s ease-in-out; }
     .cc--yawn .cc-eyes { animation: cc-yawn-eyes 2.4s ease-in-out; }
     .cc--yawn .cc-head { animation: cc-yawn-head 2.4s ease-in-out; }
 
-    /* Click: he waves back */
-    .cc--wave .cc-hand { animation: cc-wave-rise 1.9s ease-in-out; }
-    .cc--wave .cc-hand-pose { animation: cc-wave 1.9s ease-in-out; }
-    :is(.cc--wave, .cc--party) .cc-m-smile { opacity: 1; }
-    :is(.cc--wave, .cc--party) :is(.cc-brow-l, .cc-brow-r) { animation: none; transform: translateY(-3px); }
-    :is(.cc--wave, .cc--party) .cc-blush { opacity: 0.6; }
-
     /* Résumé download: confetti off the laptop and a little hop */
+    .cc--party .cc-m-smile { opacity: 1; }
+    .cc--party :is(.cc-brow-l, .cc-brow-r) { animation: none; transform: translateY(-3px); }
+    .cc--party .cc-blush { opacity: 0.6; }
     .cc--party .cc-bit { animation: cc-bit 1.6s cubic-bezier(0.2, 0.7, 0.4, 1) forwards; }
     .cc--party .cc-head { animation: cc-party-head 0.9s ease-in-out 2; }
 
@@ -2018,7 +2005,7 @@ button.shell-ui {
     .cc--startle :is(.cc-brow-l, .cc-brow-r) { animation: none; transform: translateY(-4px); }
     .cc--startle .cc-bang { animation: cc-bang 0.9s ease-out; }
 
-    /* Asleep: eyes shut, head nodding, slow breaths, z's rising, screen dimmed */
+    /* Asleep: eyes shut, head nodding, z's rising */
     .cc--asleep .cc-eyes { animation: none; transform: scaleY(0.12); }
     .cc--asleep .cc-head { animation: cc-nod 3.4s ease-in-out infinite; }
     .cc--asleep :is(.cc-brow-l, .cc-brow-r) { animation: none; transform: translateY(2px); }
@@ -2027,34 +2014,8 @@ button.shell-ui {
     .cc--asleep .cc-zzz text { opacity: 0; animation: cc-z 2.4s ease-out infinite; }
     .cc--asleep .cc-zzz text:nth-child(2) { animation-delay: 0.8s; }
     .cc--asleep .cc-zzz text:nth-child(3) { animation-delay: 1.6s; }
-    .cc--asleep :is(.cc-code, .cc-bulb) { animation: none; opacity: 0; }
-    .cc--asleep .cc-glow { animation: none; opacity: 0.03; }
+    .cc--asleep .cc-code { animation: none; opacity: 0; }
     .cc--asleep .cc-steam { animation-duration: 5s; }
-}
-
-@keyframes cc-bulb {
-    0%, 80% { opacity: 0; transform: scale(0.3); }
-    82.5% { opacity: 1; transform: scale(1.2); }
-    84%, 93% { opacity: 1; transform: scale(1); }
-    96%, 100% { opacity: 0; transform: scale(0.8); }
-}
-
-@keyframes cc-rays {
-    50% { opacity: 0.4; }
-}
-
-@keyframes cc-sip {
-    0%, 8% { transform: none; }
-    20% { transform: translate(-6px, -10px); }
-    42%, 66% { transform: translate(-60px, -58px) rotate(-32deg); }
-    86% { transform: translate(-4px, -6px); }
-    100% { transform: none; }
-}
-
-@keyframes cc-sip-hand {
-    0%, 4% { opacity: 0; }
-    10%, 90% { opacity: 1; }
-    100% { opacity: 0; }
 }
 
 @keyframes cc-sip-eyes {
@@ -2064,7 +2025,7 @@ button.shell-ui {
 
 @keyframes cc-sip-head {
     0%, 30%, 80%, 100% { transform: none; }
-    44%, 66% { transform: rotate(4deg) translate(2px, 2px); }
+    44%, 66% { transform: rotate(3deg) translate(2px, 2px); }
 }
 
 @keyframes cc-sip-smile {
@@ -2076,51 +2037,52 @@ button.shell-ui {
 @keyframes cc-bug-walk {
     0% { opacity: 0; transform: translate(176px, 119.4px); }
     5% { opacity: 1; }
-    50%, 60% { opacity: 1; transform: translate(136px, 119.4px); }
-    78% { opacity: 1; transform: translate(80px, 64px); }
-    84%, 100% { opacity: 0; transform: translate(70px, 56px); }
+    50%, 62% { opacity: 1; transform: translate(136px, 119.4px); }
+    72% { transform: translate(170px, 98px); }
+    82% { opacity: 1; transform: translate(204px, 76px); }
+    88%, 100% { opacity: 0; transform: translate(214px, 70px); }
 }
 
 @keyframes cc-bug-spin {
-    0%, 60% { transform: none; }
-    84%, 100% { transform: rotate(-900deg); }
+    0%, 62% { transform: none; }
+    88%, 100% { transform: rotate(720deg); }
 }
 
 @keyframes cc-bug-legs {
     to { transform: translateX(0.7px); }
 }
 
-@keyframes cc-flick {
-    0%, 40% { transform: translate(146px, 150px); }
-    54%, 72% { transform: translate(146px, 117px); }
-    88%, 100% { transform: translate(146px, 150px); }
-}
-
-@keyframes cc-flick-pose {
-    0%, 57% { transform: none; }
-    61% { transform: rotate(-48deg); }
-    72% { transform: rotate(-12deg); }
-    100% { transform: none; }
-}
-
 @keyframes cc-bug-eyes {
     0% { transform: translate(2.2px, 2.4px); }
     50% { transform: translate(0.8px, 2.6px); }
-    62% { transform: translate(-1.6px, -0.6px); }
-    80% { transform: translate(-2.2px, -1.6px); }
+    62% { transform: translate(1.2px, 2.2px); }
+    72% { transform: translate(2.4px, 0.2px); }
+    84% { transform: translate(2.4px, -1px); }
     100% { transform: translate(0, 1px); }
 }
 
 @keyframes cc-bug-frown {
     0%, 18% { opacity: 0; }
-    22%, 60% { opacity: 1; }
-    64%, 100% { opacity: 0; }
+    22%, 56% { opacity: 1; }
+    58%, 100% { opacity: 0; }
+}
+
+@keyframes cc-bug-blow {
+    0%, 57% { opacity: 0; }
+    58%, 72% { opacity: 1; }
+    74%, 100% { opacity: 0; }
 }
 
 @keyframes cc-bug-smile {
-    0%, 64% { opacity: 0; }
-    68%, 96% { opacity: 1; }
+    0%, 75% { opacity: 0; }
+    78%, 96% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+@keyframes cc-puff {
+    0%, 59% { opacity: 0; transform: none; }
+    62%, 68% { opacity: 0.9; transform: translate(2px, 2px); }
+    74%, 100% { opacity: 0; transform: translate(5px, 5px); }
 }
 
 @keyframes cc-yawn {
@@ -2140,18 +2102,6 @@ button.shell-ui {
 @keyframes cc-yawn-head {
     0%, 100% { transform: none; }
     30%, 70% { transform: rotate(-5deg) translateY(-3px); }
-}
-
-@keyframes cc-wave-rise {
-    0% { transform: translate(70px, 150px); }
-    18%, 82% { transform: translate(70px, 108px); }
-    100% { transform: translate(70px, 150px); }
-}
-
-@keyframes cc-wave {
-    0%, 18%, 80%, 100% { transform: none; }
-    28%, 52% { transform: rotate(-20deg); }
-    40%, 64% { transform: rotate(16deg); }
 }
 
 @keyframes cc-bit {
@@ -2210,9 +2160,9 @@ button.shell-ui {
     --lift-glow: rgba(255, 255, 255, 0.5);
     position: fixed;
     top: 0;
-    right: 28px;
+    right: 26px;
     z-index: 55;
-    width: 64px;
+    width: 72px;
     height: 100%;
     pointer-events: none;
     opacity: 0;
@@ -2226,7 +2176,7 @@ button.shell-ui {
     transition: opacity 0.3s;
 }
 
-/* Ceiling bracket and wheel; the wheel turns with the scroll */
+/* Ceiling bracket and wheel; the wheel turns as the rope pays out */
 .lift-pulley {
     position: absolute;
     top: 0;
@@ -2279,50 +2229,49 @@ button.shell-ui {
     background: var(--lift-rope);
 }
 
+/* The car: hook at the top, soul sitting in a basket wider than his shoulders, hands on the rim */
 .lift-car {
     position: absolute;
     top: 0;
     left: 50%;
-    width: 56px;
-    height: 66px;
-    margin-left: -28px;
+    width: 64px;
+    height: 61px;
+    margin-left: -32px;
     translate: 0 var(--y);
     rotate: var(--swing);
     transform-origin: 50% 0;
     pointer-events: auto;
     cursor: grab;
     touch-action: none;
-    transition: rotate 0.6s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
 .lift.is-dragging .lift-car {
     cursor: grabbing;
 }
 
-/* Two ropes from the hook to the basket rim */
 .lift-hanger::before,
 .lift-hanger::after {
     content: '';
     position: absolute;
     top: 0;
-    left: 27px;
+    left: 31px;
     width: 2px;
-    height: 45px;
+    height: 46px;
     background: var(--lift-rope);
     transform-origin: 50% 0;
-    transform: rotate(32deg);
+    transform: rotate(40.6deg);
 }
 
 .lift-hanger::after {
-    transform: rotate(-32deg);
+    transform: rotate(-40.6deg);
 }
 
 .lift-soul {
     position: absolute;
-    top: 2px;
-    left: 6px;
-    width: 44px;
-    filter: drop-shadow(0 0 6px var(--lift-glow));
+    top: 0;
+    left: 14px;
+    width: 36px;
+    filter: drop-shadow(0 0 5px var(--lift-glow));
 }
 
 .lift-soul .cc {
@@ -2333,15 +2282,33 @@ button.shell-ui {
 
 .lift-basket {
     position: absolute;
-    top: 38px;
-    left: 4px;
-    width: 48px;
+    top: 35px;
+    left: 2px;
+    width: 60px;
     height: 26px;
-    border-radius: 4px 4px 16px 16px;
+    border-radius: 4px 4px 18px 18px;
     background:
         repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 2px, transparent 2px 6px),
         repeating-linear-gradient(90deg, #a87645 0 3px, #8a5a2b 3px 6px);
     box-shadow: inset 0 3px 0 #c8925a, 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lift-hand {
+    position: absolute;
+    top: 31px;
+    width: 9px;
+    height: 8px;
+    border-radius: 50% 50% 40% 40%;
+    background: var(--cc-skin, #d9966a);
+    box-shadow: inset -1px -1.5px 0 var(--cc-skin-shade, #b9764d);
+}
+
+.lift-hand-l {
+    left: 13px;
+}
+
+.lift-hand-r {
+    right: 13px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2352,14 +2319,13 @@ button.shell-ui {
 
 @media (prefers-reduced-motion: reduce) {
     .lift,
-    .lift-pulley,
-    .lift-car {
+    .lift-pulley {
         transition: none;
     }
 }
 
 @keyframes lift-bob {
-    50% { transform: translateY(-2px); }
+    50% { transform: translateY(-1.5px); }
 }
 
 /* Phones: no room on the right edge */
@@ -2498,7 +2464,7 @@ html[data-theme="terminal"] .lift-basket {
 }
 
 html[data-theme="terminal"] .lift-basket::before {
-    content: '\\____/';
+    content: '\\______/';
 }
 
 /* Terminal theme: each OS gets its own terminal's palette and font (ANSI colours, like the real thing) */
@@ -5555,9 +5521,10 @@ html:has(#sfRoot) { scrollbar-color: var(--line, rgba(255, 176, 0, 0.28)) transp
     --cc-code: #ffb000;
     --cc-sticker: #3a2600;
     --cc-bug: #ffd27a;
-    --cc-bulb: #ffd27a;
     --cc-lamp: #a87400;
     --cc-lamp-light: #ffb000;
+    --cc-bubble: #1a1000;
+    --cc-bubble-ink: #ffb000;
     width: 100%;
     filter: drop-shadow(0 0 6px rgba(255, 150, 0, 0.3));
 }

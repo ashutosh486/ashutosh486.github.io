@@ -35,6 +35,30 @@ for (const theme of ['apple', 'paper', 'book', 'notebook', 'scifi', 'terminal'])
     console.log(`${theme}: lift ok`);
 }
 
+// Themes and pages without the caricature on screen keep the soul in the basket from the start
+for (const theme of ['chatgpt', 'modelcard', 'vscode']) {
+    const b = await openTheme(theme, { width: 1280, height: 720 });
+    await sleep(800);
+    assert.equal((await lift(b))?.on, true, `${theme}: soul rides the lift (no caricature in this theme)`);
+    await b.shot(`${shots}/avatar-lift-${theme}.png`);
+    b.close();
+}
+{
+    const b = await openTheme('book', { width: 1280, height: 720 });
+    await sleep(800);
+    await b.evaluate(`[...document.querySelectorAll('a, button')].find(el => /Projects/.test(el.textContent))?.click()`); await sleep(1200);
+    assert.ok(await b.evaluate(`!document.querySelector('#themeContainer svg.cc') || document.querySelector('#themeContainer svg.cc').getBoundingClientRect().bottom < 0`), 'book: projects chapter has no caricature in view');
+    assert.equal((await lift(b)).on, true, 'book: soul rides the lift on chapters without the caricature');
+    // Space scrolls the page, and the basket follows
+    const before = (await lift(b)).y;
+    await b.evaluate(`document.activeElement?.blur()`);
+    for (const type of ['keyDown', 'keyUp']) await b.send('Input.dispatchKeyEvent', { type, key: ' ', code: 'Space', windowsVirtualKeyCode: 32, ...(type === 'keyDown' ? { text: ' ' } : {}) });
+    await sleep(1200);
+    assert.ok((await lift(b)).y > before, 'book: Space scrolls and the basket follows');
+    await b.shot(`${shots}/avatar-lift-book-projects.png`);
+    b.close();
+}
+
 // Moments: idle sleep and waking, wave on click, dizzy on a shake, confetti on a résumé download
 const b = await openTheme('apple', { width: 1280, height: 720 });
 await sleep(3000);
@@ -48,7 +72,7 @@ await sleep(1000);
 const r = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('#themeContainer svg.cc').getBoundingClientRect())`));
 for (const type of ['mousePressed', 'mouseReleased']) await b.send('Input.dispatchMouseEvent', { type, x: r.x + r.width / 2, y: r.y + r.height / 3, button: 'left', clickCount: 1 });
 await sleep(100);
-assert.ok(await has('cc--wave'), 'waves when clicked');
+assert.ok(await has('cc--hi'), 'says hi when clicked');
 await sleep(2000);
 for (let i = 0; i < 14; i++) await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: i % 2 ? 1100 : 200, y: 300 + (i % 3) * 20 });
 await sleep(100);
