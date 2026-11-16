@@ -3,7 +3,8 @@ import assert from 'node:assert';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const handler = require('../api/chat.js');
-const { clean, deltas, SYSTEM } = handler;
+const { clean, deltas, prompt, tenure } = handler;
+const SYSTEM = prompt();
 const c = (log => { console.log = () => {}; const content = require('../js/content.js'); console.log = log; return content; })(console.log);
 
 const stream = parts => new ReadableStream({ start(ctl) { parts.forEach(p => ctl.enqueue(new TextEncoder().encode(p))); ctl.close(); } });
@@ -12,6 +13,16 @@ const u = content => ({ role: 'user', content }), a = content => ({ role: 'assis
 
 // The prompt carries the résumé from content.js, not the UI-only fields
 assert.ok(SYSTEM.includes(c.name) && SYSTEM.includes(c.email) && SYSTEM.includes(c.experience[0].company), 'prompt has résumé facts');
+// Tenure is worked out in code, both start and end months counted, Present = this month
+const t = tenure(new Date(2026, 10, 16));
+assert.match(t, /Today is November 2026/);
+assert.match(t, /Analyst at Accenture[^\n]*\(September 2018 - May 2021\): 2 years 9 months/, 'per role');
+assert.match(t, /Total at NielsenIQ: 4 years 3 months/, 'per company, to Present');
+assert.match(t, /Total at Accenture[^:]*: 4 years\n/, 'per company, whole years');
+assert.match(t, /Career so far: 8 years 3 months across 2 companies; average 4 years 2 months per company/, 'total and average');
+assert.ok(SYSTEM.includes('Worked-out tenure'), 'prompt carries the tenure');
+assert.ok(SYSTEM.includes('{{card:contact}}') && SYSTEM.includes('{{card:resume}}') && !SYSTEM.includes('{{card:help}}'), 'cards listed from chatCommands');
+assert.ok(SYSTEM.includes(`"resume":"${c.site}/${c.resume}"`), 'résumé given as a full URL');
 assert.ok(!SYSTEM.includes('chatCommands') && !SYSTEM.includes('skillGroups'), 'prompt skips UI fields');
 
 // Input validation

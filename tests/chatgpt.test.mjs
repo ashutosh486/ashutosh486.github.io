@@ -50,16 +50,36 @@ assert.equal(await b.evaluate(`document.getElementById('cgSidebar').getBoundingC
 await ask(b, '/hire'); await b.shot(`${out}-5-hire.png`);
 // Free text goes to the chat API: streamed in, light Markdown rendered with everything escaped, history sent along
 await b.evaluate(`window.__sent = []; window.fetch = (url, opts) => { __sent.push(JSON.parse(opts.body));
-    const parts = ['I have **5+ years**', ' of Python.\\n- Built <b>APIs</b>\\n- Led a team'];
+    const parts = ['I have **5+ years**', ' of Python.\\n- Built <b>APIs</b>\\n- Led a team\\n\\n| Role | Years |\\n|---|---|\\n| Manager | 1 |\\n\\nMail ash@example.com or [call](tel:+911234) · [x](javascript:alert(1)) · https://example.com/a.'];
     return Promise.resolve(new Response(new ReadableStream({ start(c) { parts.forEach(p => c.enqueue(new TextEncoder().encode(p))); c.close(); } }))); }`);
 assert.match(await ask(b, 'do you know python?'), /5\+ years of Python/, 'streamed answer shown');
-assert.equal(await b.evaluate(`(el => [el.querySelectorAll('strong').length, el.querySelectorAll('li').length, el.querySelectorAll('b').length].join())([...document.querySelectorAll('.cg-body')].at(-1))`), '1,2,0', 'bold and bullets rendered, model HTML escaped');
+assert.equal(await b.evaluate(`(el => [el.querySelectorAll('strong').length, el.querySelectorAll('li').length, el.querySelectorAll('b, .cg-caret').length].join())([...document.querySelectorAll('.cg-body')].at(-1))`), '1,2,0', 'bold and bullets rendered, model HTML escaped, no dot once done');
+assert.equal(await b.evaluate(`[...[...document.querySelectorAll('.cg-body')].at(-1).querySelectorAll('th, td')].map(c => c.textContent).join()`), 'Role,Years,Manager,1', 'table rendered, separator row dropped');
+assert.deepEqual(await b.evaluate(`[...[...document.querySelectorAll('.cg-body')].at(-1).querySelectorAll('a')].map(a => a.getAttribute('href'))`), ['mailto:ash@example.com', 'tel:+911234', 'https://example.com/a'], 'email, phone and URL linked; javascript: link left as text');
+
 await ask(b, 'and java?');
 assert.deepEqual(await b.evaluate(`__sent.at(-1).messages.map(m => m.role)`), ['user', 'assistant', 'user'], 'history sent with the question');
 await b.shot(`${out}-10-ai.png`);
+// Mid-stream: the words so far, then the pulsing dot inside the last line; New chat stops the answer
+await b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('Still typing')); } })))`);
+assert.equal(await ask(b, 'tell me more'), 'Still typing', 'partial answer shown while streaming');
+assert.ok(await b.evaluate(`!![...document.querySelectorAll('.cg-body')].at(-1).querySelector('p > .cg-caret')`), 'pulsing dot while streaming');
+await b.shot(`${out}-10a-streaming.png`);
 await b.evaluate(`document.getElementById('cgNewChat').click(); document.querySelector('[data-fit]').click()`);
 assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job description/.test(cgInput.placeholder) && ChatGPTTheme.history.length === 0`), 'fit button focuses the composer; new chat clears history');
 await b.shot(`${out}-11-fit.png`);
+// {{card:x}} tags become the topic's own card (known topics only, each once); a tag still arriving is hidden
+const reply = (text, close = true) => b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(${JSON.stringify(text)})); ${close ? 'c.close();' : ''} } })))`);
+await reply("Here's how to reach me.\n{{card:contact}}\n{{card:contact}} {{card:bogus}} {{card:help}} {{card:toString}}");
+const cardText = await ask(b, 'how can I contact you?');
+assert.ok(!cardText.includes('{{'), 'card tags never show as text');
+assert.equal(await b.evaluate(`(el => el.querySelectorAll('.cg-card').length + ':' + !!el.querySelector('.cg-card [data-copy]'))([...document.querySelectorAll('.cg-body')].at(-1))`), '1:true', 'one contact card, with its copy button');
+await b.shot(`${out}-12-card.png`);
+await reply('Sure, here it is.\n{{card:res', false);
+assert.equal(await ask(b, 'your resume'), 'Sure, here it is.', 'half-arrived tag hidden');
+await reply('Sure, here it is.\n{{card:resume}}');
+await ask(b, 'your resume again');
+assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-body')].at(-1).querySelector('.cg-card a[download]')?.getAttribute('href')`), await b.evaluate('portfolioContent.resume'), 'résumé card has the download');
 await b.evaluate(`window.fetch = () => Promise.resolve(new Response('', { status: 502 }))`);
 assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'API down -> keyword answer');
 // switching theme mid-reply must not throw
