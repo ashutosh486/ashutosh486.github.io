@@ -174,7 +174,7 @@ const VSCodeTheme = {
     // ---------- source files (syntax-highlighted lines: [indent, html]) ----------
 
     json() {
-        const p = s => this.t('p', s), groups = this.skills();
+        const p = s => this.t('p', s), groups = portfolioContent.skillGroups;
         return [[0, p('{')],
             ...groups.map(([label, list], i) => [1, `${this.t('key', JSON.stringify(label))}${p(': [')}${list.map(s => this.t('str', JSON.stringify(s))).join(p(', '))}${p(i < groups.length - 1 ? '],' : ']')}`]),
             [0, p('}')]];
@@ -218,12 +218,6 @@ const VSCodeTheme = {
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
-    skills() {
-        const c = portfolioContent, seen = new Set();
-        return Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length);
-    },
 
     // ---------- small pieces ----------
 

@@ -323,11 +323,7 @@ const ChatGPTTheme = {
         },
 
         skills() {
-            const c = portfolioContent, seen = new Set();
-            // Categories overlap in content.js, so each skill is listed once, under its first category
-            const groups = Object.entries(c.skills)
-                .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(skill => !seen.has(skill.toLowerCase()) && seen.add(skill.toLowerCase()))])
-                .filter(([, list]) => list.length);
+            const c = portfolioContent, groups = c.skillGroups;
             return `
                 <p>${c.stats.skills} skills across ${groups.length} areas.</p>
                 <dl class="divide-y divide-white/5 overflow-hidden rounded-2xl ring-1 ring-white/10">

@@ -88,10 +88,7 @@ const AppleTheme = {
         const item = (title, ...subs) => `<div class="ap-row ap-item"><strong>${e(title)}</strong>${subs.filter(Boolean).map(x => `<span class="ap-sub">${e(x)}</span>`).join('')}</div>`;
         const link = (href, title, ...subs) => `<a class="ap-row ap-item ap-out" href="${href}" ${this.external(href)}><strong>${e(title)}</strong>${subs.filter(Boolean).map(x => `<span class="ap-sub">${e(x)}</span>`).join('')}</a>`;
         const text = x => `<div class="ap-row ap-text">${e(x)}</div>`;
-        const seen = new Set();
-        const skills = Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels[key] || key, list.filter(x => !seen.has(x.toLowerCase()) && seen.add(x.toLowerCase()))])
-            .filter(([, list]) => list.length);
+        const skills = c.skillGroups;
 
         return [
             { id: 'experience', title: 'Experience', value: `${s.years} yrs`,

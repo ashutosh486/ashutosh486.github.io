@@ -68,7 +68,7 @@ Run it after every `content.js` edit; `tests/seo.test.mjs` fails while any of th
 
 ## Testing
 
-Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome.
+Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome. Run `npm test` before every deploy: it runs every file below and stops at the first failure (seo.test.mjs fails while the generated SEO files are stale).
 
 ```sh
 node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
