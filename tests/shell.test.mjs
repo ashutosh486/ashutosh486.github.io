@@ -126,4 +126,33 @@ await b.evaluate(`document.querySelector('[data-theme="apple"]').click()`); awai
 await b.shot(`${out}-6-m-floating.png`);
 assert.deepEqual(b.errors.filter(e => /main\.js|chatgpt\.js/.test(e)), [], 'no shell errors (phone)');
 b.close();
+// Random: rolls over the cards, then opens a different theme
+b = await openPage('paper');
+await b.evaluate(`document.getElementById('themeChooserRandom').click()`); await sleep(250);
+assert.equal(await b.evaluate(`document.querySelectorAll('.chooser-item.is-rolling').length`), 1, 'one card lit while rolling');
+await b.shot(`${out}-7-rolling.png`);
+await sleep(1800);
+s = await state(b);
+assert.equal(s.open, false, 'random closes the chooser');
+assert.notEqual(s.theme, 'paper', 'random picks a different theme');
+assert.equal(s.hash, `#${s.theme}`, 'random pick is in the URL');
+
+// Cursors follow the theme; the ripple shows on click
+assert.equal(await b.evaluate(`document.documentElement.dataset.theme`), s.theme, 'html carries the theme');
+assert.match(await b.evaluate(`getComputedStyle(document.body).cursor`), /^url\("data:image\/svg\+xml/, 'theme cursor applied');
+assert.match(await b.evaluate(`getComputedStyle(document.getElementById('themeDock')).cursor`), /^url\(.*pointer$/, 'theme hand on buttons');
+await click(b, 300, 300);
+assert.equal(await b.evaluate(`document.querySelectorAll('.cursor-ping').length`), 1, 'click ripple appears');
+await sleep(700);
+assert.equal(await b.evaluate(`document.querySelectorAll('.cursor-ping').length`), 0, 'click ripple cleans up');
+b.close();
+
+// Caricature: the eyes follow the pointer
+b = await openPage('apple');
+await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);
+const eyes = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('svg.cc .cc-eye-white').getBoundingClientRect())`));
+await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: eyes.x + 400, y: eyes.y + eyes.height / 2 }); await sleep(100);
+assert.ok(await b.evaluate(`document.querySelector('svg.cc').classList.contains('cc--looking')`), 'caricature looks at the pointer');
+assert.match(await b.evaluate(`document.querySelector('svg.cc .cc-look').style.transform`), /^translate\(2\.[0-9]+px/, 'pupils turn right toward a pointer on the right');
+b.close();
 console.log('all shell checks passed');

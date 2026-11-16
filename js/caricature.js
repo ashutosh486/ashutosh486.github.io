@@ -27,7 +27,7 @@ function caricatureSVG(label = '') {
     <path class="cc-collar" d="M100 104l20 15-9 8-16-17Zm40 0-20 15 9 8 16-17Z"/>
     <path class="cc-placket" d="M120 122v56" fill="none" stroke-width="1.5"/>
     <g transform="translate(120 116) scale(1.08) translate(-120 -116)">
-        <g class="cc-head">
+        <g class="cc-turn"><g class="cc-head">
             <path class="cc-skin-shade" d="M96 104q24 20 48 0-3 14-24 16-21-2-24-16Z"/>
             <ellipse class="cc-skin" cx="80" cy="76" rx="7" ry="10"/>
             <ellipse class="cc-skin" cx="160" cy="76" rx="7" ry="10"/>
@@ -42,12 +42,12 @@ function caricatureSVG(label = '') {
             <g class="cc-eyes">
                 <g class="cc-eye-white">${eye(106)}${eye(134)}</g>
                 <g clip-path="url(#${id}-eyes)">
-                    <g class="cc-pupils">
+                    <g class="cc-look"><g class="cc-pupils">
                         <circle class="cc-eye" cx="106" cy="75" r="2.7"/>
                         <circle class="cc-eye" cx="134" cy="75" r="2.7"/>
                         <circle class="cc-eye-shine" cx="107" cy="74" r="0.9"/>
                         <circle class="cc-eye-shine" cx="135" cy="74" r="0.9"/>
-                    </g>
+                    </g></g>
                 </g>
                 <path class="cc-skin" d="${lid(106)}${lid(134)}"/>
                 <path class="cc-lash" d="${lash(106)}${lash(134)}" fill="none" stroke-width="1.3" stroke-linecap="round"/>
@@ -60,7 +60,7 @@ function caricatureSVG(label = '') {
                 <path class="cc-m cc-m-smile" d="M110 95.5q10 7 20 0"/>
             </g>
             <ellipse class="cc-glow" cx="120" cy="112" rx="50" ry="34" clip-path="url(#${id}-face)"/>
-        </g>
+        </g></g>
     </g>
     <rect class="cc-desk" x="6" y="178" width="228" height="8" rx="3"/>
     <path class="cc-laptop" d="M68 122h104a6 6 0 0 1 6 6v46H62v-46a6 6 0 0 1 6-6Z"/>
@@ -75,6 +75,31 @@ function caricatureSVG(label = '') {
 </svg>`;
 }
 
+// Eyes (and a little of the head) follow the pointer; once it rests for 2.5s they go back to reading the screen
+let lookFrame = 0;
+let lookTimer = 0;
+function lookAt(x, y) {
+    document.querySelectorAll('svg.cc').forEach(svg => {
+        const eyes = svg.querySelector('.cc-eye-white').getBoundingClientRect();
+        if (!eyes.width) return; // copy in a hidden panel
+        const dx = x - (eyes.left + eyes.width / 2);
+        const dy = y - (eyes.top + eyes.height / 2);
+        const k = Math.min(1, Math.hypot(dx, dy) / 240) / (Math.hypot(dx, dy) || 1); // full glance from ~240px away
+        svg.classList.add('cc--looking');
+        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4}px, ${dy * k * 1.8}px)`;
+        svg.querySelector('.cc-turn').style.transform = `translate(${dx * k * 2}px, ${dy * k * 1.2}px)`;
+    });
+    clearTimeout(lookTimer);
+    lookTimer = setTimeout(() => document.querySelectorAll('svg.cc--looking').forEach(svg => {
+        svg.classList.remove('cc--looking');
+        svg.querySelector('.cc-look').style.transform = svg.querySelector('.cc-turn').style.transform = '';
+    }), 2500);
+}
+
 if (typeof window !== 'undefined') {
     window.caricatureSVG = caricatureSVG;
+    window.addEventListener('pointermove', (e) => {
+        cancelAnimationFrame(lookFrame);
+        lookFrame = requestAnimationFrame(() => lookAt(e.clientX, e.clientY));
+    }, { passive: true });
 }
