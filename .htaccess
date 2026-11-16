@@ -16,6 +16,13 @@ RewriteRule ^ - [R=404,L]
 
 AddType text/markdown .md
 AddCharset utf-8 .md .txt
+# Code and pages are rechecked on every visit (a 304 when unchanged); LiteSpeed's default kept them 7 days, so a
+# deploy didn't reach returning visitors. Images and the PDF keep the default.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|md|js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
 # Home page: point agents at llms.txt and the Markdown version; caches must key on Accept (HTML vs Markdown)
 <IfModule mod_headers.c>
     <FilesMatch "^index\.(html|md)$">

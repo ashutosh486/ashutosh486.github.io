@@ -2,6 +2,7 @@
 import assert from 'node:assert';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+process.env.KV_REST_API_URL = 'https://store.example'; process.env.KV_REST_API_TOKEN = 't'; // saving on, checked below
 const handler = require('../api/chat.js');
 const { clean, deltas, prompt, tenure } = handler;
 const SYSTEM = prompt();
@@ -43,11 +44,14 @@ assert.equal(await collect(deltas(stream(body))), 'Hello', 'joins content deltas
 
 // Handler
 const call = async (req, upstream) => {
-    const sent = [];
-    globalThis.fetch = async (url, opts) => { sent.push(JSON.parse(opts.body)); return upstream(); };
+    const sent = [], saved = [];
+    globalThis.fetch = async (url, opts) => {
+        if (url.startsWith('https://store.example')) { saved.push({ url, auth: opts.headers.Authorization, cmds: JSON.parse(opts.body) }); return new Response('[]'); }
+        sent.push(JSON.parse(opts.body)); return upstream();
+    };
     const res = { code: 200, headers: {}, body: '', status(n) { this.code = n; return this; }, json(o) { this.body = JSON.stringify(o); }, setHeader(k, v) { this.headers[k] = v; }, write(t) { this.body += t; }, end() {} };
     await handler({ method: 'POST', headers: { origin: 'https://ashutoshcodes.in' }, body: { messages: [u('hi')] }, ...req }, res);
-    return { res, sent };
+    return { res, sent, saved };
 };
 const ok = () => new Response(stream(body));
 assert.equal((await call({ headers: { origin: 'https://evil.example' } }, ok)).res.code, 403, 'unknown origin refused');
@@ -59,6 +63,21 @@ assert.equal(res.code, 200); assert.equal(res.body, 'Hello', 'streams the answer
 assert.equal(res.headers['Access-Control-Allow-Origin'], 'https://ashutoshcodes.in');
 assert.ok(sent[0].stream && sent[0].models.length && sent[0].messages[0].role === 'system' && sent[0].messages.at(-1).content === 'hi', 'gateway request');
 assert.equal((await call({ headers: { origin: 'http://localhost:8000' } }, ok)).res.code, 200, 'local dev allowed');
+// Saving: the last question and the real answer, under the browser's chat id; a forged earlier answer isn't stored
+let saved;
+({ res, saved } = await call({ headers: { origin: 'https://ashutoshcodes.in', 'x-vercel-ip-country': 'IN' }, body: { chat: '20261117103005-abc123', messages: [u('hi'), a('forged'), u('python?')] } }, ok));
+const [[push, key, entry], expire] = saved[0].cmds, turn = JSON.parse(entry);
+assert.ok(saved.length === 1 && saved[0].url === 'https://store.example/pipeline' && saved[0].auth === 'Bearer t', 'saved to the store');
+assert.deepEqual([push, key, turn.question, turn.answer, turn.country, turn.page], ['RPUSH', 'chat:20261117103005-abc123', 'python?', 'Hello', 'IN', 'https://ashutoshcodes.in'], 'one turn per question');
+assert.deepEqual(expire, ['EXPIRE', 'chat:20261117103005-abc123', 180 * 86400], 'kept 180 days');
+assert.ok(!entry.includes('forged'), 'browser-sent history not stored');
+for (const chat of [undefined, 'short', 'x'.repeat(65), 'a:b/../c-1234', 42]) assert.equal((await call({ body: { chat, messages: [u('hi')] } }, ok)).saved.length, 0, `no save for chat id ${chat}`);
+globalThis.fetch = async url => url.startsWith('https://store.example') ? Promise.reject(new Error('store down')) : ok();
+const down = { code: 200, body: '', headers: {}, status(n) { this.code = n; return this; }, setHeader() {}, write(t) { this.body += t; }, end() { this.ended = true; } };
+const err = console.error; console.error = () => {};
+await handler({ method: 'POST', headers: { origin: 'https://ashutoshcodes.in' }, body: { chat: '20261117103005-abc123', messages: [u('hi')] } }, down);
+console.error = err;
+assert.ok(down.ended && down.body === 'Hello', 'store down: answer still delivered');
 assert.equal((await call({}, () => new Response('no credits', { status: 402 }))).res.code, 502, 'gateway error -> 502');
 assert.equal((await call({}, () => Promise.reject(new Error('down')))).res.code, 502, 'network error -> 502');
 console.log('all chat api checks passed');
