@@ -1,5 +1,5 @@
 // ChatGPT theme checks: node tests/chatgpt.test.mjs [screenshot-dir]
-import { openTheme, sleep } from './cdp.mjs';
+import { openPage, openTheme, sleep } from './cdp.mjs';
 import assert from 'node:assert';
 import { mkdirSync } from 'node:fs';
 const shots = process.argv[2] || 'tests/screenshots';
@@ -121,5 +121,14 @@ assert.equal(await b.evaluate(`document.getElementById('cgSidebar').classList.co
 await b.shot(`${out}-9-m-experience.png`);
 assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), '390x390', 'no overflow after answer');
 assert.deepEqual(b.errors.filter(e => e.includes('chatgpt.js')), [], 'no runtime errors (mobile)');
+b.close();
+// Saved chats stay hidden behind the theme chooser and arrive with the rest of the sidebar
+b = await openPage('chatgpt');
+await b.evaluate(`localStorage.setItem('cgChats', JSON.stringify([{ id: '20261117000000-abcdef', title: 'NielsenIQ Tenure', messages: [] }])); location.reload()`); await sleep(1500);
+const chatsOpacity = () => b.evaluate(`getComputedStyle(document.getElementById('cgChats')).opacity`);
+assert.equal(await b.evaluate(`document.getElementById('themeChooser').open && document.getElementById('cgChats').innerText.includes('NielsenIQ Tenure')`), true, 'chooser open, chat listed');
+assert.equal(await chatsOpacity(), '0', 'chats hidden behind the chooser');
+await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(3000);
+assert.equal(await chatsOpacity(), '1', 'chats fade in with the sidebar');
 b.close();
 console.log('all chatgpt checks passed');

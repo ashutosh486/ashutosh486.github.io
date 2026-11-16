@@ -127,7 +127,7 @@ const ChatGPTTheme = {
             el.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration, delay: at + i * step, easing: ease, fill: 'backwards' }));
         this.stopOpening = playOpening([
             ...rise(q('main > header, .cg-side-head'), 0, 0, 'translateY(-8px)', 600),
-            ...rise(q('#cgSidebar nav > p, .cg-topic, .cg-profile, .cg-links'), 150, 70, 'translateX(-16px)', 600),
+            ...rise(q('#cgSidebar nav > p, .cg-topic, #cgChats, .cg-profile, .cg-links'), 150, 70, 'translateX(-16px)', 600),
             ...rise(q('#cgWelcome > .cg-block:first-child > :first-child'), 250, 0, 'scale(0.6)', 900),
             ...rise(q('#cgWelcome > .cg-block:first-child .min-w-0 > *'), 450, 220),
             ...rise(q('#cgWelcome dl'), 1100, 0, 'translateY(16px) scale(0.98)'),
