@@ -90,6 +90,19 @@ await reply('Mostly automation platforms.');
 await b.evaluate(`[...document.querySelectorAll('[data-ask]')].at(-3).click()`); await sleep(1600);
 assert.equal(await b.evaluate(`[...document.querySelectorAll('#cgThread > .justify-end')].at(-1).innerText`), 'What did you build there?', 'tap asks the follow-up');
 assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-asks')].filter(el => el.offsetParent).length`), 0, 'older follow-ups hidden');
+// Past chats: listed in the sidebar (this browser only), newest first; a click restores it and the chat carries on
+const titles = () => b.evaluate(`[...document.querySelectorAll('#cgChats [data-chat]')].map(el => el.innerText.trim())`);
+assert.deepEqual(await titles(), ['how can I contact you?', 'do you know python?'], 'chats listed, newest first');
+assert.ok(await b.evaluate(`document.querySelector('#cgChats [data-chat]').getAttribute('aria-current') === 'true'`), 'current chat highlighted');
+await b.evaluate(`document.getElementById('cgNewChat').click()`);
+assert.equal(await b.evaluate(`document.querySelectorAll('#cgChats [aria-current]').length`), 0, 'new chat: nothing highlighted');
+await b.evaluate(`document.querySelectorAll('#cgChats [data-chat]')[1].click()`); await sleep(300);
+assert.deepEqual(await b.evaluate(`[...document.querySelectorAll('#cgThread > .justify-end')].map(el => el.innerText)`), ['do you know python?', 'and java?'], 'old chat restored');
+assert.ok(await b.evaluate(`ChatGPTTheme.history.length === 4 && !!document.querySelector('#cgThread table')`), 'history and Markdown restored');
+await b.shot(`${out}-14-chats.png`);
+await reply('Java too.');
+await ask(b, 'one more');
+assert.ok(await b.evaluate(`(c => c[0].title === 'do you know python?' && c[0].messages.length === 6 && c.length === 2)(JSON.parse(localStorage.getItem('cgChats')))`), 'continued chat moves to the top');
 await b.evaluate(`window.fetch = () => Promise.resolve(new Response('', { status: 502 }))`);
 assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'API down -> keyword answer');
 // switching theme mid-reply must not throw
