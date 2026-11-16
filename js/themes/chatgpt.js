@@ -289,7 +289,7 @@ const ChatGPTTheme = {
         scrollToQuestion();
 
         const body = bot.querySelector('.cg-body');
-        if (free) return this.ask(text, body, scrollToQuestion);
+        if (free) return void this.ask(text, body, scrollToQuestion);
         this.later(() => {
             this.show(body, key, text);
             // Now the answer exists there is room to bring the question to the top, like ChatGPT
@@ -314,8 +314,26 @@ const ChatGPTTheme = {
         this.abort?.abort(); // a new question replaces an unfinished answer
         const abort = this.abort = new AbortController(), question = { role: 'user', content: text };
         this.history.push(question);
-        let reply = '';
+        let reply = '', shown = 0, finished = false;
         body.setAttribute('aria-busy', 'true'); // screen readers wait for the whole answer
+        // Typing reveal: the dots stay until the first words arrive, then text types out at a steady pace (faster when
+        // far behind, so it never lags the stream) with ChatGPT's pulsing dot at the end
+        const paint = () => {
+            body.innerHTML = this.md(reply.slice(0, shown));
+            const last = body.lastElementChild;
+            (last?.matches('ul') ? last.lastElementChild : last || body).insertAdjacentHTML('beforeend', '<span class="cg-caret" aria-hidden="true"></span>');
+        };
+        const revealed = new Promise(resolve => {
+            const step = () => {
+                if (abort.signal.aborted) return resolve();
+                if (shown < reply.length) {
+                    shown = this.reduced ? reply.length : Math.min(reply.length, shown + Math.max(2, Math.ceil((reply.length - shown) / 10)));
+                    paint();
+                } else if (finished) return resolve();
+                requestAnimationFrame(step);
+            };
+            step();
+        });
         try {
             const res = await fetch(this.chatApi, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -323,17 +341,19 @@ const ChatGPTTheme = {
             });
             if (!res.ok) throw new Error(`chat ${res.status}`);
             const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-            for (let chunk; !(chunk = await reader.read()).done;) {
-                reply += chunk.value;
-                body.innerHTML = this.md(reply);
-            }
+            abort.signal.addEventListener('abort', () => reader.cancel()); // stop reading even if the stream ignores the signal
+            for (let chunk; !(chunk = await reader.read()).done;) reply += chunk.value;
         } catch { /* handled below: aborted, or nothing came back */ }
+        finished = true;
+        await revealed;
         body.removeAttribute('aria-busy');
         if (abort.signal.aborted || !reply.trim()) {
             if (this.history.at(-1) === question) this.history.pop();
+            body.querySelector('.cg-caret')?.remove(); // an interrupted answer keeps its text, without the dot
             if (abort.signal.aborted) return;
             this.show(body, this.matchIntent(text), text);
         } else {
+            body.innerHTML = this.md(reply);
             this.history.push({ role: 'assistant', content: reply });
             this.setActive(null);
         }

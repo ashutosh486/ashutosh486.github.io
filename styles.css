@@ -692,6 +692,25 @@ button.shell-ui {
     }
 }
 
+/* ChatGPT's pulsing dot at the end of a streaming answer */
+.cg-caret {
+    display: inline-block;
+    width: 0.65em;
+    height: 0.65em;
+    margin-left: 0.25em;
+    border-radius: 50%;
+    background: #ececec;
+    vertical-align: -0.05em;
+    animation: cg-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cg-pulse {
+    50% {
+        opacity: 0.35;
+        transform: scale(0.75);
+    }
+}
+
 /* Progress fills by scaling, not by animating width */
 .cg-bar {
     transform: scaleX(0);
@@ -709,7 +728,7 @@ button.shell-ui {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cg-in, .cg-extra, .cg-block, .cg-dots span {
+    .cg-in, .cg-extra, .cg-block, .cg-dots span, .cg-caret {
         animation: none;
     }
     .cg-bar, #cgSidebar {

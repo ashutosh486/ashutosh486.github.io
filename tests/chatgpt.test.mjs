@@ -53,10 +53,15 @@ await b.evaluate(`window.__sent = []; window.fetch = (url, opts) => { __sent.pus
     const parts = ['I have **5+ years**', ' of Python.\\n- Built <b>APIs</b>\\n- Led a team'];
     return Promise.resolve(new Response(new ReadableStream({ start(c) { parts.forEach(p => c.enqueue(new TextEncoder().encode(p))); c.close(); } }))); }`);
 assert.match(await ask(b, 'do you know python?'), /5\+ years of Python/, 'streamed answer shown');
-assert.equal(await b.evaluate(`(el => [el.querySelectorAll('strong').length, el.querySelectorAll('li').length, el.querySelectorAll('b').length].join())([...document.querySelectorAll('.cg-body')].at(-1))`), '1,2,0', 'bold and bullets rendered, model HTML escaped');
+assert.equal(await b.evaluate(`(el => [el.querySelectorAll('strong').length, el.querySelectorAll('li').length, el.querySelectorAll('b, .cg-caret').length].join())([...document.querySelectorAll('.cg-body')].at(-1))`), '1,2,0', 'bold and bullets rendered, model HTML escaped, no dot once done');
 await ask(b, 'and java?');
 assert.deepEqual(await b.evaluate(`__sent.at(-1).messages.map(m => m.role)`), ['user', 'assistant', 'user'], 'history sent with the question');
 await b.shot(`${out}-10-ai.png`);
+// Mid-stream: the words so far, then the pulsing dot inside the last line; New chat stops the answer
+await b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('Still typing')); } })))`);
+assert.equal(await ask(b, 'tell me more'), 'Still typing', 'partial answer shown while streaming');
+assert.ok(await b.evaluate(`!![...document.querySelectorAll('.cg-body')].at(-1).querySelector('p > .cg-caret')`), 'pulsing dot while streaming');
+await b.shot(`${out}-10a-streaming.png`);
 await b.evaluate(`document.getElementById('cgNewChat').click(); document.querySelector('[data-fit]').click()`);
 assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job description/.test(cgInput.placeholder) && ChatGPTTheme.history.length === 0`), 'fit button focuses the composer; new chat clears history');
 await b.shot(`${out}-11-fit.png`);

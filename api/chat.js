@@ -1,12 +1,19 @@
 // Résumé chat for the ChatGPT theme, deployed as a Vercel function (the site itself stays on Hostinger / GitHub Pages).
 // POST {messages: [{role: 'user' | 'assistant', content}]} -> the answer as a plain-text stream.
-// Env: AI_GATEWAY_API_KEY (required), CHAT_MODELS (first one answers, the rest are fallbacks), ALLOWED_ORIGINS
+// The résumé is js/content.js (deployed with this function), sent whole as the system prompt below.
+// Env (Vercel → Settings → Environment Variables; redeploy after changing):
+//   AI_GATEWAY_API_KEY  required
+//   CHAT_MODELS         comma-separated AI Gateway model ids; the first answers, the rest are fallbacks in order
+//   CHAT_EFFORT         reasoning effort: none | minimal | low | medium | high (default low)
+//   CHAT_MAX_TOKENS     longest answer in tokens (default 2000)
+//   ALLOWED_ORIGINS     comma-separated sites allowed to call this (localhost is always allowed)
 const log = console.log;
 console.log = () => {}; // content.js logs while loading
 const c = require('../js/content.js');
 console.log = log;
 
-const MODELS = (process.env.CHAT_MODELS || 'anthropic/claude-sonnet-5.5,openai/gpt-oss-120b').split(',').map(m => m.trim());
+const MODELS = (process.env.CHAT_MODELS || 'anthropic/claude-sonnet-5.5,openai/gpt-oss-120b').split(',').map(m => m.trim()).filter(Boolean);
+const EFFORT = process.env.CHAT_EFFORT || 'low', MAX_TOKENS = Number(process.env.CHAT_MAX_TOKENS) || 2000;
 const ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ashutoshcodes.in,https://www.ashutoshcodes.in,https://about.ashutoshcodes.in,https://ashutosh486.github.io').split(',').map(o => o.trim());
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 const MAX_TURNS = 10, MAX_CHARS = 12000, MAX_TOTAL = 24000; // a pasted JD fits; long histories are trimmed from the oldest
@@ -67,7 +74,7 @@ async function handler(req, res) {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.AI_GATEWAY_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: MODELS[0], models: MODELS.slice(1), stream: true, max_tokens: 2000, reasoning_effort: 'low',
+            model: MODELS[0], models: MODELS.slice(1), stream: true, max_tokens: MAX_TOKENS, reasoning_effort: EFFORT,
             messages: [{ role: 'system', content: SYSTEM }, ...messages],
             providerOptions: { gateway: { caching: 'auto' } } // Anthropic caches the résumé prompt only when asked
         })
