@@ -66,6 +66,7 @@ const ChatGPTTheme = {
                                 <span class="cg-label truncate">${cmd.description}</span>
                             </button>
                         `).join('')}
+                        <div id="cgChats" class="cg-label"></div>
                     </nav>
                     <div class="border-t border-white/5 p-2">
                         <div class="cg-profile flex items-center gap-3 px-2 py-2">
@@ -155,6 +156,8 @@ const ChatGPTTheme = {
             if (more) return this.toggleMore(more);
             const ask = e.target.closest('[data-ask]');
             if (ask) return this.send(ask.textContent);
+            const chat = e.target.closest('[data-chat]');
+            if (chat) return this.openChat(chat.dataset.chat);
             if (e.target.closest('[data-fit]')) {
                 this.input.placeholder = 'Paste the job description…';
                 return this.input.focus();
@@ -223,6 +226,7 @@ const ChatGPTTheme = {
         this.history = [];
         this.chatId = null; // New chat is saved as a new conversation
         this.setActive(null);
+        this.renderChats();
         this.toggleDrawer(false);
         this.thread.innerHTML = `
             <div id="cgWelcome" class="m-auto w-full py-6">
@@ -277,16 +281,7 @@ const ChatGPTTheme = {
         let key = free ? null : text.slice(1).toLowerCase().split(/\s/)[0];
         if (key === 'hireme') key = 'hire';
 
-        const user = this.el(`<div class="cg-in flex justify-end"><div class="max-w-[85%] whitespace-pre-wrap break-words rounded-3xl bg-[#303030] px-5 py-2.5"></div></div>`);
-        user.firstElementChild.textContent = text;
-        const bot = this.el(`
-            <div class="cg-in flex gap-3 md:gap-4">
-                ${this.avatar('mt-0.5 h-8 w-8 shrink-0')}
-                <div class="cg-body min-w-0 flex-1 space-y-4 text-[15px] leading-7 text-[#ececec]" aria-live="polite">
-                    <div class="cg-dots pt-2" role="status" aria-label="Typing…"><span></span><span></span><span></span></div>
-                </div>
-            </div>
-        `);
+        const [user, bot] = this.turn(text);
         this.thread.append(user, bot);
         const scrollToQuestion = () => this.scroller.scrollTo({ top: user.offsetTop - 12, behavior: this.reduced ? 'auto' : 'smooth' });
         scrollToQuestion();
@@ -298,6 +293,55 @@ const ChatGPTTheme = {
             // Now the answer exists there is room to bring the question to the top, like ChatGPT
             scrollToQuestion();
         }, this.reduced ? 0 : 450 + Math.random() * 350);
+    },
+
+    // A question bubble and the answer row under it (typing dots until the answer arrives)
+    turn(text) {
+        const user = this.el(`<div class="cg-in flex justify-end"><div class="max-w-[85%] whitespace-pre-wrap break-words rounded-3xl bg-[#303030] px-5 py-2.5"></div></div>`);
+        user.firstElementChild.textContent = text;
+        const bot = this.el(`
+            <div class="cg-in flex gap-3 md:gap-4">
+                ${this.avatar('mt-0.5 h-8 w-8 shrink-0')}
+                <div class="cg-body min-w-0 flex-1 space-y-4 text-[15px] leading-7 text-[#ececec]" aria-live="polite">
+                    <div class="cg-dots pt-2" role="status" aria-label="Typing…"><span></span><span></span><span></span></div>
+                </div>
+            </div>
+        `);
+        return [user, bot];
+    },
+
+    // Past AI chats, kept in this visitor's browser only (the copy saved on the server is for the site owner)
+    chats() {
+        try { return JSON.parse(localStorage.getItem('cgChats')) || []; } catch { return []; }
+    },
+    keepChat() {
+        const chats = this.chats().filter(chat => chat.id !== this.chatId);
+        chats.unshift({ id: this.chatId, title: this.history[0].content.slice(0, 80), messages: this.history });
+        try { localStorage.setItem('cgChats', JSON.stringify(chats.slice(0, 20))); } catch { /* private mode or full: just not listed */ }
+        this.renderChats();
+    },
+    renderChats() {
+        const chats = this.chats();
+        document.getElementById('cgChats').innerHTML = chats.length ? `<p class="px-2 pb-1.5 pt-5 text-xs font-medium text-[#8e8e8e]">Chats</p>` + chats.map(chat => `
+            <button data-chat="${this.esc(chat.id)}" ${chat.id === this.chatId ? 'aria-current="true"' : ''} class="flex min-h-11 w-full items-center rounded-lg px-2 text-left text-sm text-[#d1d1d1] transition-colors hover:bg-white/5 aria-[current=true]:bg-white/10 md:min-h-9">
+                <span class="truncate">${this.esc(chat.title)}</span>
+            </button>`).join('') : '';
+    },
+    openChat(id) {
+        const chat = this.chats().find(c => c.id === id);
+        if (!chat) return;
+        this.showWelcome(); // stops any answer in progress and closes the drawer
+        this.thread.innerHTML = '';
+        this.chatId = chat.id;
+        this.history = chat.messages;
+        for (let i = 0; i < chat.messages.length; i += 2) {
+            const [user, bot] = this.turn(chat.messages[i].content);
+            bot.querySelector('.cg-body').innerHTML = this.md(chat.messages[i + 1]?.content || '');
+            this.thread.append(user, bot);
+        }
+        this.thread.querySelectorAll('.cg-bar').forEach(bar => bar.classList.add('is-filled'));
+        this.renderChats();
+        this.scroller.scrollTop = this.scroller.scrollHeight;
     },
 
     // A topic answer built from content.js
@@ -362,6 +406,7 @@ const ChatGPTTheme = {
             body.innerHTML = this.md(reply);
             this.later(() => body.querySelectorAll('.cg-bar').forEach(bar => bar.classList.add('is-filled')), 60); // reading card
             this.history.push({ role: 'assistant', content: reply });
+            this.keepChat();
             this.setActive(null);
         }
         scrollToQuestion();
