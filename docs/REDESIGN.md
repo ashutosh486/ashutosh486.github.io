@@ -268,6 +268,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Round 4c:** the model can attach the topic cards (`{{card:contact}}`, `{{card:resume}}`, … from `chatCommands`), so a contact question gets the full contact card and a résumé request the download card. Answers render Markdown tables, numbered lists, links (https, mailto, tel only) and code. Tenure per role, per company, total and average is worked out in code and put in the prompt, which is rewritten in sections. `npm run redteam` runs misuse and prompt-injection checks against the live endpoint (real model calls).
 - **Round 4d:** chats are saved when Upstash Redis is connected to the Vercel project (one list per conversation, `chat:<start time>-<random>`, kept 180 days, footer says so). A Voice section in the prompt cuts chatbot phrasing. JS, CSS and HTML are now sent `no-cache` with a one-time `?v=` on index.html, because LiteSpeed's 7-day default kept returning visitors on old code (raw `{{card:…}}` tags showed).
 - **Round 4e:** each AI answer ends with two or three `{{ask:…}}` follow-up questions, shown as buttons under the latest answer only; a tap asks it.
+- **Round 4f:** the sidebar lists the visitor's own past AI chats under Chats (localStorage `cgChats`, last 20, this browser only); a click restores the thread and the conversation carries on. The server copy in Upstash is for the owner and never shown on the page.
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 
