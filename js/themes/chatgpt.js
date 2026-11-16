@@ -3,6 +3,9 @@ const ChatGPTTheme = {
     name: "ChatGPT Interface",
     timers: [],
     iconBtn: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#b4b4b4] transition-colors hover:bg-white/5 hover:text-white md:h-9 md:w-9',
+    // Free text goes to the résumé chat (api/chat.js on Vercel); slash commands stay local. Use '/api/chat' under `vercel dev`
+    chatApi: 'https://ashutoshgpt.vercel.app/api/chat',
+    history: [],
 
     // Icon per command key (UI only - the commands themselves come from content.js chatCommands)
     icons: {
@@ -103,7 +106,7 @@ const ChatGPTTheme = {
                             <!-- Keeps the composer clear of the page's floating theme switcher (bottom-right) on narrower screens -->
                             <div class="cg-dock-gap" aria-hidden="true"></div>
                         </div>
-                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">Answers come from ${this.first}'s résumé<span class="hidden sm:inline"> · Enter to send · Type / for commands</span></p>
+                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">AI answers from ${this.first}'s résumé<span class="hidden sm:inline"> · can make mistakes · Enter to send · Type / for commands</span></p>
                     </div>
                 </main>
             </div>
@@ -150,6 +153,10 @@ const ChatGPTTheme = {
             if (copy) return this.copy(copy);
             const more = e.target.closest('[data-more]');
             if (more) return this.toggleMore(more);
+            if (e.target.closest('[data-fit]')) {
+                this.input.placeholder = 'Paste the job description…';
+                return this.input.focus();
+            }
             const target = e.target.closest('[data-key]');
             if (target) this.send(`/${target.dataset.key}`, this.menu.contains(target));
         });
@@ -210,6 +217,8 @@ const ChatGPTTheme = {
         const picks = this.commands.filter(cmd => cmd.key !== 'help').slice(0, 4);
 
         this.clearTimers();
+        this.abort?.abort();
+        this.history = [];
         this.setActive(null);
         this.toggleDrawer(false);
         this.thread.innerHTML = `
@@ -237,6 +246,11 @@ const ChatGPTTheme = {
                             <span class="ml-auto font-mono text-xs text-[#8e8e8e]">${cmd.command}</span>
                         </button>
                     `).join('')}
+                    <button data-fit style="--i:6" class="cg-block flex min-h-11 items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-left text-sm transition-colors hover:border-white/20 hover:bg-white/5 sm:col-span-2">
+                        <i class="fas fa-clipboard-check w-4 text-center text-[#8e8e8e]" aria-hidden="true"></i>
+                        <span class="font-medium text-[#ececec]">Check my fit for your role</span>
+                        <span class="ml-auto hidden text-xs text-[#8e8e8e] sm:inline">Paste a job description</span>
+                    </button>
                 </div>
             </div>
         `;
@@ -248,6 +262,7 @@ const ChatGPTTheme = {
 
         if (fromComposer || this.input.value.startsWith('/')) {
             this.input.value = '';
+            this.input.placeholder = 'Ask anything…';
             this.input.style.height = 'auto';
             this.updateSendButton();
         }
@@ -255,7 +270,8 @@ const ChatGPTTheme = {
         this.toggleDrawer(false);
         document.getElementById('cgWelcome')?.remove();
 
-        let key = text.startsWith('/') ? text.slice(1).toLowerCase().split(/\s/)[0] : this.matchIntent(text);
+        const free = !text.startsWith('/');
+        let key = free ? null : text.slice(1).toLowerCase().split(/\s/)[0];
         if (key === 'hireme') key = 'hire';
 
         const user = this.el(`<div class="cg-in flex justify-end"><div class="max-w-[85%] whitespace-pre-wrap break-words rounded-3xl bg-[#303030] px-5 py-2.5"></div></div>`);
@@ -272,19 +288,74 @@ const ChatGPTTheme = {
         const scrollToQuestion = () => this.scroller.scrollTo({ top: user.offsetTop - 12, behavior: this.reduced ? 'auto' : 'smooth' });
         scrollToQuestion();
 
+        const body = bot.querySelector('.cg-body');
+        if (free) return this.ask(text, body, scrollToQuestion);
         this.later(() => {
-            const body = bot.querySelector('.cg-body');
-            body.innerHTML = this.answer(key, text);
-            [...body.children].forEach((block, i) => {
-                block.classList.add('cg-block');
-                block.style.setProperty('--i', i);
-            });
-            // Progress bars grow from 0 once they're on screen
-            this.later(() => body.querySelectorAll('.cg-bar').forEach(bar => bar.classList.add('is-filled')), 60);
-            this.setActive(key);
+            this.show(body, key, text);
             // Now the answer exists there is room to bring the question to the top, like ChatGPT
             scrollToQuestion();
         }, this.reduced ? 0 : 450 + Math.random() * 350);
+    },
+
+    // A topic answer built from content.js
+    show(body, key, text) {
+        body.innerHTML = this.answer(key, text);
+        [...body.children].forEach((block, i) => {
+            block.classList.add('cg-block');
+            block.style.setProperty('--i', i);
+        });
+        // Progress bars grow from 0 once they're on screen
+        this.later(() => body.querySelectorAll('.cg-bar').forEach(bar => bar.classList.add('is-filled')), 60);
+        this.setActive(key);
+    },
+
+    // Free text: the model answers from the résumé, streamed in. If the API is down, the keyword answers still work.
+    async ask(text, body, scrollToQuestion) {
+        this.abort?.abort(); // a new question replaces an unfinished answer
+        const abort = this.abort = new AbortController(), question = { role: 'user', content: text };
+        this.history.push(question);
+        let reply = '';
+        body.setAttribute('aria-busy', 'true'); // screen readers wait for the whole answer
+        try {
+            const res = await fetch(this.chatApi, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: this.history }), signal: abort.signal
+            });
+            if (!res.ok) throw new Error(`chat ${res.status}`);
+            const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+            for (let chunk; !(chunk = await reader.read()).done;) {
+                reply += chunk.value;
+                body.innerHTML = this.md(reply);
+            }
+        } catch { /* handled below: aborted, or nothing came back */ }
+        body.removeAttribute('aria-busy');
+        if (abort.signal.aborted || !reply.trim()) {
+            if (this.history.at(-1) === question) this.history.pop();
+            if (abort.signal.aborted) return;
+            this.show(body, this.matchIntent(text), text);
+        } else {
+            this.history.push({ role: 'assistant', content: reply });
+            this.setActive(null);
+        }
+        scrollToQuestion();
+    },
+
+    // The model's light Markdown (paragraphs, "- " bullets, **bold**) as HTML; everything is escaped first
+    md(text) {
+        const blocks = [];
+        let list = null;
+        for (const line of this.esc(text).split('\n')) {
+            const item = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
+            if (item) {
+                if (!list) blocks.push(list = []);
+                list.push(item[1]);
+            } else if (line.trim()) {
+                list = null;
+                blocks.push(line);
+            }
+        }
+        return blocks.map(b => Array.isArray(b) ? `<ul class="list-disc space-y-1 pl-5">${b.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p>${b}</p>`).join('')
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>');
     },
 
     matchIntent(text) {
@@ -628,6 +699,7 @@ const ChatGPTTheme = {
 
     cleanup() {
         this.clearTimers();
+        this.abort?.abort();
         this.stopOpening?.();
     }
 };
