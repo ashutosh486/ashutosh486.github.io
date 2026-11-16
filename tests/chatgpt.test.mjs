@@ -9,6 +9,7 @@ const ask = async (b, text) => { await b.evaluate(`ChatGPTTheme.send(${JSON.stri
 
 // Desktop
 let b = await openTheme('chatgpt');
+await b.evaluate(`window.fetch = () => Promise.reject(new Error('offline'))`); // keyword answers below; the chat API is checked at the end
 assert.equal(await b.evaluate(`document.querySelectorAll('#cgWelcome [data-key]').length`), 4, 'welcome suggestions');
 assert.ok(await b.evaluate(`(() => { const r = document.getElementById('cgNewChat').getBoundingClientRect(); return r.width <= 44 && !document.getElementById('cgNewChat').innerText.trim(); })()`), 'new chat hover area is just the pencil');
 assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'free text -> résumé');
@@ -47,6 +48,20 @@ await b.shot(`${out}-6-collapsed.png`);
 await b.evaluate(`document.getElementById('cgClose').click()`); await sleep(400);
 assert.equal(await b.evaluate(`document.getElementById('cgSidebar').getBoundingClientRect().width`), 260, 'rail expands back');
 await ask(b, '/hire'); await b.shot(`${out}-5-hire.png`);
+// Free text goes to the chat API: streamed in, light Markdown rendered with everything escaped, history sent along
+await b.evaluate(`window.__sent = []; window.fetch = (url, opts) => { __sent.push(JSON.parse(opts.body));
+    const parts = ['I have **5+ years**', ' of Python.\\n- Built <b>APIs</b>\\n- Led a team'];
+    return Promise.resolve(new Response(new ReadableStream({ start(c) { parts.forEach(p => c.enqueue(new TextEncoder().encode(p))); c.close(); } }))); }`);
+assert.match(await ask(b, 'do you know python?'), /5\+ years of Python/, 'streamed answer shown');
+assert.equal(await b.evaluate(`(el => [el.querySelectorAll('strong').length, el.querySelectorAll('li').length, el.querySelectorAll('b').length].join())([...document.querySelectorAll('.cg-body')].at(-1))`), '1,2,0', 'bold and bullets rendered, model HTML escaped');
+await ask(b, 'and java?');
+assert.deepEqual(await b.evaluate(`__sent.at(-1).messages.map(m => m.role)`), ['user', 'assistant', 'user'], 'history sent with the question');
+await b.shot(`${out}-10-ai.png`);
+await b.evaluate(`document.getElementById('cgNewChat').click(); document.querySelector('[data-fit]').click()`);
+assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job description/.test(cgInput.placeholder) && ChatGPTTheme.history.length === 0`), 'fit button focuses the composer; new chat clears history');
+await b.shot(`${out}-11-fit.png`);
+await b.evaluate(`window.fetch = () => Promise.resolve(new Response('', { status: 502 }))`);
+assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'API down -> keyword answer');
 // switching theme mid-reply must not throw
 await b.evaluate(`ChatGPTTheme.send('/about', true); portfolioController.loadTheme('apple')`); await sleep(2000);
 assert.deepEqual(b.errors.filter(e => e.includes('chatgpt.js')), [], 'no runtime errors');
@@ -54,6 +69,7 @@ b.close();
 
 // Mobile
 b = await openTheme('chatgpt', { width: 390, height: 844, mobile: true });
+await b.evaluate(`window.fetch = () => Promise.reject(new Error('offline'))`); // keyword answers below; the chat API is checked at the end
 assert.equal(await b.evaluate(`innerWidth + 'x' + document.documentElement.scrollWidth`), '390x390', 'no horizontal overflow');
 await b.shot(`${out}-7-m-welcome.png`);
 await b.evaluate(`document.getElementById('cgMenuBtn').click()`); await sleep(500); await b.shot(`${out}-8-m-drawer.png`);

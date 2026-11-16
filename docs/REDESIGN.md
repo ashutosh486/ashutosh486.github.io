@@ -104,7 +104,8 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
 | Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, merged** | `theme/motion` | Merged to `develop` |
 | Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
-| Caricature moments + soul lift | — | **Done, in review** | `theme/avatar` | Not merged yet |
+| Caricature moments + soul lift | — | **Done, merged** | `theme/avatar` | Live on `main` |
+| ChatGPT AI answers + JD fit check (`api/chat.js` on Vercel) | — | **Done, in review** | `theme/chatgpt-ai` | Not merged yet |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -253,6 +254,16 @@ Checked with `tests/chatgpt.test.mjs`:
 - Every résumé download link opens in a new tab rather than replacing the page.
 - Switching theme mid-reply throws no errors.
 - On phones there's no overflow and the drawer works.
+
+#### Round 4: AI answers (`theme/chatgpt-ai`)
+
+- **Free text goes to a model.** The message is answered by `api/chat.js`, a Vercel function that sends the whole résumé (`content.js` as JSON, about 3.6k tokens) as the system prompt; at this size there's nothing to retrieve, so there's no RAG. Answers stream in with light Markdown (paragraphs, bullets, bold), and everything is escaped first.
+- **Slash commands stay local and instant.** If the API is down or not deployed, free text falls back to the old keyword answers.
+- **JD fit check:** a "Check my fit for your role" card focuses the composer. A pasted job description gets a Strong/Partial/Weak verdict, what matches, and honest gaps.
+- **Models:** Vercel AI Gateway, `anthropic/claude-sonnet-5.5` with `openai/gpt-oss-120b` as a fallback (`CHAT_MODELS`), low reasoning effort, auto prompt caching. The function accepts only the site's origins, at most 10 turns and 24k characters, and 2k output tokens.
+- **Hosting:** `.vercelignore` makes the Vercel deploy only the API. Hostinger's `.htaccess` allowlist already returns 404 for `api/`.
+- **Footer:** now says the answers are AI-generated ("AI answers from …'s résumé · can make mistakes").
+- **Tests:** `tests/chat-api.test.mjs` (no network) checks validation, origins and the stream parser. The theme test stubs `fetch`.
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 
