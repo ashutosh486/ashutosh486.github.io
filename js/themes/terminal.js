@@ -368,11 +368,7 @@ const TerminalTheme = {
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
     skills() {
-        const c = portfolioContent, seen = new Set();
-        return this.kv(Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length)
-            .map(([label, list]) => [label, list.join(', ')]));
+        return this.kv(portfolioContent.skillGroups.map(([label, list]) => [label, list.join(', ')]));
     },
 
     education() {

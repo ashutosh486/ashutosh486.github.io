@@ -78,7 +78,7 @@ const ModelCardTheme = {
                         <div class="space-y-4">${c.projects.map(p => `<div>${row(p.title, p.site ? `<a href="https://${p.site}" target="_blank" rel="noopener" class="underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">${p.site}</a>` : '')}<p class="mt-1 text-[15px] leading-6 text-gray-700">${p.description}</p><p class="mt-1 text-sm text-gray-500">${p.tags.join(' · ')}</p></div>`).join('')}</div>
 
                         ${head('Skills')}
-                        <dl class="space-y-1.5 text-[15px]">${this.skills().map(([label, list]) => `<div class="sm:flex sm:gap-3"><dt class="shrink-0 font-semibold sm:w-36">${label}</dt><dd class="text-gray-700">${list.join(', ')}</dd></div>`).join('')}</dl>
+                        <dl class="space-y-1.5 text-[15px]">${portfolioContent.skillGroups.map(([label, list]) => `<div class="sm:flex sm:gap-3"><dt class="shrink-0 font-semibold sm:w-36">${label}</dt><dd class="text-gray-700">${list.join(', ')}</dd></div>`).join('')}</dl>
 
                         ${head('Education')}
                         <div class="space-y-3">${c.education.map(e => `<div>${row(e.degree, e.year)}<p class="text-sm text-gray-600">${e.institution}${e.gpa ? ` · GPA ${e.gpa}` : ''}</p></div>`).join('')}</div>
@@ -148,7 +148,7 @@ const ModelCardTheme = {
             ${this.section('Technical Specifications', `
                 <h3 class="mc-h3">Model Architecture</h3>
                 <dl class="divide-y divide-gray-100 rounded-xl border border-gray-200">
-                    ${this.skills().map(([label, list]) => `
+                    ${portfolioContent.skillGroups.map(([label, list]) => `
                         <div class="grid gap-2 px-4 py-3 sm:grid-cols-[140px_1fr] sm:gap-4">
                             <dt class="text-sm font-medium text-gray-500 sm:pt-0.5">${label}</dt>
                             <dd class="flex flex-wrap gap-1">${list.map(s => `<span class="${this.chip}">${s}</span>`).join('')}</dd>
@@ -246,12 +246,6 @@ const ModelCardTheme = {
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
-    skills() {
-        const c = portfolioContent, seen = new Set();
-        return Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length);
-    },
 
     bibtex(type, item, fields) {
         const c = portfolioContent;

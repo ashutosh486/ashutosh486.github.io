@@ -108,7 +108,7 @@ const PaperTheme = {
         };
         const li = html => `<ul class="pp-ul"><li>${html}</li></ul>`;
         const fun = c.about.funFact?.replace(/\s*\p{Extended_Pictographic}️?/gu, '');
-        const skills = this.skills();
+        const skills = portfolioContent.skillGroups;
         const reading = c.currentlyReading;
         const sections = ['Experience', 'Projects', 'Technical Stack', 'Education and Credentials', ...(reading.length ? ['Ongoing Work'] : [])];
 
@@ -162,12 +162,6 @@ const PaperTheme = {
     },
 
     // Skill categories overlap in content.js, so each skill is listed once, under its first category
-    skills() {
-        const c = portfolioContent, seen = new Set();
-        return Object.entries(c.skills)
-            .map(([key, list]) => [c.skillLabels?.[key] || key, list.filter(s => !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))])
-            .filter(([, list]) => list.length);
-    },
 
     // Title and authors, full width on page 1
     head() {

@@ -68,7 +68,7 @@ Run it after every `content.js` edit; `tests/seo.test.mjs` fails while any of th
 
 ## Testing
 
-Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome.
+Tests drive the real page in headless Chrome. They need no npm install, only Node 22+ and Google Chrome. Run `npm test` before every deploy: it runs every file below and stops at the first failure (seo.test.mjs fails while the generated SEO files are stale).
 
 ```sh
 node tests/shell.test.mjs      # switcher, chooser, refresh, Back, phone sheet
@@ -103,7 +103,8 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
 | Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, merged** | `theme/motion` | Merged to `develop` |
-| Random pick, theme cursors, caricature eyes follow pointer | — | **Done, in review** | `theme/shell` | Not merged yet |
+| Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
+| Caricature moments + soul lift | — | **Done, in review** | `theme/avatar` | Not merged yet |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -642,7 +643,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 #### Contact Card after
 
 **Looks like iOS Contacts** (a contact card with a Contact Poster). It uses iOS's system colours (light and dark, following the OS), the SF font stack, inset grouped lists and the 44px rows. The theme key stays `apple` so links keep working. The chooser shows it as "Contact Card" on the poster colour.
-- **Poster:** the name in large rounded type with the caricature standing in front of its lower half, like the poster's depth effect. On wide screens (900px and up) the poster stays on the left and the card scrolls on the right.
+- **Poster:** the name in large rounded type with the caricature right under it; his hair just reaches the tail of the "y", a light take on the poster's depth effect. (He used to cover the lower half of the name, which read as clipped.) On wide screens (900px and up) the poster stays on the left and the card scrolls on the right.
 - **Card:** job title, then specialization · company. Below that sit four action buttons (mail, GitHub, LinkedIn, résumé) and the fields: work email, URLs (homepage, GitHub, LinkedIn), home address (opens Apple Maps). Notes holds the tagline, bio, impact numbers, fun fact and hobbies. Then come the disclosure rows and Share Contact / Download Résumé.
 - **Detail pages:** Experience (shows `stats.years`), Projects, Skills, Education and Reading List push in from the right like an iOS navigation push, while the card drifts left (transform only). Each page has a "‹ <first name>" Back button. Escape also goes back, and focus returns to the row. Each role, project and degree is its own group, with technologies and tags as the group footer. Skills lists each skill once. Education also covers the patent and certifications (with links).
 - **Share Contact:** builds a vCard from `content.js` (name, title, company, email, labelled URLs, city, short bio; no phone number). It opens the share sheet where the browser can share files (phones). Otherwise it downloads `<name>.vcf`, which iOS and macOS open in Contacts.
@@ -653,7 +654,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 
 Checked by `tests/apple.test.mjs` at 1440px and 390px:
 - Nothing plays behind the chooser, closing it starts the opening, and a key press skips it.
-- The poster shows the name and caricature (no photo), and the caricature overlaps the name.
+- The poster shows the name and caricature (no photo), and the caricature's box overlaps the name's.
 - The facts from `content.js` appear across the card and all pages, and the phone number does not. Skills lists every skill once (`stats.skills`), as a comma list (owner found the commas missing in round 1: the row was a flex box, so each skill became a flex item). The résumé links use the `content.js` path.
 - A page slides in, the card goes inert and focus lands on Back. On desktop the page opens beside the poster. Escape and Back return to the card with focus on the row.
 - The vCard has the right name, fields and CRLF line ends, and no phone number.
@@ -762,6 +763,61 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
 - **Cursor animation:** browsers can't animate cursor images, so a click draws a ripple in the theme's style: a ring in the accent colour, a block-cursor flash in Terminal, an iPad press-and-bloom in Contact Card, and a target-lock bracket in Sci-Fi. Mouse and pen only, off with reduced motion.
 - **Caricature eye contact:** the pupils (and the head, slightly) follow the pointer in every theme that shows the caricature. After 2.5s at rest it goes back to reading the screen.
 - **Known limit:** Terminal's cursor stays green whatever colour scheme the `theme` command picks.
+
+### Caricature moments and soul lift (`theme/avatar`)
+
+- **Moments** (js/caricature.js adds `cc--*` classes; styles.css animates them; all off with reduced motion):
+  - **Idle, every 9-16s:** a coffee sip or a bug.
+    - *Coffee:* his arm rests on the mug handle. For the sip, the arm bends and lifts the mug to his mouth while his eyes close, then he smiles. The arm and mug move by SMIL in the svg, because CSS can't change a path's shape in every browser.
+    - *Bug:* a bug walks along the lid, he frowns, blows it away (puff lines), then smiles.
+  - **Asleep** after 40s with no input (25s at night): eyes shut, head nods, z's rise. Any input wakes him with a jolt and a "!".
+  - **Dizzy** when the pointer whips back and forth: spiral eyes, wobbling head, stars circling. The stars are drawn tall and spin back against the orbit, so its flattening leaves them upright and full-size, with a 1px outline; before, they shrank to a few yellow pixels on small caricatures and white pages (Notebook).
+  - **Hover or tap:** a "Hi!" speech bubble.
+  - **Résumé download** (any `.pdf` link): confetti off the laptop.
+  - **Night** (visitor's clock, 9pm to 6am): desk lamp on, no flying code, and yawns join the idle moments.
+  - **Eyes following the pointer** pause the reading animation instead of stopping it, so they glide back when the pointer rests.
+- **Owner feedback, round 2:**
+  - *Removed:* the eureka bulb, the hover blush/brows, the click wave and the laptop glow on the face (it showed as a light-blue patch).
+  - *Kept:* dizzy, which the owner liked.
+  - *Changed:* the hands were badly proportioned, so the arm and grip were redrawn, and the bug is now blown away rather than flicked.
+- **New colour variables:** `--cc-bug`, `--cc-lamp`, `--cc-lamp-light`, `--cc-bubble`, `--cc-bubble-ink` (Sci-Fi sets amber values).
+- **Soul lift** (`caricatureLift`):
+  - *When it shows:* in every theme, whenever the caricature isn't on screen. That covers themes without one (ChatGPT, Model Card, VS Code), Book chapters without it, and avatars scrolled out of view.
+  - *How it moves:* when the caricature leaves view, the soul pops up out of the basket from below (a small overshoot, then he settles); when it comes back, he ducks down into the basket. `.lift-soul` clips him just inside the basket's rim. (It used to fly between the caricature and the basket.) The basket follows scroll progress on a spring (smooth, small bounce), the wheel turns as the rope pays out, and dragging the basket scrolls.
+  - *What it follows:* the panel that scrolls the caricature, else the page, else the largest scrolling panel. It rescans when the theme's content changes.
+  - *Looks:* the head sits in a basket wider than his shoulders, with his hands on the rim. Each theme dresses it differently: wicker with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal. Hidden on phones.
+- **VS Code:** root-level files sit flush with the `projects` folder's chevron.
+- **Round 3 (owner feedback):**
+  - *Lift:*
+    - It's a scroll indicator, so it only appears when there's something to scroll; one-screen pages show nothing.
+    - The soul gets into the basket only once the visitor scrolls past the caricature (or straight away in themes and pages without one). While the caricature is still further down, the basket rides empty, so nothing hops before the visitor acts.
+    - A winch bolted to the top edge (plate, housing with vents and a status light, a gear driving the rope drum) shows where the rope comes from.
+    - The rim hands are gone (they stayed behind when the soul hopped out).
+    - Sci-Fi and Terminal draw the lift as glowing line art in the screen colour.
+  - *Caricature:*
+    - Coffee arm: the upper arm grows out from behind his side and bends at an elbow, and the forearm and mug pass behind the laptop lid on the way up.
+    - Laptop: a bigger MacBook-style silver laptop, closer to him, with a plain apple fruit (not the bitten logo) and one sticker.
+    - "Hi!" shows on click only.
+    - Looking up is limited so the pupils stay under the lids.
+  - *Notebook:* the selected-cell bar is 2px.
+  - *Every theme opens at the top:* `history.scrollRestoration = 'manual'` and a scroll to the top on every theme load.
+- **Round 4 (owner feedback):**
+  - *Solid baskets:* every basket is opaque (Paper and Book use a cream paper boat with an accent edge).
+  - *Position:* the rope hangs 36px from the window edge.
+  - *Controls on the winch:* a readout (scroll %) and ▲ / ▼ (one screen). Dragging the basket still scrolls. A hint explains the controls the first time the lift appears (once per browser) and again whenever the winch is hovered.
+- **Round 5 (owner feedback):**
+  - *Winch:* fixed to the very top of the window. Mounting it under the top bars made it drift when bars hid on scroll (mdBook's menu bar), which moved the basket by itself.
+  - *Drag:* ends on lost pointer capture and whenever no button is down, so the basket can't keep scrolling after a missed mouse-up.
+  - *Park replaced by hide:* ✕ hides the lift, and a small tab at the top brings it back (remembered per browser).
+  - *Contact Card:* no lift (`LIFT_SKIP`).
+  - *Head turn:* following the pointer, the face features slide further than the head outline and the head tilts up to 7°, so it reads as turning rather than glancing.
+- **Round 6 (owner feedback):**
+  - *Coffee arm:* it used to stretch like rubber (forearm about 20 units at rest, about 70 mid-sip), its elbow floated outside his body, and the hand ended up on his cheek. It now uses two-bone inverse kinematics: a fixed shoulder inside the torso, upper arm and forearm both 32 units, and the elbow solved per keyframe on the lower side. At rest the elbow sits at his side. Mid-sip it's tucked behind the laptop lid with the forearm rising to his mouth. Frames come from `scripts/caricature-arm-ik.py`; edit its keyframes and regenerate rather than hand-editing the SVG.
+  - *Gaming chair:* a racing backrest behind him with red side bolsters and a light top rim (`--cc-chair`, `--cc-chair-accent`, `--cc-chair-shine`; amber in Sci-Fi). Its top sits below his crown, so only his hair breaks the top edge: a taller first version covered the surname on the Contact Card poster. It's hidden in the lift's head-only soul.
+  - *Neck:* a shadow-toned neck fills the collar's opening and is drawn over the collar's inner edge, so no shirt or collar shows between his chin and the V (also when his head turns).
+  - *Body and desk:* the shirt and chair stop at the desk's top edge, so the Contact Card's translucent desk shows the poster behind it, not a strip of shirt.
+  - *Steam:* rises from the mug's rim, in front of the sleeve; brighter on the Contact Card poster.
+  - *Coffee hand:* fingers go through the handle: the handle is drawn over the fist and the thumb rests on top, so the handle stays visible. The drawn sleeve stops 8 units short of the hand (`CUFF` in `scripts/caricature-arm-ik.py`), so it ends behind the mug instead of showing as a blue ring around the fist.
 
 ## Shared backlog (shell / cross-theme)
 
