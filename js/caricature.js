@@ -10,7 +10,7 @@
 const FACE = 'M120 28c28 0 42 20 42 44 0 14-4 24-12 30-8 7-19 10-30 10s-22-3-30-10c-8-6-12-16-12-30 0-24 14-44 42-44Z';
 // Spiral for dizzy eyes, centred on 0,0
 // Ease in and out for each leg of the coffee sip (SMIL keySplines)
-const EASE = Array(5).fill('0.45 0 0.3 1').join(';');
+const EASE = Array(7).fill('0.45 0 0.3 1').join(';');
 const SPIRAL = 'M0 0a.8.8 0 0 1 1.6 0 1.6 1.6 0 0 1-3.2 0 2.4 2.4 0 0 1 4.8 0 3.2 3.2 0 0 1-6.4 0';
 // Confetti for a résumé download: [x, y, spin, colour var], fixed so every copy throws the same burst
 const CONFETTI = [[-46, -64, 220, 'code'], [-30, -86, -160, 'sticker'], [-12, -70, 300, 'mug'], [4, -94, -240, 'glow'],
@@ -48,8 +48,8 @@ function caricatureSVG(label = '', { head = false } = {}) {
         <text x="38" y="106">01</text>
     </g>
     <g class="cc-upper-arm">
-        <path class="cc-arm-shade" d="M178 128L205 150" fill="none" stroke-width="16" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M178 128L205 150;M178 128L206 146;M178 128L206 138;M178 128L206 138;M178 128L206 148;M178 128L205 150"/></path>
-        <path class="cc-arm" d="M178 128L205 150" fill="none" stroke-width="13" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M178 128L205 150;M178 128L206 146;M178 128L206 138;M178 128L206 138;M178 128L206 148;M178 128L205 150"/></path>
+        <path class="cc-arm-shade" d="M176.0 124.0L188.8 153.3" fill="none" stroke-width="16" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M176.0 124.0L188.8 153.3;M176.0 124.0L180.8 155.6;M176.0 124.0L181.3 155.6;M176.0 124.0L144.0 123.9;M176.0 124.0L144.0 123.9;M176.0 124.0L186.5 154.2;M176.0 124.0L182.9 155.2;M176.0 124.0L188.8 153.3"/></path>
+        <path class="cc-arm" d="M176.0 124.0L188.8 153.3" fill="none" stroke-width="13" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M176.0 124.0L188.8 153.3;M176.0 124.0L180.8 155.6;M176.0 124.0L181.3 155.6;M176.0 124.0L144.0 123.9;M176.0 124.0L144.0 123.9;M176.0 124.0L186.5 154.2;M176.0 124.0L182.9 155.2;M176.0 124.0L188.8 153.3"/></path>
     </g>
     <path class="cc-shirt" d="M38 182c0-44 18-70 56-78h52c38 8 56 34 56 78Z"/>
     <path class="cc-shirt-shade" d="M38 182c0-18 4-38 14-52 4 18 6 36 4 52Zm164 0c0-18-4-38-14-52-4 18-6 36-4 52Z"/>
@@ -98,14 +98,14 @@ function caricatureSVG(label = '', { head = false } = {}) {
         </g></g>
     </g>
     <g class="cc-mugset">
-        <path class="cc-arm-shade" d="M205 150L219 165" fill="none" stroke-width="15" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M205 150L219 165;M206 146L213 155;M206 138L150 93;M206 138L150 93;M206 148L215 159;M205 150L219 165"/></path>
-        <path class="cc-arm" d="M205 150L219 165" fill="none" stroke-width="12" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M205 150L219 165;M206 146L213 155;M206 138L150 93;M206 138L150 93;M206 148L215 159;M205 150L219 165"/></path>
-        <circle class="cc-elbow" cx="205" cy="150" r="6.5"><animate class="cc-sip-anim" attributeName="cx" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="205;206;206;206;206;205"/><animate class="cc-sip-anim" attributeName="cy" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="150;146;138;138;148;150"/></circle>
+        <path class="cc-arm-shade" d="M188.8 153.3L218.8 164.5" fill="none" stroke-width="15" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L218.8 164.5;M180.8 155.6L212.8 154.5;M181.3 155.6L187.9 124.3;M144.0 123.9L149.3 92.3;M144.0 123.9L149.3 92.3;M186.5 154.2L185.9 122.3;M182.9 155.2L214.8 158.5;M188.8 153.3L218.8 164.5"/></path>
+        <path class="cc-arm" d="M188.8 153.3L218.8 164.5" fill="none" stroke-width="12" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L218.8 164.5;M180.8 155.6L212.8 154.5;M181.3 155.6L187.9 124.3;M144.0 123.9L149.3 92.3;M144.0 123.9L149.3 92.3;M186.5 154.2L185.9 122.3;M182.9 155.2L214.8 158.5;M188.8 153.3L218.8 164.5"/></path>
+        <circle class="cc-elbow" cx="188.8" cy="153.3" r="6.5"><animate class="cc-sip-anim" attributeName="cx" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="188.8;180.8;181.3;144.0;144.0;186.5;182.9;188.8"/><animate class="cc-sip-anim" attributeName="cy" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="153.3;155.6;155.6;123.9;123.9;154.2;155.2;153.3"/></circle>
         <g>
-            <animateTransform class="cc-sip-anim" attributeName="transform" type="translate" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
-                values="0 0;-6 -10;-66 -63;-66 -63;-4 -6;0 0"/>
-            <animateTransform class="cc-sip-anim" attributeName="transform" type="rotate" additive="sum" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
-                values="0 201 166;0 201 166;-32 201 166;-32 201 166;0 201 166;0 201 166"/>
+            <animateTransform class="cc-sip-anim" attributeName="transform" type="translate" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}"
+                values="0 0;-6 -10;-30 -36;-66 -63;-66 -63;-32 -38;-4 -6;0 0"/>
+            <animateTransform class="cc-sip-anim" attributeName="transform" type="rotate" additive="sum" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}"
+                values="0 201 166;0 201 166;-14 201 166;-32 201 166;-32 201 166;-14 201 166;0 201 166;0 201 166"/>
             <path class="cc-steam" d="M196 148q-4-6 0-12t0-12m9 24q-4-6 0-12t0-12" fill="none" stroke-width="2" stroke-linecap="round"/>
             <rect class="cc-mug" x="190" y="154" width="22" height="24" rx="4"/>
             <path class="cc-mug-handle" d="M212 159h3a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke-width="3"/>
