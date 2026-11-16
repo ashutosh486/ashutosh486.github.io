@@ -266,6 +266,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Tests:** `tests/chat-api.test.mjs` (no network) checks validation, origins and the stream parser. The theme test stubs `fetch`.
 - **Round 4b:** answers type out at a steady pace with ChatGPT's pulsing dot at the end (the typing dots stay until the first words arrive); `CHAT_EFFORT` and `CHAT_MAX_TOKENS` join `CHAT_MODELS` as environment settings.
 - **Round 4c:** the model can attach the topic cards (`{{card:contact}}`, `{{card:resume}}`, … from `chatCommands`), so a contact question gets the full contact card and a résumé request the download card. Answers render Markdown tables, numbered lists, links (https, mailto, tel only) and code. Tenure per role, per company, total and average is worked out in code and put in the prompt, which is rewritten in sections. `npm run redteam` runs misuse and prompt-injection checks against the live endpoint (real model calls).
+- **Round 4d:** chats are saved when Upstash Redis is connected to the Vercel project (one list per conversation, `chat:<start time>-<random>`, kept 180 days, footer says so). A Voice section in the prompt cuts chatbot phrasing. JS, CSS and HTML are now sent `no-cache` with a one-time `?v=` on index.html, because LiteSpeed's 7-day default kept returning visitors on old code (raw `{{card:…}}` tags showed).
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 

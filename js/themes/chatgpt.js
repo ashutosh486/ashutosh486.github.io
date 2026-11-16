@@ -106,7 +106,7 @@ const ChatGPTTheme = {
                             <!-- Keeps the composer clear of the page's floating theme switcher (bottom-right) on narrower screens -->
                             <div class="cg-dock-gap" aria-hidden="true"></div>
                         </div>
-                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">AI answers from ${this.first}'s résumé<span class="hidden sm:inline"> · can make mistakes · Enter to send · Type / for commands</span></p>
+                        <p class="mt-2 text-center text-xs text-[#8e8e8e]">AI answers from ${this.first}'s résumé · chats are saved<span class="hidden sm:inline"> · can make mistakes · Enter to send · Type / for commands</span></p>
                     </div>
                 </main>
             </div>
@@ -219,6 +219,7 @@ const ChatGPTTheme = {
         this.clearTimers();
         this.abort?.abort();
         this.history = [];
+        this.chatId = null; // New chat is saved as a new conversation
         this.setActive(null);
         this.toggleDrawer(false);
         this.thread.innerHTML = `
@@ -338,7 +339,9 @@ const ChatGPTTheme = {
         try {
             const res = await fetch(this.chatApi, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: this.history }), signal: abort.signal
+                // chat id: start time (so saved chats sort by date) plus a random tail
+                body: JSON.stringify({ messages: this.history, chat: this.chatId ||= `${new Date().toISOString().slice(0, 19).replace(/\D/g, '')}-${Math.random().toString(36).slice(2, 8)}` }),
+                signal: abort.signal
             });
             if (!res.ok) throw new Error(`chat ${res.status}`);
             const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();

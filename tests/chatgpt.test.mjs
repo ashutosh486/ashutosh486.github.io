@@ -59,6 +59,7 @@ assert.deepEqual(await b.evaluate(`[...[...document.querySelectorAll('.cg-body')
 
 await ask(b, 'and java?');
 assert.deepEqual(await b.evaluate(`__sent.at(-1).messages.map(m => m.role)`), ['user', 'assistant', 'user'], 'history sent with the question');
+assert.ok(await b.evaluate(`/^\\d{14}-\\w{4,}$/.test(__sent[0].chat) && __sent[0].chat === __sent.at(-1).chat`), 'one chat id per conversation');
 await b.shot(`${out}-10-ai.png`);
 // Mid-stream: the words so far, then the pulsing dot inside the last line; New chat stops the answer
 await b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('Still typing')); } })))`);
@@ -66,7 +67,7 @@ assert.equal(await ask(b, 'tell me more'), 'Still typing', 'partial answer shown
 assert.ok(await b.evaluate(`!![...document.querySelectorAll('.cg-body')].at(-1).querySelector('p > .cg-caret')`), 'pulsing dot while streaming');
 await b.shot(`${out}-10a-streaming.png`);
 await b.evaluate(`document.getElementById('cgNewChat').click(); document.querySelector('[data-fit]').click()`);
-assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job description/.test(cgInput.placeholder) && ChatGPTTheme.history.length === 0`), 'fit button focuses the composer; new chat clears history');
+assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job description/.test(cgInput.placeholder) && ChatGPTTheme.history.length === 0 && !ChatGPTTheme.chatId`), 'fit button focuses the composer; new chat clears history');
 await b.shot(`${out}-11-fit.png`);
 // {{card:x}} tags become the topic's own card (known topics only, each once); a tag still arriving is hidden
 const reply = (text, close = true) => b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(${JSON.stringify(text)})); ${close ? 'c.close();' : ''} } })))`);
