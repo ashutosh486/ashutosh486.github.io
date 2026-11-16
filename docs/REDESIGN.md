@@ -103,6 +103,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Contact Card (was Apple Persona Card) | ✅ | **Rebuilt (2 rounds), merged** | `theme/apple` | Merged to `develop` |
 | Sci-Fi Console | ✅ | **Rebuilt (2 rounds), merged** | `theme/scifi` | Merged to `develop` |
 | Motion pass + "Don't show again" (shell, ChatGPT, Model Card, VS Code, Book, Contact Card) | — | **Done, merged** | `theme/motion` | Merged to `develop` |
+| Random pick, theme cursors, caricature eyes follow pointer | — | **Done, in review** | `theme/shell` | Not merged yet |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -753,6 +754,14 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - **No MCP Server Card:** there's no MCP server, and a card pointing at a made-up endpoint would mislead agents. The URL returns a real 404.
   - **No phone number** in the JSON-LD.
 - **Tests:** `tests/cdp.mjs` now waits for the page to load instead of a fixed 2.5s (slow CDN fonts made whole batches fail), and gained `reload()`.
+
+### Random, cursors, eye contact (`theme/shell`)
+
+- **Random:** a "Random" button in the chooser header (next to collapse). It lights cards in turn, slowing down like a roulette wheel, then opens the one it lands on, never the current theme. Closing the chooser mid-roll cancels it. With reduced motion it switches straight away.
+- **Theme cursors:** `paintCursor()` in main.js draws each theme's pointer as inline SVG and sets `--cursor-default/-pointer/-text` on `<html>`, and styles.css reads them. Classic arrow and hand in the theme's colours (ChatGPT monochrome, Model Card orange, VS Code blue, Notebook orange, Paper arXiv red, Book link blue, Terminal green with a green I-beam). Contact Card gets an iPad-style circle pointer (bigger blue circle on buttons, capsule text bar). Sci-Fi gets an amber reticle (closing brackets on buttons, block text bar). Any new `cursor:` rule must use `var(--cursor-pointer, pointer)` / `var(--cursor-text, text)`, or it shows the system cursor.
+- **Cursor animation:** browsers can't animate cursor images, so a click draws a ripple in the theme's style: a ring in the accent colour, a block-cursor flash in Terminal, an iPad press-and-bloom in Contact Card, and a target-lock bracket in Sci-Fi. Mouse and pen only, off with reduced motion.
+- **Caricature eye contact:** the pupils (and the head, slightly) follow the pointer in every theme that shows the caricature. After 2.5s at rest it goes back to reading the screen.
+- **Known limit:** Terminal's cursor stays green whatever colour scheme the `theme` command picks.
 
 ## Shared backlog (shell / cross-theme)
 
