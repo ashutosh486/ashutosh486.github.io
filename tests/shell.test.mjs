@@ -48,7 +48,7 @@ assert.deepEqual([s.theme, s.hash, s.open, s.dock], ['paper', '#paper', false, [
 await b.shot(`${out}-3-paper.png`);
 
 // Refresh keeps the theme and asks again with it preselected
-await b.send('Page.reload'); await sleep(2500);
+await b.reload();
 s = await state(b);
 assert.deepEqual([s.theme, s.open, s.current], ['paper', true, 'paper'], 'refresh keeps theme and asks');
 
@@ -69,13 +69,14 @@ b.close();
 b = await openPage('paper');
 assert.equal(await b.evaluate(`document.getElementById('themeChooserSkip').checked`), false, "don't show starts unticked");
 await b.evaluate(`document.getElementById('themeChooserSkip').click()`);
-await b.send('Page.reload'); await sleep(2500);
+await b.reload();
 assert.equal((await state(b)).open, false, "don't show again skips the chooser on the next visit");
+await sleep(4000); // Paper's opening runs about 3s
 assert.ok(await b.evaluate(`!PaperTheme.onSkip && !document.getElementById('ppRoot').classList.contains('is-waiting')`), 'the opening plays without the chooser');
 await b.evaluate(`document.getElementById('themeDock').click()`); await sleep(400);
 assert.ok(await b.evaluate(`document.getElementById('themeChooser').open && document.getElementById('themeChooserSkip').checked`), 'switcher still opens it, ticked');
 await b.evaluate(`document.getElementById('themeChooserSkip').click()`);
-await b.send('Page.reload'); await sleep(2500);
+await b.reload();
 assert.equal((await state(b)).open, true, 'unticking asks again');
 b.close();
 

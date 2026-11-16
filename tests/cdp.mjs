@@ -1,6 +1,6 @@
 // Minimal Chrome DevTools driver for theme tests - no npm deps, uses the locally installed Chrome
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -8,12 +8,24 @@ export const sleep = ms => new Promise(r => setTimeout(r, ms));
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const INDEX = `file://${resolve(import.meta.dirname, '..', 'index.html')}`;
 
+// Every Chrome this process starts is killed and its temp profile deleted when Node exits, including after a failed
+// assert or Ctrl+C; otherwise each crashed run leaves a headless Chrome (~300MB) running in the background
+const browsers = [];
+process.on('exit', () => {
+    browsers.forEach(({ chrome }) => chrome.kill('SIGKILL'));
+    // Chrome's helper processes keep writing to the profile for a moment after the browser dies
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300);
+    browsers.forEach(({ profile }) => { try { rmSync(profile, { recursive: true, force: true, maxRetries: 3 }); } catch { /* still busy */ } });
+});
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => process.exit(130));
+
 // Opens index.html (optionally at #hash) at the given viewport; the theme chooser is left as the page shows it
 export async function openPage(hash = '', { width = 1440, height = 900, mobile = false } = {}) {
     // Port 0 lets Chrome pick a free port, so parallel or leftover runs never collide
     const profile = mkdtempSync(join(tmpdir(), 'theme-test-'));
     const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
         '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
+    browsers.push({ chrome, profile });
     const portFile = join(profile, 'DevToolsActivePort');
     while (!existsSync(portFile) || !readFileSync(portFile, 'utf8').includes('\n')) await sleep(100);
     const port = readFileSync(portFile, 'utf8').split('\n')[0];
@@ -44,8 +56,15 @@ export async function openPage(hash = '', { width = 1440, height = 900, mobile =
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: mobile ? 2 : 1, mobile });
     await send('Page.navigate', { url: INDEX + (hash ? `#${hash}` : '') });
-    await sleep(2500); // fonts + first render
-    return { send, evaluate, shot, key, errors, close: () => { ws.close(); chrome.kill(); } };
+    // Wait for the page itself (slow CDN fonts can hold it up for seconds), then let the first render settle
+    const ready = async () => {
+        await sleep(200);
+        for (let t = 0; t < 150 && await evaluate(`document.readyState === 'complete' && !!window.portfolioController`) !== true; t++) await sleep(100);
+        await sleep(500);
+    };
+    await ready();
+    const reload = async () => { await send('Page.reload'); await ready(); };
+    return { send, evaluate, shot, key, errors, reload, close: () => { ws.close(); chrome.kill(); } };
 }
 
 // Opens the page straight on `theme` with the chooser dismissed

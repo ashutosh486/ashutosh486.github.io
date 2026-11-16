@@ -29,6 +29,30 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
+/* Static copy (scripts/build-seo.js): readable without JavaScript, hidden once the themes take over */
+.js .static-page {
+    display: none;
+}
+
+.static-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+.static-page h1 { font-size: 2rem; font-weight: 700; }
+.static-page h2 { margin-top: 2rem; font-size: 1.4rem; font-weight: 600; }
+.static-page h3 { margin-top: 1rem; font-weight: 600; }
+.static-page ul { padding-left: 1.25rem; list-style: disc; }
+.static-page a { text-decoration: underline; }
+
+/* Without JavaScript there are no themes to switch */
+html:not(.js) .theme-dock {
+    display: none;
+}
+
 #themeContainer:focus {
     outline: none;
 }

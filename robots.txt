@@ -1,0 +1,6 @@
+# Content Signals (contentsignals.org): search indexing and AI answers may use this site; AI model training may not
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+Sitemap: https://ashutoshcodes.in/sitemap.xml
