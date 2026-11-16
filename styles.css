@@ -1750,8 +1750,8 @@ button.shell-ui {
     --cc-bubble: #ffffff;
     --cc-bubble-ink: #241e1b;
     --cc-chair: #2b2f36;
-    --cc-chair-shade: #1c1f24;
-    --cc-chair-accent: #e5484d;
+    --cc-chair-shine: rgba(255, 255, 255, 0.14);
+    --cc-chair-accent: #d9474c;
     display: block;
     overflow: visible;
 }
@@ -1913,11 +1913,11 @@ button.shell-ui {
 }
 
 /* ---------- Caricature moments (js/caricature.js adds the cc--* classes) ---------- */
-/* Gaming chair behind him: racing backrest, side wings, two stripes (not in the lift's head-only soul) */
+/* Racing chair behind him: backrest with side bolsters, topped below his crown so only his hair breaks the top edge
+   (Contact Card's name sits there); not in the lift's head-only soul */
 .cc-chair-back { fill: var(--cc-chair); }
-.cc-chair-panel { fill: var(--cc-chair-shade); }
-.cc-chair-wing { fill: var(--cc-chair-accent); opacity: 0.85; }
-.cc-chair-stripe { stroke: var(--cc-chair-accent); }
+.cc-chair-wing { fill: var(--cc-chair-accent); }
+.cc-chair-rim { stroke: var(--cc-chair-shine); }
 .cc--soul .cc-chair { display: none; }
 .cc-lamp-metal { fill: var(--cc-lamp); }
 .cc-lamp-arm { stroke: var(--cc-lamp); }
@@ -1928,7 +1928,16 @@ button.shell-ui {
 .cc-bug-legs { stroke: var(--cc-eye); }
 .cc-zzz,
 .cc-bang { fill: var(--cc-code); }
-.cc-star { fill: var(--cc-sticker); }
+.cc-star {
+    fill: var(--cc-sticker);
+    /* a 1px outline at any size, so the stars show on white pages too (Notebook, Paper) */
+    stroke: var(--cc-hair);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+    transform-box: fill-box;
+    transform-origin: center;
+}
 .cc-spiral { stroke: var(--cc-eye); }
 .cc-m-yawn { fill: var(--cc-mouth); stroke: none; }
 .cc-arm { stroke: var(--cc-shirt); }
@@ -2009,6 +2018,7 @@ button.shell-ui {
     .cc--dizzy .cc-spiral { animation: cc-spin 0.6s linear infinite; }
     .cc--dizzy .cc-head { animation: cc-wobble 0.8s ease-in-out infinite; }
     .cc--dizzy .cc-orbit { opacity: 1; animation: cc-spin 1.1s linear infinite; }
+    .cc--dizzy .cc-star { animation: cc-spin 1.1s linear infinite reverse; } /* cancels the orbit's turn: stars stay upright */
     .cc--dizzy .cc-m-think,
     .cc--startle .cc-m-think { opacity: 1; }
 
@@ -2400,6 +2410,8 @@ button.shell-ui {
     width: 36px;
     opacity: 0;
     filter: drop-shadow(0 0 5px var(--lift-glow));
+    /* Open above and to the sides, cut just inside the basket: popping up, he rises out of it from below */
+    clip-path: inset(-40px -30px 0 -30px);
 }
 
 .lift.has-soul .lift-soul {
@@ -5236,13 +5248,13 @@ html:has(#apRoot) { scrollbar-color: rgba(128, 128, 128, 0.45) transparent; }
     position: relative;
     z-index: 1;
     width: min(100%, 440px);
-    margin-top: calc(var(--name-size) * -0.42);
+    margin-top: calc(var(--name-size) * -0.12); /* his hair just reaches the tail of the y: more and it hides letters */
 }
 
 .ap-figure .cc {
     --cc-desk: rgba(0, 0, 0, 0.28);
     --cc-code: rgba(255, 255, 255, 0.55);
-    --cc-steam: rgba(255, 255, 255, 0.5);
+    --cc-steam: rgba(255, 255, 255, 0.75);
     width: 100%;
     height: auto;
     margin-bottom: -5%; /* the desk sits on the poster's bottom edge */
@@ -5642,7 +5654,7 @@ html:has(#sfRoot) { scrollbar-color: var(--line, rgba(255, 176, 0, 0.28)) transp
     --cc-bubble: #1a1000;
     --cc-bubble-ink: #ffb000;
     --cc-chair: #3a2600;
-    --cc-chair-shade: #241800;
+    --cc-chair-shine: rgba(255, 176, 0, 0.35);
     --cc-chair-accent: #ffb000;
     width: 100%;
     filter: drop-shadow(0 0 6px rgba(255, 150, 0, 0.3));

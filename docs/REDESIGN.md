@@ -643,7 +643,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 #### Contact Card after
 
 **Looks like iOS Contacts** (a contact card with a Contact Poster). It uses iOS's system colours (light and dark, following the OS), the SF font stack, inset grouped lists and the 44px rows. The theme key stays `apple` so links keep working. The chooser shows it as "Contact Card" on the poster colour.
-- **Poster:** the name in large rounded type with the caricature standing in front of its lower half, like the poster's depth effect. On wide screens (900px and up) the poster stays on the left and the card scrolls on the right.
+- **Poster:** the name in large rounded type with the caricature right under it; his hair just reaches the tail of the "y", a light take on the poster's depth effect. (He used to cover the lower half of the name, which read as clipped.) On wide screens (900px and up) the poster stays on the left and the card scrolls on the right.
 - **Card:** job title, then specialization · company. Below that sit four action buttons (mail, GitHub, LinkedIn, résumé) and the fields: work email, URLs (homepage, GitHub, LinkedIn), home address (opens Apple Maps). Notes holds the tagline, bio, impact numbers, fun fact and hobbies. Then come the disclosure rows and Share Contact / Download Résumé.
 - **Detail pages:** Experience (shows `stats.years`), Projects, Skills, Education and Reading List push in from the right like an iOS navigation push, while the card drifts left (transform only). Each page has a "‹ <first name>" Back button. Escape also goes back, and focus returns to the row. Each role, project and degree is its own group, with technologies and tags as the group footer. Skills lists each skill once. Education also covers the patent and certifications (with links).
 - **Share Contact:** builds a vCard from `content.js` (name, title, company, email, labelled URLs, city, short bio; no phone number). It opens the share sheet where the browser can share files (phones). Otherwise it downloads `<name>.vcf`, which iOS and macOS open in Contacts.
@@ -654,7 +654,7 @@ Checked by `tests/book.test.mjs` at 1440px and 390px:
 
 Checked by `tests/apple.test.mjs` at 1440px and 390px:
 - Nothing plays behind the chooser, closing it starts the opening, and a key press skips it.
-- The poster shows the name and caricature (no photo), and the caricature overlaps the name.
+- The poster shows the name and caricature (no photo), and the caricature's box overlaps the name's.
 - The facts from `content.js` appear across the card and all pages, and the phone number does not. Skills lists every skill once (`stats.skills`), as a comma list (owner found the commas missing in round 1: the row was a flex box, so each skill became a flex item). The résumé links use the `content.js` path.
 - A page slides in, the card goes inert and focus lands on Back. On desktop the page opens beside the poster. Escape and Back return to the card with focus on the row.
 - The vCard has the right name, fields and CRLF line ends, and no phone number.
@@ -771,7 +771,7 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
     - *Coffee:* his arm rests on the mug handle. For the sip, the arm bends and lifts the mug to his mouth while his eyes close, then he smiles. The arm and mug move by SMIL in the svg, because CSS can't change a path's shape in every browser.
     - *Bug:* a bug walks along the lid, he frowns, blows it away (puff lines), then smiles.
   - **Asleep** after 40s with no input (25s at night): eyes shut, head nods, z's rise. Any input wakes him with a jolt and a "!".
-  - **Dizzy** when the pointer whips back and forth: spiral eyes, wobbling head, stars circling.
+  - **Dizzy** when the pointer whips back and forth: spiral eyes, wobbling head, stars circling. The stars are drawn tall and spin back against the orbit, so its flattening leaves them upright and full-size, with a 1px outline; before, they shrank to a few yellow pixels on small caricatures and white pages (Notebook).
   - **Hover or tap:** a "Hi!" speech bubble.
   - **Résumé download** (any `.pdf` link): confetti off the laptop.
   - **Night** (visitor's clock, 9pm to 6am): desk lamp on, no flying code, and yawns join the idle moments.
@@ -783,7 +783,7 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
 - **New colour variables:** `--cc-bug`, `--cc-lamp`, `--cc-lamp-light`, `--cc-bubble`, `--cc-bubble-ink` (Sci-Fi sets amber values).
 - **Soul lift** (`caricatureLift`):
   - *When it shows:* in every theme, whenever the caricature isn't on screen. That covers themes without one (ChatGPT, Model Card, VS Code), Book chapters without it, and avatars scrolled out of view.
-  - *How it moves:* when the caricature leaves or comes back into view, the soul hops between it and the basket. The basket follows scroll progress on a spring (smooth, small bounce), the wheel turns as the rope pays out, and dragging the basket scrolls.
+  - *How it moves:* when the caricature leaves view, the soul pops up out of the basket from below (a small overshoot, then he settles); when it comes back, he ducks down into the basket. `.lift-soul` clips him just inside the basket's rim. (It used to fly between the caricature and the basket.) The basket follows scroll progress on a spring (smooth, small bounce), the wheel turns as the rope pays out, and dragging the basket scrolls.
   - *What it follows:* the panel that scrolls the caricature, else the page, else the largest scrolling panel. It rescans when the theme's content changes.
   - *Looks:* the head sits in a basket wider than his shoulders, with his hands on the rim. Each theme dresses it differently: wicker with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal. Hidden on phones.
 - **VS Code:** root-level files sit flush with the `projects` folder's chevron.
@@ -813,7 +813,11 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - *Head turn:* following the pointer, the face features slide further than the head outline and the head tilts up to 7°, so it reads as turning rather than glancing.
 - **Round 6 (owner feedback):**
   - *Coffee arm:* it used to stretch like rubber (forearm about 20 units at rest, about 70 mid-sip), its elbow floated outside his body, and the hand ended up on his cheek. It now uses two-bone inverse kinematics: a fixed shoulder inside the torso, upper arm and forearm both 32 units, and the elbow solved per keyframe on the lower side. At rest the elbow sits at his side. Mid-sip it's tucked behind the laptop lid with the forearm rising to his mouth. Frames come from `scripts/caricature-arm-ik.py`; edit its keyframes and regenerate rather than hand-editing the SVG.
-  - *Gaming chair:* a racing backrest behind him with side wings and two stripes (`--cc-chair`, `--cc-chair-shade`, `--cc-chair-accent`; amber in Sci-Fi). It's hidden in the lift's head-only soul.
+  - *Gaming chair:* a racing backrest behind him with red side bolsters and a light top rim (`--cc-chair`, `--cc-chair-accent`, `--cc-chair-shine`; amber in Sci-Fi). Its top sits below his crown, so only his hair breaks the top edge: a taller first version covered the surname on the Contact Card poster. It's hidden in the lift's head-only soul.
+  - *Neck:* a shadow-toned neck fills the collar's opening and is drawn over the collar's inner edge, so no shirt or collar shows between his chin and the V (also when his head turns).
+  - *Body and desk:* the shirt and chair stop at the desk's top edge, so the Contact Card's translucent desk shows the poster behind it, not a strip of shirt.
+  - *Steam:* rises from the mug's rim, in front of the sleeve; brighter on the Contact Card poster.
+  - *Coffee hand:* fingers go through the handle: the handle is drawn over the fist and the thumb rests on top, so the handle stays visible. The drawn sleeve stops 8 units short of the hand (`CUFF` in `scripts/caricature-arm-ik.py`), so it ends behind the mug instead of showing as a blue ring around the fist.
 
 ## Shared backlog (shell / cross-theme)
 

@@ -36,10 +36,9 @@ function caricatureSVG(label = '', { head = false } = {}) {
         <clipPath id="${id}-eyes">${eye(106)}${eye(134)}</clipPath>
     </defs>
     <g class="cc-chair">
-        <path class="cc-chair-back" d="M60 182V72C60 54 55 40 57 26 59 11 70 3 85 3h70c15 0 26 8 28 23 2 14-3 28-3 46v110Z"/>
-        <path class="cc-chair-panel" d="M72 182V74c0-16-3-28-2-42 1-12 9-19 21-19h58c12 0 20 7 21 19 1 14-2 26-2 42v108Z"/>
-        <path class="cc-chair-stripe" d="M94 13v169M146 13v169" fill="none" stroke-width="5"/>
-        <path class="cc-chair-wing" d="M57 26c-4 18 3 36 3 50l12-2c0-16-3-28-2-42Zm126 0c4 18-3 36-3 50l-12-2c0-16 3-28 2-42Z"/>
+        <path class="cc-chair-back" d="M58 178V100C58 86 50 72 50 58 50 45 59 38 72 38h96c13 0 22 7 22 20 0 14-8 28-8 42v78Z"/>
+        <path class="cc-chair-wing" d="M50 58C50 45 59 38 72 38h6C66 42 59 50 59 61 59 75 65 88 65 102h-7C58 86 50 72 50 58Zm140 0C190 45 181 38 168 38h-6c12 4 19 12 19 23 0 14-6 27-6 41h7C182 86 190 72 190 58Z"/>
+        <path class="cc-chair-rim" d="M57 48C61 41 66 40 72 40h96c6 0 11 1 15 8" fill="none" stroke-width="2" stroke-linecap="round"/>
     </g>
     <g class="cc-lamp">
         <path class="cc-lamp-light" d="M44 132 62 136 104 178H36Z"/>
@@ -57,10 +56,13 @@ function caricatureSVG(label = '', { head = false } = {}) {
         <path class="cc-arm-shade" d="M176.0 124.0L188.8 153.3" fill="none" stroke-width="16" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M176.0 124.0L188.8 153.3;M176.0 124.0L180.8 155.6;M176.0 124.0L181.3 155.6;M176.0 124.0L144.0 123.9;M176.0 124.0L144.0 123.9;M176.0 124.0L186.5 154.2;M176.0 124.0L182.9 155.2;M176.0 124.0L188.8 153.3"/></path>
         <path class="cc-arm" d="M176.0 124.0L188.8 153.3" fill="none" stroke-width="13" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M176.0 124.0L188.8 153.3;M176.0 124.0L180.8 155.6;M176.0 124.0L181.3 155.6;M176.0 124.0L144.0 123.9;M176.0 124.0L144.0 123.9;M176.0 124.0L186.5 154.2;M176.0 124.0L182.9 155.2;M176.0 124.0L188.8 153.3"/></path>
     </g>
-    <path class="cc-shirt" d="M38 182c0-44 18-70 56-78h52c38 8 56 34 56 78Z"/>
-    <path class="cc-shirt-shade" d="M38 182c0-18 4-38 14-52 4 18 6 36 4 52Zm164 0c0-18-4-38-14-52-4 18-6 36-4 52Z"/>
+    <path class="cc-shirt" d="M38 178c0-40 18-66 56-74h52c38 8 56 34 56 74Z"/>
+    <path class="cc-shirt-shade" d="M38 178c0-18 4-34 14-48 4 18 6 32 4 48Zm164 0c0-18-4-34-14-48-4 18-6 32-4 48Z"/>
     <path class="cc-collar" d="M100 104l20 15-9 8-16-17Zm40 0-20 15 9 8 16-17Z"/>
-    <path class="cc-placket" d="M120 122v56" fill="none" stroke-width="1.5"/>
+    <!-- Neck in the collar's opening, in the under-chin shadow tone; over the collar's inner edge, so no shirt or collar
+         shows between his chin and the V -->
+    <path class="cc-skin-shade" d="M98 96h44v13l-22 15-22-15Z"/>
+    <path class="cc-placket" d="M120 122v52" fill="none" stroke-width="1.5"/>
     <g transform="translate(120 116) scale(1.08) translate(-120 -116)">
         <g class="cc-turn"><g class="cc-head">
             <path class="cc-skin-shade" d="M96 104q24 20 48 0-3 14-24 16-21-2-24-16Z"/>
@@ -104,22 +106,23 @@ function caricatureSVG(label = '', { head = false } = {}) {
         </g></g>
     </g>
     <g class="cc-mugset">
-        <path class="cc-arm-shade" d="M188.8 153.3L218.8 164.5" fill="none" stroke-width="15" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L218.8 164.5;M180.8 155.6L212.8 154.5;M181.3 155.6L187.9 124.3;M144.0 123.9L149.3 92.3;M144.0 123.9L149.3 92.3;M186.5 154.2L185.9 122.3;M182.9 155.2L214.8 158.5;M188.8 153.3L218.8 164.5"/></path>
-        <path class="cc-arm" d="M188.8 153.3L218.8 164.5" fill="none" stroke-width="12" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L218.8 164.5;M180.8 155.6L212.8 154.5;M181.3 155.6L187.9 124.3;M144.0 123.9L149.3 92.3;M144.0 123.9L149.3 92.3;M186.5 154.2L185.9 122.3;M182.9 155.2L214.8 158.5;M188.8 153.3L218.8 164.5"/></path>
+        <path class="cc-arm-shade" d="M188.8 153.3L211.3 161.7" fill="none" stroke-width="15" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L211.3 161.7;M180.8 155.6L204.8 154.8;M181.3 155.6L186.2 132.1;M144.0 123.9L147.9 100.2;M144.0 123.9L147.9 100.2;M186.5 154.2L186.0 130.2;M182.9 155.2L206.8 157.7;M188.8 153.3L211.3 161.7"/></path>
+        <path class="cc-arm" d="M188.8 153.3L211.3 161.7" fill="none" stroke-width="12" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="M188.8 153.3L211.3 161.7;M180.8 155.6L204.8 154.8;M181.3 155.6L186.2 132.1;M144.0 123.9L147.9 100.2;M144.0 123.9L147.9 100.2;M186.5 154.2L186.0 130.2;M182.9 155.2L206.8 157.7;M188.8 153.3L211.3 161.7"/></path>
         <circle class="cc-elbow" cx="188.8" cy="153.3" r="6.5"><animate class="cc-sip-anim" attributeName="cx" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="188.8;180.8;181.3;144.0;144.0;186.5;182.9;188.8"/><animate class="cc-sip-anim" attributeName="cy" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}" values="153.3;155.6;155.6;123.9;123.9;154.2;155.2;153.3"/></circle>
         <g>
             <animateTransform class="cc-sip-anim" attributeName="transform" type="translate" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}"
                 values="0 0;-6 -10;-30 -36;-66 -63;-66 -63;-32 -38;-4 -6;0 0"/>
             <animateTransform class="cc-sip-anim" attributeName="transform" type="rotate" additive="sum" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.3;0.42;0.66;0.76;0.86;1" keySplines="${EASE}"
                 values="0 201 166;0 201 166;-14 201 166;-32 201 166;-32 201 166;-14 201 166;0 201 166;0 201 166"/>
-            <path class="cc-steam" d="M196 148q-4-6 0-12t0-12m9 24q-4-6 0-12t0-12" fill="none" stroke-width="2" stroke-linecap="round"/>
+            <path class="cc-steam" d="M196 152q-4-6 0-12t0-12m9 24q-4-6 0-12t0-12" fill="none" stroke-width="2" stroke-linecap="round"/>
             <rect class="cc-mug" x="190" y="154" width="22" height="24" rx="4"/>
-            <path class="cc-mug-handle" d="M212 159h3a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke-width="3"/>
+            <!-- Fingers go through the handle: fist, then the handle over it, then the thumb resting on top -->
             <g class="cc-grip">
-                <rect class="cc-skin" x="212.5" y="157.5" width="12.5" height="14" rx="6"/>
-                <ellipse class="cc-skin" cx="214.5" cy="157.5" rx="4.4" ry="2.8" transform="rotate(-20 214.5 157.5)"/>
-                <path class="cc-knuckle" d="M215.5 162.5h7M215.5 166.5h7" fill="none" stroke-width="1" stroke-linecap="round"/>
+                <rect class="cc-skin" x="211" y="157.5" width="14" height="14" rx="4.5"/>
+                <path class="cc-knuckle" d="M221 162.5h2.5M221 166.5h2.5" fill="none" stroke-width="1" stroke-linecap="round"/>
             </g>
+            <path class="cc-mug-handle" d="M212 159h3a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke-width="3"/>
+            <ellipse class="cc-skin" cx="214.5" cy="157.5" rx="4.4" ry="2.8" transform="rotate(-20 214.5 157.5)"/>
         </g>
     </g>
     <rect class="cc-desk" x="6" y="178" width="228" height="8" rx="3"/>
@@ -154,10 +157,11 @@ function caricatureSVG(label = '', { head = false } = {}) {
         <text x="174" y="18" font-size="16">Z</text>
     </g>
     <text class="cc-bang" x="160" y="40" font-family="ui-monospace, monospace" font-size="20" font-weight="700">!</text>
+    <!-- Stars circle his head on a flattened orbit; each is drawn 1/0.38 tall and spins back against the orbit, so it stays upright and star-shaped -->
     <g transform="translate(120 14) scale(1 0.38)"><g class="cc-orbit">
-        <path class="cc-star" d="M0-34l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2Z"/>
-        <path class="cc-star" d="M30 17l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2Z"/>
-        <path class="cc-star" d="M-30 17l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2Z"/>
+        <path class="cc-star" d="M0 -49.7 2.6 -34.3 8.45 -27.5 2.6 -20.7 0 -5.3 -2.6 -20.7 -8.45 -27.5 -2.6 -34.3Z"/>
+        <path class="cc-star" d="M30 1.3 32.6 16.7 38.45 23.5 32.6 30.3 30 45.7 27.4 30.3 21.55 23.5 27.4 16.7Z"/>
+        <path class="cc-star" d="M-30 1.3 -27.4 16.7 -21.55 23.5 -27.4 30.3 -30 45.7 -32.6 30.3 -38.45 23.5 -32.6 16.7Z"/>
     </g></g>
 </svg>`;
 }
@@ -478,7 +482,7 @@ const caricatureLift = {
         if (this.readout.textContent !== pct) this.readout.textContent = pct;
         if (this.inBasket === null) this.y = this.target; // first paint: no travel
         this.animate();
-        if (inBasket !== this.inBasket) this.hop(inBasket, present ? a : null);
+        if (inBasket !== this.inBasket) this.hop(inBasket);
     },
 
     animate() {
@@ -506,23 +510,19 @@ const caricatureLift = {
         this.el.style.setProperty('--swing', `${Math.max(-6, Math.min(6, this.v * -0.6)).toFixed(2)}deg`);
     },
 
-    // The soul leaves the caricature for the basket, or climbs back into it; only animated when the visitor scrolls
-    hop(inBasket, a) {
+    // The soul pops up out of the basket, or ducks back down into it (.lift-soul clips him at the basket's rim);
+    // only animated when the visitor scrolls
+    hop(inBasket) {
         const first = this.inBasket === null;
         this.inBasket = inBasket;
+        this.hopAnim?.cancel();
         if (inBasket) this.el.classList.add('has-soul');
-        if (first || ccReduced.matches || !a || !this.el.classList.contains('is-on')) return inBasket || this.el.classList.remove('has-soul');
-        const t = this.soul.getBoundingClientRect();
-        const scale = Math.max(0.6, Math.min(3, (a.width * 0.45) / t.width));
-        const dx = a.left + a.width * 0.5 - (t.left + t.width / 2);
-        const dy = a.top + a.height * 0.3 - (t.top + t.height / 2);
-        const frames = [
-            { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0.3 },
-            { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 70}px) scale(${(scale + 1) / 2}) rotate(-12deg)`, opacity: 1, offset: 0.55 },
-            { transform: 'none', opacity: 1 }
-        ];
-        const anim = this.soul.animate(inBasket ? frames : frames.reverse(), { duration: inBasket ? 750 : 600, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' });
-        if (!inBasket) anim.finished.then(() => !this.inBasket && this.el.classList.remove('has-soul'), () => {});
+        if (first || ccReduced.matches || !this.el.classList.contains('is-on')) return inBasket || this.el.classList.remove('has-soul');
+        const svg = this.soul.querySelector('svg');
+        this.hopAnim = inBasket
+            ? svg.animate([{ translate: '0 100%' }, { translate: '0 -14%', offset: 0.6 }, { translate: '0 0' }], { duration: 520, easing: 'ease-out' })
+            : svg.animate([{ translate: '0 0' }, { translate: '0 -10%', offset: 0.3 }, { translate: '0 100%' }], { duration: 380, easing: 'ease-in', fill: 'forwards' });
+        if (!inBasket) this.hopAnim.finished.then(() => { if (!this.inBasket) { this.el.classList.remove('has-soul'); this.hopAnim.cancel(); } }, () => {});
     }
 };
 

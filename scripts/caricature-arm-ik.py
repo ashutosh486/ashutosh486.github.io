@@ -5,6 +5,7 @@ S = (176.0, 124.0)      # shoulder, inside the torso
 L = 32.0                # upper arm = forearm
 MUG = (201.0, 166.0)    # mug centre (rotation pivot)
 GRIP = (218.75, 164.5)  # hand centre on the handle, mug at rest
+CUFF = 8.0              # the drawn sleeve stops this far short of the hand centre, so no sleeve shows around the fist
 # keyTime: (translate x, y, rotate deg) of the mug
 KEYS = [(0, 0, 0, 0), (0.2, -6, -10, 0), (0.3, -30, -36, -14), (0.42, -66, -63, -32), (0.66, -66, -63, -32),
         (0.76, -32, -38, -14), (0.86, -4, -6, 0), (1, 0, 0, 0)]
@@ -31,7 +32,8 @@ for t, tx, ty, deg in KEYS:
     h = hand(tx, ty, deg); e = elbow(h)
     # check: both bones keep length
     assert abs(math.dist(S, e) - L) < 0.01 and abs(math.dist(e, h) - L) < 0.01
-    upper.append(f'M{f(S)}L{f(e)}'); fore.append(f'M{f(e)}L{f(h)}'); ex.append(f'{e[0]:.1f}'); ey.append(f'{e[1]:.1f}')
+    tip = (h[0] - (h[0] - e[0]) * CUFF / L, h[1] - (h[1] - e[1]) * CUFF / L)
+    upper.append(f'M{f(S)}L{f(e)}'); fore.append(f'M{f(e)}L{f(tip)}'); ex.append(f'{e[0]:.1f}'); ey.append(f'{e[1]:.1f}')
     print(t, 'hand', f(h), 'elbow', f(e))
 import json
 print(json.dumps({'keyTimes': ';'.join(str(k[0]) for k in KEYS), 'upper': ';'.join(upper), 'fore': ';'.join(fore), 'ex': ';'.join(ex), 'ey': ';'.join(ey), 'tr': ';'.join(f'{k[1]} {k[2]}' for k in KEYS), 'rot': ';'.join(f'{k[3]} 201 166' for k in KEYS)}, indent=1))
