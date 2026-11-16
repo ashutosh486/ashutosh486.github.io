@@ -320,8 +320,9 @@ const ChatGPTTheme = {
         // far behind, so it never lags the stream) with ChatGPT's pulsing dot at the end
         const paint = () => {
             body.innerHTML = this.md(reply.slice(0, shown));
-            const last = body.lastElementChild;
-            (last?.matches('ul') ? last.lastElementChild : last || body).insertAdjacentHTML('beforeend', '<span class="cg-caret" aria-hidden="true"></span>');
+            const last = body.lastElementChild; // the dot goes at the end of the last line, list item or table cell
+            const end = last?.matches('.cg-card') ? body : last?.matches('ul, ol') ? last.lastElementChild : last?.querySelector('tr:last-child > :last-child') || last || body;
+            end.insertAdjacentHTML('beforeend', '<span class="cg-caret" aria-hidden="true"></span>');
         };
         const revealed = new Promise(resolve => {
             const step = () => {
@@ -354,28 +355,55 @@ const ChatGPTTheme = {
             this.show(body, this.matchIntent(text), text);
         } else {
             body.innerHTML = this.md(reply);
+            this.later(() => body.querySelectorAll('.cg-bar').forEach(bar => bar.classList.add('is-filled')), 60); // reading card
             this.history.push({ role: 'assistant', content: reply });
             this.setActive(null);
         }
         scrollToQuestion();
     },
 
-    // The model's light Markdown (paragraphs, "- " bullets, **bold**) as HTML; everything is escaped first
+    // The model's Markdown as HTML: paragraphs, headings, bullet and numbered lists, tables, links, **bold**, *italics*
+    // and `code`. Everything is escaped first, so only the tags made here exist; links are https, mailto or tel only.
     md(text) {
-        const blocks = [];
-        let list = null;
-        for (const line of this.esc(text).split('\n')) {
-            const item = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
-            if (item) {
-                if (!list) blocks.push(list = []);
-                list.push(item[1]);
-            } else if (line.trim()) {
-                list = null;
-                blocks.push(line);
+        const blocks = [], cards = new Set();
+        for (let line of this.esc(text).split('\n')) {
+            // {{card:contact}} etc. become the topic's own card, each once; a tag still streaming in is hidden
+            const tags = [...line.matchAll(/\{\{\s*card:(\w+)\s*\}\}/g)].map(m => m[1]);
+            line = line.replace(/\{\{\s*card:\w+\s*\}\}/g, '').replace(/\{\{[^}]*$/, '');
+            const row = line.match(/^\s*\|(.*)\|\s*$/), item = line.match(/^\s*([-*•]|\d+[.)])\s+(.*)/), head = line.match(/^\s*#{1,6}\s+(.*)/);
+            const kind = row ? 'table' : item ? (/\d/.test(item[1]) ? 'ol' : 'ul') : null, last = blocks.at(-1);
+            if (kind) {
+                const value = row ? row[1].split('|').map(cell => cell.trim()) : item[2];
+                if (last?.kind === kind) last.items.push(value);
+                else blocks.push({ kind, items: [value] });
+            } else if (line.trim()) blocks.push({ kind: head ? 'h' : 'p', text: head ? head[1] : line.trim() });
+            for (const key of tags) {
+                const known = Object.hasOwn(this.sections, key) && !['unknown', 'help'].includes(key);
+                if (known && !cards.has(key)) blocks.push({ kind: 'card', key }) && cards.add(key);
             }
         }
-        return blocks.map(b => Array.isArray(b) ? `<ul class="list-disc space-y-1 pl-5">${b.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p>${b}</p>`).join('')
-            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>');
+        const link = 'underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white';
+        const a = (href, label) => `<a href="${href}" class="${link}"${href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${label}</a>`;
+        const inline = s => s
+            .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:|tel:)[^\s)]+)\)/g, (_, label, href) => a(href, label))
+            .replace(/(^|[\s(*])(https:\/\/[^\s<)*]*[^\s<)*.,;:!?])/g, (_, pre, url) => pre + a(url, url))
+            .replace(/(^|[\s(*])([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g, (_, pre, mail) => pre + a(`mailto:${mail}`, mail))
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
+            .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g, '$1<em>$2</em>')
+            .replace(/`([^`]+)`/g, '<code class="rounded bg-white/10 px-1 font-mono text-[13px]">$1</code>');
+        const list = (tag, cls, items) => `<${tag} class="${cls} space-y-1 pl-5">${items.map(li => `<li>${inline(li)}</li>`).join('')}</${tag}>`;
+        return blocks.map(b => {
+            if (b.kind === 'ul') return list('ul', 'list-disc', b.items);
+            if (b.kind === 'ol') return list('ol', 'list-decimal', b.items);
+            if (b.kind === 'h') return `<p class="font-semibold text-white">${inline(b.text)}</p>`;
+            if (b.kind === 'p') return `<p>${inline(b.text)}</p>`;
+            if (b.kind === 'card') return `<div class="cg-card space-y-4">${this.sections[b.key].call(this)}</div>`;
+            const [header = [], ...rows] = b.items.filter(cells => !cells.every(cell => /^:?-+:?$/.test(cell))); // drop the |---| row
+            return `<div class="overflow-x-auto rounded-xl ring-1 ring-white/10"><table class="w-full text-left text-sm">
+                <thead class="bg-white/[0.04] text-[#b4b4b4]"><tr>${header.map(cell => `<th class="px-3 py-2 font-medium">${inline(cell)}</th>`).join('')}</tr></thead>
+                <tbody class="divide-y divide-white/5">${rows.map(cells => `<tr>${cells.map(cell => `<td class="px-3 py-2 align-top">${inline(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table></div>`;
+        }).join('');
     },
 
     matchIntent(text) {

@@ -265,6 +265,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Footer:** now says the answers are AI-generated ("AI answers from …'s résumé · can make mistakes").
 - **Tests:** `tests/chat-api.test.mjs` (no network) checks validation, origins and the stream parser. The theme test stubs `fetch`.
 - **Round 4b:** answers type out at a steady pace with ChatGPT's pulsing dot at the end (the typing dots stay until the first words arrive); `CHAT_EFFORT` and `CHAT_MAX_TOKENS` join `CHAT_MODELS` as environment settings.
+- **Round 4c:** the model can attach the topic cards (`{{card:contact}}`, `{{card:resume}}`, … from `chatCommands`), so a contact question gets the full contact card and a résumé request the download card. Answers render Markdown tables, numbered lists, links (https, mailto, tel only) and code. Tenure per role, per company, total and average is worked out in code and put in the prompt, which is rewritten in sections. `npm run redteam` runs misuse and prompt-injection checks against the live endpoint (real model calls).
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 
