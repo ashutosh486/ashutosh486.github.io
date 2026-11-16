@@ -1784,6 +1784,11 @@ button.shell-ui {
 .cc-sticker-b { fill: var(--cc-sticker); }
 .cc-code { fill: var(--cc-code); opacity: 0; }
 
+.cc-turn {
+    transform-box: fill-box;
+    transform-origin: 50% 90%;
+}
+
 .cc-eyes,
 .cc-head,
 .cc-brow,
@@ -1809,6 +1814,7 @@ button.shell-ui {
     .cc-eyes { animation: cc-blink 5s infinite; }
     .cc-pupils { animation: cc-read 6s linear infinite; }
     .cc-look,
+    .cc-features,
     .cc-turn { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .cc-head { animation: cc-head 12s ease-in-out infinite; }
     .cc-brow-l { animation: cc-brow-l 12s ease-in-out infinite; }
@@ -2159,7 +2165,6 @@ button.shell-ui {
     --lift-led: #22c55e;
     --lift-rope: #9b7a52;
     --lift-glow: rgba(255, 255, 255, 0.5);
-    --mount: 0px;              /* bottom of the theme's top bars; the winch hangs below them */
     position: fixed;
     top: 0;
     right: 33px;               /* puts the rope 36px from the window edge, so the basket hugs it */
@@ -2178,10 +2183,10 @@ button.shell-ui {
     transition: opacity 0.3s;
 }
 
-/* The winch: bolted under the top bar, it slides down into place when the lift appears */
+/* The winch: bolted to the very top of the window, it slides down into place when the lift appears */
 .lift-machine {
     position: absolute;
-    top: var(--mount);
+    top: 0;
     left: 0;
     width: 70.4px;
     height: 96.8px;
@@ -2230,14 +2235,59 @@ button.shell-ui {
     fill: var(--lift-led);
 }
 
-.lift.is-parked .lift-btn[data-lift="park"] rect {
-    fill: var(--lift-led);
+/* Hidden: the winch winds everything up out of view; a small tab at the top brings it back */
+.lift-recall {
+    position: absolute;
+    top: 0;
+    left: 30px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 22px;
+    border: 1px solid var(--lift-line);
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+    background: var(--lift-metal);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    cursor: var(--cursor-pointer, pointer);
+    pointer-events: auto;
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lift-recall svg {
+    width: 20px;
+    height: 14px;
+    fill: none;
+    stroke: var(--lift-icon, #374151);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.lift.is-hidden .lift-recall {
+    transform: none;
+}
+
+.lift.is-hidden :is(.lift-machine, .lift-hint) {
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
+.lift-rope,
+.lift-car {
+    transition: opacity 0.3s;
+}
+
+.lift.is-hidden :is(.lift-rope, .lift-car) {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* How to operate it: shown once per browser when the lift first appears, and whenever the winch is hovered */
 .lift-hint {
     position: absolute;
-    top: calc(var(--mount) + 14px);
+    top: 14px;
     right: calc(100% + 8px);
     padding: 7px 10px;
     border-radius: 8px;
@@ -2291,10 +2341,10 @@ button.shell-ui {
 /* The rope leaves the drum's right edge (drum at 50,24 r11 in the 1.1x winch) */
 .lift-rope {
     position: absolute;
-    top: calc(var(--mount) + 26.4px);
+    top: 26.4px;
     left: 66.1px;
     width: 2px;
-    height: max(0px, calc(var(--y) - var(--mount) - 26.4px));
+    height: max(0px, calc(var(--y) - 26.4px));
     background: var(--lift-rope);
 }
 
@@ -2425,23 +2475,6 @@ html[data-theme="notebook"] .lift {
     --lift-accent: #f37726;
     --lift-led: #f37726;
     --lift-glow: rgba(243, 119, 38, 0.45);
-}
-
-/* Contact Card: frosted glass winch and gondola on white lines */
-html[data-theme="apple"] .lift {
-    --lift-metal: rgba(255, 255, 255, 0.85);
-    --lift-line: rgba(0, 0, 0, 0.22);
-    --lift-accent: #ffffff;
-    --lift-led: #0a84ff;
-    --lift-rope: rgba(255, 255, 255, 0.8);
-    --lift-glow: rgba(255, 255, 255, 0.6);
-}
-
-html[data-theme="apple"] .lift-basket {
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 10px 10px 18px 18px;
-    background: linear-gradient(#ffffff, #e5e5ea);
-    box-shadow: inset 0 2px 0 #ffffff, 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 /* Paper and Book: a ribbon off a spool, carrying a paper boat */

@@ -66,6 +66,7 @@ function caricatureSVG(label = '', { head = false } = {}) {
             <ellipse class="cc-blush" cx="145" cy="89" rx="7" ry="3.8"/>
             <path class="cc-hair" d="M78 80C72 50 84 22 116 18c30-4 52 14 50 42-1 8-3 14-6 20-2-10-4-17-8-23l-4 8-8-11-8 9-9-10-11 8-7-9c-9 6-16 14-22 28Z"/>
             <path class="cc-hair-shine" d="M100 34c16-10 42-10 56 2-16-4-38-4-52 4Z"/>
+            <g class="cc-features">
             <path class="cc-brow cc-brow-l" d="M98 65q7-3 15-.5" fill="none" stroke-width="3.6" stroke-linecap="round"/>
             <path class="cc-brow cc-brow-r" d="M127 64.5q8-2.5 15 .5" fill="none" stroke-width="3.6" stroke-linecap="round"/>
             <g class="cc-eyes">
@@ -92,6 +93,7 @@ function caricatureSVG(label = '', { head = false } = {}) {
                 <path class="cc-m cc-m-frown" d="M112 99.5q8-3.6 16 0"/>
                 <path class="cc-m cc-m-smile" d="M110 95.5q10 7 20 0"/>
                 <ellipse class="cc-m cc-m-yawn" cx="120" cy="99" rx="3.8" ry="5.4"/>
+            </g>
             </g>
         </g></g>
     </g>
@@ -199,13 +201,18 @@ function lookAt(x, y) {
         const dx = x - (eyes.left + eyes.width / 2);
         const dy = y - (eyes.top + eyes.height / 2);
         const k = Math.min(1, Math.hypot(dx, dy) / 240) / (Math.hypot(dx, dy) || 1); // full glance from ~240px away
-        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4 - rx}px, ${Math.max(-0.5, dy * k * 1.8) - ry}px)`;
-        svg.querySelector('.cc-turn').style.transform = `translate(${dx * k * 2}px, ${Math.max(-0.6, dy * k * 1.2)}px)`;
+        // Unit direction (shorter when the pointer is close); looking up is kept small so the eyes never roll back
+        const tx = dx * k;
+        const ty = Math.max(-0.35, dy * k);
+        svg.querySelector('.cc-look').style.transform = `translate(${tx * 2.4 - rx}px, ${Math.max(-0.5, ty * 1.8) - ry}px)`;
+        // The face slides further than the head outline and the head tilts: it reads as turning, not just glancing
+        svg.querySelector('.cc-features').style.transform = `translate(${tx * 3}px, ${ty * 1.8}px)`;
+        svg.querySelector('.cc-turn').style.transform = `translate(${tx * 2.6}px, ${ty * 1.4}px) rotate(${tx * 7}deg)`;
     });
     clearTimeout(lookTimer);
     lookTimer = setTimeout(() => document.querySelectorAll('svg.cc--looking').forEach(svg => {
         svg.classList.remove('cc--looking');
-        svg.querySelector('.cc-look').style.transform = svg.querySelector('.cc-turn').style.transform = '';
+        ['.cc-look', '.cc-features', '.cc-turn'].forEach(sel => (svg.querySelector(sel).style.transform = ''));
     }), 2500);
 }
 
@@ -268,6 +275,7 @@ function ccTick() {
 const CC_VARS = ['skin', 'skin-shade', 'hair', 'hair-shine', 'shirt', 'shirt-shade', 'collar', 'eye', 'mouth', 'blush', 'laptop',
     'laptop-shade', 'desk', 'mug', 'steam', 'code', 'sticker', 'bug', 'lamp', 'lamp-light', 'bubble', 'bubble-ink'].map(v => `--cc-${v}`);
 
+const LIFT_SKIP = ['apple'];
 const scrolls = el => /(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 1;
 
 const caricatureLift = {
@@ -275,7 +283,6 @@ const caricatureLift = {
     avatar: null,
     scroller: null,
     inBasket: null,
-    mountY: 0,
     y: 64, // basket position, eased toward target with a spring so it settles with a small bounce
     v: 0,
     target: 64,
@@ -297,7 +304,7 @@ const caricatureLift = {
                 <text class="lift-readout" x="18" y="20.5" text-anchor="middle">0%</text>
                 <g class="lift-btn" data-lift="up"><rect x="5" y="27" width="26" height="17" rx="3"/><path d="M13 38.5l5-6 5 6"/></g>
                 <g class="lift-btn" data-lift="down"><rect x="5" y="47" width="26" height="17" rx="3"/><path d="M13 52.5l5 6 5-6"/></g>
-                <g class="lift-btn" data-lift="park"><rect x="5" y="67" width="26" height="16" rx="3"/><path d="M13 76l5-5 5 5Z"/><path d="M13 79h10"/></g>
+                <g class="lift-btn" data-lift="hide"><rect x="5" y="67" width="26" height="16" rx="3"/><path d="M14 71.5l8 7M22 71.5l-8 7"/></g>
                 <g class="lift-gear"><circle class="lift-gear-teeth" cx="44" cy="40" r="6"/><circle class="lift-steel" cx="44" cy="40" r="3.8"/><circle class="lift-bolt" cx="44" cy="40" r="1.2"/></g>
                 <g class="lift-drum">
                     <circle class="lift-flange" cx="50" cy="24" r="11"/>
@@ -306,7 +313,8 @@ const caricatureLift = {
                     <circle class="lift-bolt" cx="50" cy="24" r="2.2"/>
                 </g>
             </svg>
-            <div class="lift-hint" role="presentation">Drag the basket to scroll<br>▲ ▼ one screen · ⏏ park it</div>
+            <div class="lift-hint" role="presentation">Drag the basket to scroll<br>▲ ▼ one screen · ✕ hide the lift</div>
+            <button type="button" class="lift-recall" tabindex="-1" title="Show the lift"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M6 3h12M7.5 7.5l4.5 4.5 4.5-4.5"/></svg></button>
             <div class="lift-rope"></div>
             <div class="lift-car">
                 <div class="lift-hanger"></div>
@@ -317,22 +325,19 @@ const caricatureLift = {
         this.car = this.el.querySelector('.lift-car');
         this.soul = this.el.querySelector('.lift-soul');
         this.readout = this.el.querySelector('.lift-readout');
-        this.parked = this.stored('portfolio-lift-parked') === '1';
-        this.el.classList.toggle('is-parked', this.parked);
+        // Hidden stays hidden in this browser until the tab at the top brings it back
+        this.el.classList.toggle('is-hidden', this.stored('portfolio-lift-hidden') === '1');
+        const hide = (hidden) => {
+            this.el.classList.toggle('is-hidden', hidden);
+            this.store('portfolio-lift-hidden', hidden ? '1' : null);
+        };
+        this.el.querySelector('.lift-recall').addEventListener('click', () => hide(false));
 
-        // Control panel: a screen up or down, or park the basket up by the winch (out of the way of the page)
+        // Control panel: a screen up, a screen down, hide the lift
         this.el.querySelectorAll('[data-lift]').forEach(btn => btn.addEventListener('click', () => {
             this.hideHint();
-            const s = this.scroller;
-            if (!s) return;
-            const act = btn.dataset.lift;
-            if (act === 'park') {
-                this.parked = !this.parked;
-                this.el.classList.toggle('is-parked', this.parked);
-                this.store('portfolio-lift-parked', this.parked ? '1' : null);
-                return this.update();
-            }
-            s.scrollBy({ top: (act === 'up' ? -1 : 1) * s.clientHeight * 0.85, behavior: ccReduced.matches ? 'auto' : 'smooth' });
+            if (btn.dataset.lift === 'hide') return hide(true);
+            this.scroller?.scrollBy({ top: (btn.dataset.lift === 'up' ? -1 : 1) * this.scroller.clientHeight * 0.85, behavior: ccReduced.matches ? 'auto' : 'smooth' });
         }));
 
         // Drag the basket to scroll
@@ -342,19 +347,20 @@ const caricatureLift = {
             this.car.setPointerCapture(e.pointerId);
             const grab = e.clientY - this.y;
             const move = (ev) => {
+                if (!(ev.buttons & 1)) return up(); // released somewhere we didn't hear about
                 const [top, bottom] = this.track();
                 const max = this.scroller.scrollHeight - this.scroller.clientHeight;
                 this.scroller.scrollTop = Math.min(1, Math.max(0, (ev.clientY - grab - top) / (bottom - top))) * max;
             };
             const up = () => {
                 this.car.removeEventListener('pointermove', move);
+                this.car.removeEventListener('lostpointercapture', up);
                 this.el.classList.remove('is-dragging');
             };
             this.hideHint();
             this.el.classList.add('is-dragging');
             this.car.addEventListener('pointermove', move);
-            this.car.addEventListener('pointerup', up, { once: true });
-            this.car.addEventListener('pointercancel', up, { once: true });
+            this.car.addEventListener('lostpointercapture', up);
         });
 
         // Themes swap content (book chapters, Sci-Fi screens, terminal output), so look again after changes
@@ -366,30 +372,12 @@ const caricatureLift = {
         document.getElementById('themeChooser')?.addEventListener('close', () => this.settle());
     },
 
-    // Where the basket can travel: under the winch down to just above the theme switcher (parked: right under the winch)
+    // Where the basket can travel: under the winch down to just above the theme switcher
     track() {
         const dock = document.getElementById('themeDock')?.getBoundingClientRect();
         const floor = (dock ? dock.top : innerHeight) - 14 - this.car.offsetHeight;
-        const top = this.mountY + this.el.querySelector('.lift-machine').getBoundingClientRect().height + 4;
+        const top = this.el.querySelector('.lift-machine').getBoundingClientRect().height + 4;
         return [top, Math.max(top + 40, floor)];
-    },
-
-    // Bolt the winch under the theme's top bars (toolbar, title bar, tabs) at the right edge, so it hides none of them
-    mount() {
-        const root = document.getElementById('themeContainer');
-        const x = innerWidth - 60;
-        let y = 0;
-        for (let i = 0; i < 4; i++) {
-            const bar = document.elementsFromPoint(x, y + 4).find(el => {
-                if (!root.contains(el) || el === root) return false;
-                const r = el.getBoundingClientRect();
-                return r.top >= y - 2 && r.top <= y + 6 && r.height >= 20 && r.height <= 120 && r.width >= innerWidth * 0.3;
-            });
-            if (!bar || bar.getBoundingClientRect().bottom > 200) break;
-            y = Math.round(bar.getBoundingClientRect().bottom);
-        }
-        this.mountY = y;
-        this.el.style.setProperty('--mount', `${y}px`);
     },
 
     // First time the lift shows in this browser: say how it works (hovering the winch shows it again)
@@ -467,9 +455,9 @@ const caricatureLift = {
         const s = this.scroller;
         if (!s) return;
         const max = s.scrollHeight - s.clientHeight;
-        this.mount(); // top bars can still be sliding in during a theme's opening
         // A scroll indicator: one-screen pages have nothing to show, so the lift stays away
-        this.el.classList.toggle('is-on', max > 24);
+        // Contact Card is a single card with its own scroll; it doesn't get a lift
+        this.el.classList.toggle('is-on', max > 24 && !LIFT_SKIP.includes(document.documentElement.dataset.theme));
         if (max > 24 && !document.getElementById('themeChooser')?.open) this.showHint();
         // The soul rides only once the visitor has scrolled past the caricature, or in themes and pages without one;
         // a caricature still further down keeps its soul, and the basket travels empty
@@ -479,7 +467,7 @@ const caricatureLift = {
         const inBasket = !present || a.bottom < Math.max(0, view) + 8;
         const [top, bottom] = this.track();
         const progress = max > 0 ? Math.min(1, s.scrollTop / max) : 0;
-        this.target = this.parked ? top : top + progress * (bottom - top);
+        this.target = top + progress * (bottom - top);
         const pct = `${Math.round(progress * 100)}%`;
         if (this.readout.textContent !== pct) this.readout.textContent = pct;
         if (this.inBasket === null) this.y = this.target; // first paint: no travel

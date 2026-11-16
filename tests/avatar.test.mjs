@@ -9,7 +9,7 @@ mkdirSync(shots, { recursive: true });
 const scroller = `(() => { let el = document.querySelector('#themeContainer svg.cc'); while ((el = el.parentElement)) { const o = getComputedStyle(el).overflowY; if (/(auto|scroll)/.test(o) && el.scrollHeight > el.clientHeight) return el; } return document.scrollingElement; })()`;
 const lift = b => b.evaluate(`JSON.stringify((l => l && { on: l.classList.contains('is-on'), soul: l.classList.contains('has-soul'), y: parseFloat(l.style.getPropertyValue('--y')), spin: l.style.getPropertyValue('--spin') })(document.querySelector('.lift')))`).then(JSON.parse);
 
-for (const theme of ['apple', 'paper', 'book', 'notebook', 'scifi', 'terminal']) {
+for (const theme of ['paper', 'book', 'notebook', 'scifi', 'terminal']) {
     const b = await openTheme(theme, { width: 1280, height: 720 });
     await b.evaluate(`document.dispatchEvent(new KeyboardEvent('keydown'))`); // finish the opening
     await sleep(theme === 'terminal' || theme === 'notebook' ? 6000 : 3500);
@@ -71,21 +71,36 @@ for (const theme of ['chatgpt', 'modelcard', 'vscode']) {
     b.close();
 }
 
-// Controls: the winch hangs under the theme's top bar; ▼ scrolls a screen; park lifts the basket out of the way
+// Controls: the winch sits at the very top; ▼ scrolls a screen; ✕ hides the lift and the tab brings it back
 {
     const b = await openTheme('paper', { width: 1280, height: 720 });
     await sleep(800);
-    const bar = await b.evaluate(`document.querySelector('.lift-machine').getBoundingClientRect().top`);
-    assert.ok(bar >= 30, 'paper: winch mounts below the toolbar, not over its buttons');
+    assert.equal(await b.evaluate(`document.querySelector('.lift-machine').getBoundingClientRect().top`), 0, 'paper: winch is fixed to the very top');
     const before = await b.evaluate(`caricatureLift.scroller.scrollTop`);
     await b.evaluate(`document.querySelector('[data-lift="down"]').dispatchEvent(new MouseEvent('click'))`); await sleep(900);
     assert.ok(await b.evaluate(`caricatureLift.scroller.scrollTop`) > before + 300, 'paper: ▼ scrolls about a screen');
     assert.match(await b.evaluate(`document.querySelector('.lift-readout').textContent`), /^[1-9][0-9]?%$/, 'paper: readout shows how far down');
-    await b.evaluate(`document.querySelector('[data-lift="park"]').dispatchEvent(new MouseEvent('click'))`); await sleep(900);
-    const parked = await lift(b);
-    assert.ok(parked.y < 200, 'paper: park hoists the basket up to the winch');
-    assert.equal(await b.evaluate(`localStorage.getItem('portfolio-lift-parked')`), '1', 'paper: parking is remembered');
-    await b.shot(`${shots}/avatar-lift-parked.png`);
+    // Hovering the basket without a button down must not scroll (a drag that ended elsewhere)
+    const r = JSON.parse(await b.evaluate(`JSON.stringify(document.querySelector('.lift-car').getBoundingClientRect())`));
+    const at = await b.evaluate(`caricatureLift.scroller.scrollTop`);
+    await b.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x + 30, y: r.y + 40, button: 'left', clickCount: 1 });
+    await b.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x + 30, y: r.y + 40, button: 'left', clickCount: 1 });
+    for (let k = 0; k < 5; k++) await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r.x + 30, y: r.y + 40 + k * 40 });
+    await sleep(300);
+    assert.equal(await b.evaluate(`caricatureLift.scroller.scrollTop`), at, 'paper: no scrolling after the drag ends');
+    await b.evaluate(`document.querySelector('[data-lift="hide"]').dispatchEvent(new MouseEvent('click'))`); await sleep(500);
+    assert.ok(await b.evaluate(`document.querySelector('.lift').classList.contains('is-hidden') && localStorage.getItem('portfolio-lift-hidden') === '1'`), 'paper: ✕ hides the lift, remembered');
+    await b.shot(`${shots}/avatar-lift-hidden.png`);
+    await b.evaluate(`document.querySelector('.lift-recall').click()`); await sleep(500);
+    assert.ok(await b.evaluate(`!document.querySelector('.lift').classList.contains('is-hidden') && localStorage.getItem('portfolio-lift-hidden') === null`), 'paper: the tab brings it back');
+    b.close();
+}
+// Contact Card never gets the lift
+{
+    const b = await openTheme('apple', { width: 800, height: 600 });
+    await sleep(800);
+    await b.evaluate(`(s => s.scrollTop = s.scrollHeight)(caricatureLift.scroller)`); await sleep(800);
+    assert.equal((await lift(b)).on, false, 'apple: no lift');
     b.close();
 }
 

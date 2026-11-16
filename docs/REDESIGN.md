@@ -802,9 +802,15 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - *Notebook:* the selected-cell bar is 2px.
   - *Every theme opens at the top:* `history.scrollRestoration = 'manual'` and a scroll to the top on every theme load.
 - **Round 4 (owner feedback):**
-  - *Solid baskets:* every basket is opaque (Paper and Book use a cream paper boat with an accent edge; Contact Card a solid white gondola).
-  - *Position:* the rope hangs 36px from the window edge, and the winch mounts below the theme's top bars (toolbar, title bar, tabs) so it covers none of their buttons. It re-measures while theme openings play.
-  - *Controls on the winch:* a readout (scroll %), ▲ and ▼ (one screen), and ⏏ to park the basket up by the winch (remembered per browser). Dragging the basket still scrolls. A hint explains the controls the first time the lift appears (once per browser) and again whenever the winch is hovered.
+  - *Solid baskets:* every basket is opaque (Paper and Book use a cream paper boat with an accent edge).
+  - *Position:* the rope hangs 36px from the window edge.
+  - *Controls on the winch:* a readout (scroll %) and ▲ / ▼ (one screen). Dragging the basket still scrolls. A hint explains the controls the first time the lift appears (once per browser) and again whenever the winch is hovered.
+- **Round 5 (owner feedback):**
+  - *Winch:* fixed to the very top of the window. Mounting it under the top bars made it drift when bars hid on scroll (mdBook's menu bar), which moved the basket by itself.
+  - *Drag:* ends on lost pointer capture and whenever no button is down, so the basket can't keep scrolling after a missed mouse-up.
+  - *Park replaced by hide:* ✕ hides the lift, and a small tab at the top brings it back (remembered per browser).
+  - *Contact Card:* no lift (`LIFT_SKIP`).
+  - *Head turn:* following the pointer, the face features slide further than the head outline and the head tilts up to 7°, so it reads as turning rather than glancing.
 
 ## Shared backlog (shell / cross-theme)
 
