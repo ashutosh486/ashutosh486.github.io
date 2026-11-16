@@ -81,6 +81,15 @@ assert.equal(await ask(b, 'your resume'), 'Sure, here it is.', 'half-arrived tag
 await reply('Sure, here it is.\n{{card:resume}}');
 await ask(b, 'your resume again');
 assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-body')].at(-1).querySelector('.cg-card a[download]')?.getAttribute('href')`), await b.evaluate('portfolioContent.resume'), 'résumé card has the download');
+// {{ask:…}} follow-ups: up to three buttons, escaped; a tap asks it; only the latest answer keeps them
+await reply('Four years at NielsenIQ.\n{{ask:What did you build there?}}\n{{ask:<img src=x onerror=window.__xss2=1>}}\n{{ask:Why hire you?}}\n{{ask:A fourth one}}');
+assert.equal(await ask(b, 'how long at NielsenIQ?'), 'Four years at NielsenIQ.\n\nWhat did you build there?\n<img src=x onerror=window.__xss2=1>\nWhy hire you?', 'three follow-ups, tags hidden');
+assert.equal(await b.evaluate(`document.querySelectorAll('#cgThread .cg-asks img').length + (window.__xss2 || 0)`), 0, 'follow-up text escaped');
+await b.shot(`${out}-13-followups.png`);
+await reply('Mostly automation platforms.');
+await b.evaluate(`[...document.querySelectorAll('[data-ask]')].at(-3).click()`); await sleep(1600);
+assert.equal(await b.evaluate(`[...document.querySelectorAll('#cgThread > .justify-end')].at(-1).innerText`), 'What did you build there?', 'tap asks the follow-up');
+assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-asks')].filter(el => el.offsetParent).length`), 0, 'older follow-ups hidden');
 await b.evaluate(`window.fetch = () => Promise.resolve(new Response('', { status: 502 }))`);
 assert.ok((await ask(b, 'can I download your CV?')).includes('Download'), 'API down -> keyword answer');
 // switching theme mid-reply must not throw
