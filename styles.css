@@ -1749,6 +1749,9 @@ button.shell-ui {
     --cc-lamp-light: #ffe9a8;
     --cc-bubble: #ffffff;
     --cc-bubble-ink: #241e1b;
+    --cc-chair: #2b2f36;
+    --cc-chair-shade: #1c1f24;
+    --cc-chair-accent: #e5484d;
     display: block;
     overflow: visible;
 }
@@ -1910,6 +1913,12 @@ button.shell-ui {
 }
 
 /* ---------- Caricature moments (js/caricature.js adds the cc--* classes) ---------- */
+/* Gaming chair behind him: racing backrest, side wings, two stripes (not in the lift's head-only soul) */
+.cc-chair-back { fill: var(--cc-chair); }
+.cc-chair-panel { fill: var(--cc-chair-shade); }
+.cc-chair-wing { fill: var(--cc-chair-accent); opacity: 0.85; }
+.cc-chair-stripe { stroke: var(--cc-chair-accent); }
+.cc--soul .cc-chair { display: none; }
 .cc-lamp-metal { fill: var(--cc-lamp); }
 .cc-lamp-arm { stroke: var(--cc-lamp); }
 .cc-lamp-light { fill: var(--cc-lamp-light); opacity: 0.2; }
@@ -5632,6 +5641,9 @@ html:has(#sfRoot) { scrollbar-color: var(--line, rgba(255, 176, 0, 0.28)) transp
     --cc-lamp-light: #ffb000;
     --cc-bubble: #1a1000;
     --cc-bubble-ink: #ffb000;
+    --cc-chair: #3a2600;
+    --cc-chair-shade: #241800;
+    --cc-chair-accent: #ffb000;
     width: 100%;
     filter: drop-shadow(0 0 6px rgba(255, 150, 0, 0.3));
 }

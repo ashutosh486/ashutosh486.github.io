@@ -35,6 +35,12 @@ function caricatureSVG(label = '', { head = false } = {}) {
     <defs>
         <clipPath id="${id}-eyes">${eye(106)}${eye(134)}</clipPath>
     </defs>
+    <g class="cc-chair">
+        <path class="cc-chair-back" d="M60 182V72C60 54 55 40 57 26 59 11 70 3 85 3h70c15 0 26 8 28 23 2 14-3 28-3 46v110Z"/>
+        <path class="cc-chair-panel" d="M72 182V74c0-16-3-28-2-42 1-12 9-19 21-19h58c12 0 20 7 21 19 1 14-2 26-2 42v108Z"/>
+        <path class="cc-chair-stripe" d="M94 13v169M146 13v169" fill="none" stroke-width="5"/>
+        <path class="cc-chair-wing" d="M57 26c-4 18 3 36 3 50l12-2c0-16-3-28-2-42Zm126 0c4 18-3 36-3 50l-12-2c0-16 3-28 2-42Z"/>
+    </g>
     <g class="cc-lamp">
         <path class="cc-lamp-light" d="M44 132 62 136 104 178H36Z"/>
         <ellipse class="cc-lamp-metal" cx="24" cy="177" rx="12" ry="3"/>
