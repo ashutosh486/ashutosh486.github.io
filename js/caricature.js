@@ -275,6 +275,7 @@ const caricatureLift = {
     avatar: null,
     scroller: null,
     inBasket: null,
+    mountY: 0,
     y: 64, // basket position, eased toward target with a spring so it settles with a small bounce
     v: 0,
     target: 64,
@@ -286,22 +287,26 @@ const caricatureLift = {
         this.el.setAttribute('aria-hidden', 'true'); // a second scrollbar; keyboard and screen readers keep the real one
         // Winch bolted to the top edge: plate, housing with vents and a status light, a gear driving the rope drum
         this.el.innerHTML = `
-            <svg class="lift-machine" viewBox="0 0 96 58" width="96" height="58">
-                <rect class="lift-steel" x="4" y="-3" width="88" height="9" rx="2"/>
-                <circle class="lift-bolt" cx="12" cy="2" r="1.6"/><circle class="lift-bolt" cx="84" cy="2" r="1.6"/>
-                <rect class="lift-steel" x="56" y="5" width="8" height="10"/>
-                <rect class="lift-steel" x="24" y="25.5" width="22" height="5" rx="2"/>
-                <rect class="lift-housing" x="40" y="14" width="50" height="30" rx="5"/>
-                <path class="lift-vent" d="M64 22h18M64 27h18M64 32h18"/>
-                <circle class="lift-led" cx="49" cy="22" r="2.4"/>
-                <g class="lift-gear"><circle class="lift-gear-teeth" cx="41" cy="43" r="6.5"/><circle class="lift-steel" cx="41" cy="43" r="4.2"/><circle class="lift-bolt" cx="41" cy="43" r="1.3"/></g>
+            <svg class="lift-machine" viewBox="0 0 64 88">
+                <rect class="lift-steel" x="0" y="-3" width="64" height="8" rx="2"/>
+                <circle class="lift-bolt" cx="6" cy="1.5" r="1.4"/><circle class="lift-bolt" cx="58" cy="1.5" r="1.4"/>
+                <rect class="lift-steel" x="14" y="4" width="8" height="6"/>
+                <rect class="lift-steel" x="32" y="21.5" width="20" height="5" rx="2"/>
+                <rect class="lift-housing" x="2" y="8" width="32" height="78" rx="4"/>
+                <rect class="lift-screen" x="5" y="11" width="26" height="13" rx="2"/>
+                <text class="lift-readout" x="18" y="20.5" text-anchor="middle">0%</text>
+                <g class="lift-btn" data-lift="up"><rect x="5" y="27" width="26" height="17" rx="3"/><path d="M13 38.5l5-6 5 6"/></g>
+                <g class="lift-btn" data-lift="down"><rect x="5" y="47" width="26" height="17" rx="3"/><path d="M13 52.5l5 6 5-6"/></g>
+                <g class="lift-btn" data-lift="park"><rect x="5" y="67" width="26" height="16" rx="3"/><path d="M13 76l5-5 5 5Z"/><path d="M13 79h10"/></g>
+                <g class="lift-gear"><circle class="lift-gear-teeth" cx="44" cy="40" r="6"/><circle class="lift-steel" cx="44" cy="40" r="3.8"/><circle class="lift-bolt" cx="44" cy="40" r="1.2"/></g>
                 <g class="lift-drum">
-                    <circle class="lift-flange" cx="26" cy="28" r="12"/>
-                    <circle class="lift-coil" cx="26" cy="28" r="8.5"/>
-                    <path class="lift-spoke" d="M26 19.5v17M17.5 28h17"/>
-                    <circle class="lift-bolt" cx="26" cy="28" r="2.4"/>
+                    <circle class="lift-flange" cx="50" cy="24" r="11"/>
+                    <circle class="lift-coil" cx="50" cy="24" r="7.8"/>
+                    <path class="lift-spoke" d="M50 16.2v15.6M42.2 24h15.6"/>
+                    <circle class="lift-bolt" cx="50" cy="24" r="2.2"/>
                 </g>
             </svg>
+            <div class="lift-hint" role="presentation">Drag the basket to scroll<br>▲ ▼ one screen · ⏏ park it</div>
             <div class="lift-rope"></div>
             <div class="lift-car">
                 <div class="lift-hanger"></div>
@@ -311,6 +316,24 @@ const caricatureLift = {
         document.body.append(this.el);
         this.car = this.el.querySelector('.lift-car');
         this.soul = this.el.querySelector('.lift-soul');
+        this.readout = this.el.querySelector('.lift-readout');
+        this.parked = this.stored('portfolio-lift-parked') === '1';
+        this.el.classList.toggle('is-parked', this.parked);
+
+        // Control panel: a screen up or down, or park the basket up by the winch (out of the way of the page)
+        this.el.querySelectorAll('[data-lift]').forEach(btn => btn.addEventListener('click', () => {
+            this.hideHint();
+            const s = this.scroller;
+            if (!s) return;
+            const act = btn.dataset.lift;
+            if (act === 'park') {
+                this.parked = !this.parked;
+                this.el.classList.toggle('is-parked', this.parked);
+                this.store('portfolio-lift-parked', this.parked ? '1' : null);
+                return this.update();
+            }
+            s.scrollBy({ top: (act === 'up' ? -1 : 1) * s.clientHeight * 0.85, behavior: ccReduced.matches ? 'auto' : 'smooth' });
+        }));
 
         // Drag the basket to scroll
         this.car.addEventListener('pointerdown', (e) => {
@@ -327,6 +350,7 @@ const caricatureLift = {
                 this.car.removeEventListener('pointermove', move);
                 this.el.classList.remove('is-dragging');
             };
+            this.hideHint();
             this.el.classList.add('is-dragging');
             this.car.addEventListener('pointermove', move);
             this.car.addEventListener('pointerup', up, { once: true });
@@ -339,13 +363,57 @@ const caricatureLift = {
         const rescan = () => queued || (queued = requestAnimationFrame(() => { queued = 0; this.scan(); }));
         new MutationObserver(muts => muts.some(m => !m.target.closest?.('svg.cc')) && rescan()).observe(document.getElementById('themeContainer'), { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
         window.addEventListener('resize', rescan);
+        document.getElementById('themeChooser')?.addEventListener('close', () => this.settle());
     },
 
-    // Where the basket can travel: under the winch down to just above the theme switcher
+    // Where the basket can travel: under the winch down to just above the theme switcher (parked: right under the winch)
     track() {
         const dock = document.getElementById('themeDock')?.getBoundingClientRect();
         const floor = (dock ? dock.top : innerHeight) - 14 - this.car.offsetHeight;
-        return [64, Math.max(90, floor)];
+        const top = this.mountY + this.el.querySelector('.lift-machine').getBoundingClientRect().height + 4;
+        return [top, Math.max(top + 40, floor)];
+    },
+
+    // Bolt the winch under the theme's top bars (toolbar, title bar, tabs) at the right edge, so it hides none of them
+    mount() {
+        const root = document.getElementById('themeContainer');
+        const x = innerWidth - 60;
+        let y = 0;
+        for (let i = 0; i < 4; i++) {
+            const bar = document.elementsFromPoint(x, y + 4).find(el => {
+                if (!root.contains(el) || el === root) return false;
+                const r = el.getBoundingClientRect();
+                return r.top >= y - 2 && r.top <= y + 6 && r.height >= 20 && r.height <= 120 && r.width >= innerWidth * 0.3;
+            });
+            if (!bar || bar.getBoundingClientRect().bottom > 200) break;
+            y = Math.round(bar.getBoundingClientRect().bottom);
+        }
+        this.mountY = y;
+        this.el.style.setProperty('--mount', `${y}px`);
+    },
+
+    // First time the lift shows in this browser: say how it works (hovering the winch shows it again)
+    showHint() {
+        if (this.hinted || this.stored('portfolio-lift-hint')) return;
+        this.hinted = true;
+        this.el.classList.add('show-hint');
+        this.hintTimer = setTimeout(() => this.hideHint(), 7000);
+    },
+
+    hideHint() {
+        if (!this.el.classList.contains('show-hint')) return;
+        clearTimeout(this.hintTimer);
+        this.el.classList.remove('show-hint');
+        this.store('portfolio-lift-hint', '1');
+    },
+
+    // Per-browser conveniences only; storage can be blocked
+    stored(key) {
+        try { return localStorage.getItem(key); } catch { return null; }
+    },
+
+    store(key, value) {
+        try { value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value); } catch { /* blocked: forget it */ }
     },
 
     // Theme switched: start over with the new theme's caricature (or none) and its scroller
@@ -354,7 +422,14 @@ const caricatureLift = {
         this.avatar = this.scroller = null;
         this.inBasket = null;
         this.el.classList.remove('is-on', 'has-soul');
+        this.settle();
+    },
+
+    // Theme openings slide bars and panels in over a few seconds without touching the DOM, so look again as they play
+    settle() {
+        (this.settling || []).forEach(clearTimeout);
         requestAnimationFrame(() => this.scan());
+        this.settling = [1200, 3500, 6000].map(ms => setTimeout(() => this.scan(), ms));
     },
 
     // The scroller is the panel that scrolls the caricature, else the page if it scrolls, else the biggest scrolling panel
@@ -392,8 +467,10 @@ const caricatureLift = {
         const s = this.scroller;
         if (!s) return;
         const max = s.scrollHeight - s.clientHeight;
+        this.mount(); // top bars can still be sliding in during a theme's opening
         // A scroll indicator: one-screen pages have nothing to show, so the lift stays away
         this.el.classList.toggle('is-on', max > 24);
+        if (max > 24 && !document.getElementById('themeChooser')?.open) this.showHint();
         // The soul rides only once the visitor has scrolled past the caricature, or in themes and pages without one;
         // a caricature still further down keeps its soul, and the basket travels empty
         const view = s === document.scrollingElement ? 0 : s.getBoundingClientRect().top;
@@ -401,7 +478,10 @@ const caricatureLift = {
         const present = !!a && a.width > 0;
         const inBasket = !present || a.bottom < Math.max(0, view) + 8;
         const [top, bottom] = this.track();
-        this.target = top + (max > 0 ? Math.min(1, s.scrollTop / max) : 0) * (bottom - top);
+        const progress = max > 0 ? Math.min(1, s.scrollTop / max) : 0;
+        this.target = this.parked ? top : top + progress * (bottom - top);
+        const pct = `${Math.round(progress * 100)}%`;
+        if (this.readout.textContent !== pct) this.readout.textContent = pct;
         if (this.inBasket === null) this.y = this.target; // first paint: no travel
         this.animate();
         if (inBasket !== this.inBasket) this.hop(inBasket, present ? a : null);

@@ -2159,11 +2159,12 @@ button.shell-ui {
     --lift-led: #22c55e;
     --lift-rope: #9b7a52;
     --lift-glow: rgba(255, 255, 255, 0.5);
+    --mount: 0px;              /* bottom of the theme's top bars; the winch hangs below them */
     position: fixed;
     top: 0;
-    right: 20px;
+    right: 33px;               /* puts the rope 36px from the window edge, so the basket hugs it */
     z-index: 55;
-    width: 96px;
+    width: 70px;
     height: 100%;
     pointer-events: none;
     opacity: 0;
@@ -2177,12 +2178,15 @@ button.shell-ui {
     transition: opacity 0.3s;
 }
 
-/* The winch: bolted to the top edge, it slides down into place when the lift appears */
+/* The winch: bolted under the top bar, it slides down into place when the lift appears */
 .lift-machine {
     position: absolute;
-    top: 0;
+    top: var(--mount);
     left: 0;
+    width: 70.4px;
+    height: 96.8px;
     overflow: visible;
+    pointer-events: auto;
     transform: translateY(-100%);
     transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
@@ -2192,7 +2196,69 @@ button.shell-ui {
     transform: none;
 }
 
-.lift-machine * {
+.lift-screen { fill: #111418; }
+
+.lift-readout {
+    fill: var(--lift-led);
+    stroke: none;
+    font: 700 7px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Control buttons: a screen up, a screen down, park */
+.lift-btn {
+    cursor: var(--cursor-pointer, pointer);
+}
+
+.lift-btn rect {
+    fill: var(--lift-btn, #f3f4f6);
+    transition: fill 0.15s;
+}
+
+.lift-machine .lift-btn path {
+    stroke: var(--lift-icon, #374151);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.lift-btn:hover rect {
+    fill: var(--lift-btn-hover, #ffffff);
+}
+
+.lift-btn:active rect {
+    fill: var(--lift-led);
+}
+
+.lift.is-parked .lift-btn[data-lift="park"] rect {
+    fill: var(--lift-led);
+}
+
+/* How to operate it: shown once per browser when the lift first appears, and whenever the winch is hovered */
+.lift-hint {
+    position: absolute;
+    top: calc(var(--mount) + 14px);
+    right: calc(100% + 8px);
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #111418;
+    color: #f3f4f6;
+    font: 500 12px/1.45 system-ui, sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    translate: 6px 0;
+    transition: opacity 0.2s, translate 0.2s;
+    pointer-events: none;
+}
+
+.lift.show-hint .lift-hint,
+.lift-machine:hover ~ .lift-hint {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.lift-machine :is(rect, circle, path) {
     stroke: var(--lift-line);
     stroke-width: 1.2;
 }
@@ -2222,13 +2288,13 @@ button.shell-ui {
 .lift-drum { transform: rotate(var(--spin)); }
 .lift-gear { transform: rotate(calc(var(--spin) * -2)); }
 
-/* The rope leaves the drum's left edge */
+/* The rope leaves the drum's right edge (drum at 50,24 r11 in the 1.1x winch) */
 .lift-rope {
     position: absolute;
-    top: 28px;
-    left: 13px;
+    top: calc(var(--mount) + 26.4px);
+    left: 66.1px;
     width: 2px;
-    height: max(0px, calc(var(--y) - 28px));
+    height: max(0px, calc(var(--y) - var(--mount) - 26.4px));
     background: var(--lift-rope);
 }
 
@@ -2236,7 +2302,7 @@ button.shell-ui {
 .lift-car {
     position: absolute;
     top: 0;
-    left: -18px;
+    left: 35.1px;
     width: 64px;
     height: 61px;
     translate: 0 var(--y);
@@ -2325,6 +2391,13 @@ button.shell-ui {
 }
 
 /* ---- Per theme ---- */
+html[data-theme="chatgpt"] .lift,
+html[data-theme="vscode"] .lift {
+    --lift-btn: #2b2e33;
+    --lift-btn-hover: #3a3e44;
+    --lift-icon: #e5e7eb;
+}
+
 html[data-theme="chatgpt"] .lift {
     --lift-metal: #5b616b;
     --lift-line: #1c1f23;
@@ -2365,11 +2438,10 @@ html[data-theme="apple"] .lift {
 }
 
 html[data-theme="apple"] .lift-basket {
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 10px 10px 18px 18px;
-    background: rgba(255, 255, 255, 0.22);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-    backdrop-filter: blur(12px) saturate(1.6);
+    background: linear-gradient(#ffffff, #e5e5ea);
+    box-shadow: inset 0 2px 0 #ffffff, 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 /* Paper and Book: a ribbon off a spool, carrying a paper boat */
@@ -2391,32 +2463,38 @@ html[data-theme="book"] .lift {
 }
 
 html:is([data-theme="paper"], [data-theme="book"]) .lift-rope {
-    left: 11.5px;
+    left: 64.6px;
     width: 5px;
 }
 
+/* A folded paper boat: cream paper, a crease, and an edge in the theme colour */
 html:is([data-theme="paper"], [data-theme="book"]) .lift-basket {
-    border-radius: 0;
-    background: linear-gradient(#ffffff 0 55%, #e6e6e6 55%);
-    box-shadow: none;
-    clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
+    border: 1.5px solid var(--lift-accent);
+    border-radius: 3px 3px 18px 18px;
+    background: linear-gradient(#fffdf6 0 55%, #ece6d6 55%);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* Sci-Fi and Terminal: line art in the screen's one colour, glowing like the phosphor */
 html[data-theme="scifi"] .lift {
     --lift-ink: #ffb000;
+    --lift-bg: #0b0700;
     --lift-glow: rgba(255, 176, 0, 0.6);
 }
 
 html[data-theme="terminal"] .lift {
     --lift-ink: #4ade80;
+    --lift-bg: #0c0c0c;
     --lift-glow: rgba(74, 222, 128, 0.55);
 }
 
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift {
-    --lift-metal: rgba(0, 0, 0, 0.6);
+    --lift-metal: var(--lift-bg);
     --lift-line: var(--lift-ink);
-    --lift-accent: rgba(0, 0, 0, 0.6);
+    --lift-accent: var(--lift-bg);
+    --lift-btn: var(--lift-bg);
+    --lift-btn-hover: #1c1c1c;
+    --lift-icon: var(--lift-ink);
     --lift-led: var(--lift-ink);
     --lift-rope: var(--lift-ink);
 }
@@ -2434,6 +2512,14 @@ html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-gear-teeth {
     stroke: var(--lift-ink);
 }
 
+html:is([data-theme="scifi"], [data-theme="terminal"]) :is(.lift-screen, .lift-hint) {
+    border: 1px solid var(--lift-ink);
+    background: var(--lift-bg);
+    color: var(--lift-ink);
+    fill: var(--lift-bg);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-rope,
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hanger::before,
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hanger::after {
@@ -2443,7 +2529,7 @@ html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hanger::after {
 
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-basket {
     border: 1.5px solid var(--lift-ink);
-    background: repeating-linear-gradient(90deg, var(--lift-ink) 0 1.5px, transparent 1.5px 8px) rgba(0, 0, 0, 0.55);
+    background: repeating-linear-gradient(90deg, var(--lift-ink) 0 1.5px, transparent 1.5px 8px) var(--lift-bg);
     box-shadow: 0 0 8px var(--lift-glow);
 }
 
@@ -2452,7 +2538,7 @@ html[data-theme="scifi"] .lift-basket {
 }
 
 html[data-theme="terminal"] .lift-basket {
-    background: repeating-linear-gradient(0deg, transparent 0 6px, var(--lift-ink) 6px 7px) rgba(0, 0, 0, 0.55);
+    background: repeating-linear-gradient(0deg, transparent 0 6px, var(--lift-ink) 6px 7px) var(--lift-bg);
 }
 
 /* Terminal theme: each OS gets its own terminal's palette and font (ANSI colours, like the real thing) */

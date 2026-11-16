@@ -71,6 +71,24 @@ for (const theme of ['chatgpt', 'modelcard', 'vscode']) {
     b.close();
 }
 
+// Controls: the winch hangs under the theme's top bar; ▼ scrolls a screen; park lifts the basket out of the way
+{
+    const b = await openTheme('paper', { width: 1280, height: 720 });
+    await sleep(800);
+    const bar = await b.evaluate(`document.querySelector('.lift-machine').getBoundingClientRect().top`);
+    assert.ok(bar >= 30, 'paper: winch mounts below the toolbar, not over its buttons');
+    const before = await b.evaluate(`caricatureLift.scroller.scrollTop`);
+    await b.evaluate(`document.querySelector('[data-lift="down"]').dispatchEvent(new MouseEvent('click'))`); await sleep(900);
+    assert.ok(await b.evaluate(`caricatureLift.scroller.scrollTop`) > before + 300, 'paper: ▼ scrolls about a screen');
+    assert.match(await b.evaluate(`document.querySelector('.lift-readout').textContent`), /^[1-9][0-9]?%$/, 'paper: readout shows how far down');
+    await b.evaluate(`document.querySelector('[data-lift="park"]').dispatchEvent(new MouseEvent('click'))`); await sleep(900);
+    const parked = await lift(b);
+    assert.ok(parked.y < 200, 'paper: park hoists the basket up to the winch');
+    assert.equal(await b.evaluate(`localStorage.getItem('portfolio-lift-parked')`), '1', 'paper: parking is remembered');
+    await b.shot(`${shots}/avatar-lift-parked.png`);
+    b.close();
+}
+
 // Moments: idle sleep and waking, wave on click, dizzy on a shake, confetti on a résumé download
 const b = await openTheme('apple', { width: 1280, height: 720 });
 await sleep(3000);

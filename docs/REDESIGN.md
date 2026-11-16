@@ -801,6 +801,10 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
     - Looking up is limited so the pupils stay under the lids.
   - *Notebook:* the selected-cell bar is 2px.
   - *Every theme opens at the top:* `history.scrollRestoration = 'manual'` and a scroll to the top on every theme load.
+- **Round 4 (owner feedback):**
+  - *Solid baskets:* every basket is opaque (Paper and Book use a cream paper boat with an accent edge; Contact Card a solid white gondola).
+  - *Position:* the rope hangs 36px from the window edge, and the winch mounts below the theme's top bars (toolbar, title bar, tabs) so it covers none of their buttons. It re-measures while theme openings play.
+  - *Controls on the winch:* a readout (scroll %), ▲ and ▼ (one screen), and ⏏ to park the basket up by the winch (remembered per browser). Dragging the basket still scrolls. A hint explains the controls the first time the lift appears (once per browser) and again whenever the winch is hovered.
 
 ## Shared backlog (shell / cross-theme)
 
