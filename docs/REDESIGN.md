@@ -269,6 +269,7 @@ Checked with `tests/chatgpt.test.mjs`:
 - **Round 4d:** chats are saved when Upstash Redis is connected to the Vercel project (one list per conversation, `chat:<start time>-<random>`, kept 180 days, footer says so). A Voice section in the prompt cuts chatbot phrasing. JS, CSS and HTML are now sent `no-cache` with a one-time `?v=` on index.html, because LiteSpeed's 7-day default kept returning visitors on old code (raw `{{card:…}}` tags showed).
 - **Round 4e:** each AI answer ends with two or three `{{ask:…}}` follow-up questions, shown as buttons under the latest answer only; a tap asks it.
 - **Round 4f:** the sidebar lists the visitor's own past AI chats under Chats (localStorage `cgChats`, last 20, this browser only); a click restores the thread and the conversation carries on. The server copy in Upstash is for the owner and never shown on the page.
+- **Round 4g:** the model names each chat in its first answer (`{{title:…}}`, hidden on the page) and the sidebar uses that title, falling back to the first question.
 
 ### Model Card (`theme/modelcard`): rebuilt from scratch
 
