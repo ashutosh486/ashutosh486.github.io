@@ -315,8 +315,10 @@ const ChatGPTTheme = {
         try { return JSON.parse(localStorage.getItem('cgChats')) || []; } catch { return []; }
     },
     keepChat() {
-        const chats = this.chats().filter(chat => chat.id !== this.chatId);
-        chats.unshift({ id: this.chatId, title: this.history[0].content.slice(0, 80), messages: this.history });
+        const old = this.chats().find(chat => chat.id === this.chatId), chats = this.chats().filter(chat => chat.id !== this.chatId);
+        // The model names the chat in its first answer ({{title:…}}); without one, the first question is the title
+        const named = this.history[1]?.content.match(/\{\{\s*title:\s*([^}]{1,60}?)\s*\}\}/)?.[1];
+        chats.unshift({ id: this.chatId, title: old?.title || named || this.history[0].content.slice(0, 80), messages: this.history });
         try { localStorage.setItem('cgChats', JSON.stringify(chats.slice(0, 20))); } catch { /* private mode or full: just not listed */ }
         this.renderChats();
     },
@@ -421,7 +423,7 @@ const ChatGPTTheme = {
             const tags = [...line.matchAll(/\{\{\s*card:(\w+)\s*\}\}/g)].map(m => m[1]);
             // {{ask:…}} are follow-up questions, shown as buttons under the answer
             for (const [, q] of line.matchAll(/\{\{\s*ask:\s*([^}]+?)\s*\}\}/g)) if (asks.size < 3 && q.length <= 120) asks.add(q);
-            line = line.replace(/\{\{\s*(card|ask):[^}]*\}\}/g, '').replace(/\{\{[^}]*$/, '');
+            line = line.replace(/\{\{\s*(card|ask|title):[^}]*\}\}/g, '').replace(/\{\{[^}]*$/, '');
             const row = line.match(/^\s*\|(.*)\|\s*$/), item = line.match(/^\s*([-*•]|\d+[.)])\s+(.*)/), head = line.match(/^\s*#{1,6}\s+(.*)/);
             const kind = row ? 'table' : item ? (/\d/.test(item[1]) ? 'ol' : 'ul') : null, last = blocks.at(-1);
             if (kind) {

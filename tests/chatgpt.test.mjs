@@ -71,7 +71,7 @@ assert.ok(await b.evaluate(`document.activeElement.id === 'cgInput' && /job desc
 await b.shot(`${out}-11-fit.png`);
 // {{card:x}} tags become the topic's own card (known topics only, each once); a tag still arriving is hidden
 const reply = (text, close = true) => b.evaluate(`window.fetch = () => Promise.resolve(new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(${JSON.stringify(text)})); ${close ? 'c.close();' : ''} } })))`);
-await reply("Here's how to reach me.\n{{card:contact}}\n{{card:contact}} {{card:bogus}} {{card:help}} {{card:toString}}");
+await reply("{{title:Contact Details}}\nHere's how to reach me.\n{{card:contact}}\n{{card:contact}} {{card:bogus}} {{card:help}} {{card:toString}}");
 const cardText = await ask(b, 'how can I contact you?');
 assert.ok(!cardText.includes('{{'), 'card tags never show as text');
 assert.equal(await b.evaluate(`(el => el.querySelectorAll('.cg-card').length + ':' + !!el.querySelector('.cg-card [data-copy]'))([...document.querySelectorAll('.cg-body')].at(-1))`), '1:true', 'one contact card, with its copy button');
@@ -92,7 +92,7 @@ assert.equal(await b.evaluate(`[...document.querySelectorAll('#cgThread > .justi
 assert.equal(await b.evaluate(`[...document.querySelectorAll('.cg-asks')].filter(el => el.offsetParent).length`), 0, 'older follow-ups hidden');
 // Past chats: listed in the sidebar (this browser only), newest first; a click restores it and the chat carries on
 const titles = () => b.evaluate(`[...document.querySelectorAll('#cgChats [data-chat]')].map(el => el.innerText.trim())`);
-assert.deepEqual(await titles(), ['how can I contact you?', 'do you know python?'], 'chats listed, newest first');
+assert.deepEqual(await titles(), ['Contact Details', 'do you know python?'], 'chats listed newest first; model title, else the question');
 assert.ok(await b.evaluate(`document.querySelector('#cgChats [data-chat]').getAttribute('aria-current') === 'true'`), 'current chat highlighted');
 await b.evaluate(`document.getElementById('cgNewChat').click()`);
 assert.equal(await b.evaluate(`document.querySelectorAll('#cgChats [aria-current]').length`), 0, 'new chat: nothing highlighted');
