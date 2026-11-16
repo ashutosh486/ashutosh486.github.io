@@ -1773,13 +1773,14 @@ button.shell-ui {
 .cc-blush { fill: var(--cc-blush); opacity: 0.3; }
 .cc-laptop { fill: var(--cc-laptop); }
 .cc-laptop-shade { fill: var(--cc-laptop-shade); }
-.cc-logo { stroke: var(--cc-laptop-shade); }
+.cc-logo { fill: var(--cc-laptop-shade); opacity: 0.75; }
+.cc-laptop-sheen { fill: #ffffff; opacity: 0.4; }
+.cc-laptop-notch { fill: rgba(0, 0, 0, 0.18); }
 .cc-desk { fill: var(--cc-desk); }
 .cc-contact { fill: rgba(0, 0, 0, 0.3); }
 .cc-mug { fill: var(--cc-mug); }
 .cc-mug-handle { stroke: var(--cc-mug); }
 .cc-steam { stroke: var(--cc-steam); }
-.cc-sticker-a { fill: var(--cc-code); }
 .cc-sticker-b { fill: var(--cc-sticker); }
 .cc-code { fill: var(--cc-code); opacity: 0; }
 
@@ -1917,14 +1918,14 @@ button.shell-ui {
 .cc-m-yawn { fill: var(--cc-mouth); stroke: none; }
 .cc-arm { stroke: var(--cc-shirt); }
 .cc-arm-shade { stroke: var(--cc-shirt-shade); }
-.cc-shoulder { fill: var(--cc-shirt); } /* blends the arm into the shirt */
+.cc-elbow { fill: var(--cc-shirt); } /* hides the seam where forearm meets upper arm */
 .cc-knuckle { stroke: var(--cc-skin-shade); }
 .cc-puff { stroke: var(--cc-steam); }
 .cc-hi-bubble { fill: var(--cc-bubble); stroke: var(--cc-bubble-ink); }
 .cc-hi-text { fill: var(--cc-bubble-ink); }
 
 /* Props wait off stage */
-.cc-bug { opacity: 0; transform: translate(176px, 119.4px); }
+.cc-bug { opacity: 0; transform: translate(176px, 111.4px); }
 .cc-lamp,
 .cc-bit,
 .cc-zzz,
@@ -1945,10 +1946,7 @@ button.shell-ui {
     transform-origin: 90% 100%;
 }
 
-/* "Hi!" in a speech bubble: on hover, or for a moment after a tap */
-@media (hover: hover) {
-    .cc:not(.cc--soul, .cc--asleep):hover .cc-hi { opacity: 1; transform: none; }
-}
+/* "Hi!" in a speech bubble for a moment after a click or tap */
 .cc--hi .cc-hi { opacity: 1; transform: none; }
 
 /* Night (visitor's clock, 9pm to 6am): the desk lamp is on and the code stops flying */
@@ -2035,10 +2033,10 @@ button.shell-ui {
 }
 
 @keyframes cc-bug-walk {
-    0% { opacity: 0; transform: translate(176px, 119.4px); }
+    0% { opacity: 0; transform: translate(176px, 111.4px); }
     5% { opacity: 1; }
-    50%, 62% { opacity: 1; transform: translate(136px, 119.4px); }
-    72% { transform: translate(170px, 98px); }
+    50%, 62% { opacity: 1; transform: translate(136px, 111.4px); }
+    72% { transform: translate(170px, 92px); }
     82% { opacity: 1; transform: translate(204px, 76px); }
     88%, 100% { opacity: 0; transform: translate(214px, 70px); }
 }
@@ -2152,17 +2150,20 @@ button.shell-ui {
 
 /* ---------- Soul lift (js/caricature.js caricatureLift): a working scroll indicator on the right edge ---------- */
 .lift {
-    --y: 56px;
+    --y: 64px;
     --spin: 0deg;
     --swing: 0deg;
+    --lift-metal: #8b939e;     /* housing and plates */
+    --lift-line: rgba(0, 0, 0, 0.4); /* outlines, vents, spokes */
+    --lift-accent: #4b5563;    /* drum flanges */
+    --lift-led: #22c55e;
     --lift-rope: #9b7a52;
-    --lift-metal: #6b7280;
     --lift-glow: rgba(255, 255, 255, 0.5);
     position: fixed;
     top: 0;
-    right: 26px;
+    right: 20px;
     z-index: 55;
-    width: 72px;
+    width: 96px;
     height: 100%;
     pointer-events: none;
     opacity: 0;
@@ -2176,67 +2177,68 @@ button.shell-ui {
     transition: opacity 0.3s;
 }
 
-/* Ceiling bracket and wheel; the wheel turns as the rope pays out */
-.lift-pulley {
+/* The winch: bolted to the top edge, it slides down into place when the lift appears */
+.lift-machine {
     position: absolute;
     top: 0;
-    left: 50%;
-    width: 34px;
-    height: 44px;
-    margin-left: -17px;
+    left: 0;
+    overflow: visible;
     transform: translateY(-100%);
     transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
 }
 
-.lift.is-on .lift-pulley {
+.lift.is-on .lift-machine {
     transform: none;
 }
 
-.lift-pulley::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 13px;
-    width: 8px;
-    height: 22px;
-    border-radius: 0 0 3px 3px;
-    background: var(--lift-metal);
+.lift-machine * {
+    stroke: var(--lift-line);
+    stroke-width: 1.2;
 }
 
-.lift-wheel {
-    position: absolute;
-    top: 13px;
-    left: 3px;
-    width: 28px;
-    height: 28px;
-    border: 4px solid var(--lift-metal);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle, var(--lift-metal) 0 3px, transparent 3.5px),
-        conic-gradient(from -6deg, var(--lift-metal) 0 12deg, transparent 0 90deg, var(--lift-metal) 0 102deg, transparent 0 180deg,
-            var(--lift-metal) 0 192deg, transparent 0 270deg, var(--lift-metal) 0 282deg, transparent 0);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    transform: rotate(var(--spin));
+.lift-steel,
+.lift-housing { fill: var(--lift-metal); }
+.lift-bolt { fill: var(--lift-line); stroke: none; }
+.lift-vent,
+.lift-spoke { fill: none; stroke-linecap: round; stroke-width: 1.6; }
+.lift-led { fill: var(--lift-led); stroke: none; }
+.lift-flange { fill: var(--lift-accent); }
+.lift-coil { fill: var(--lift-rope); }
+
+.lift-gear-teeth {
+    fill: none;
+    stroke: var(--lift-metal);
+    stroke-width: 3.2;
+    stroke-dasharray: 2.55 2.55;
 }
 
+.lift-drum,
+.lift-gear {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.lift-drum { transform: rotate(var(--spin)); }
+.lift-gear { transform: rotate(calc(var(--spin) * -2)); }
+
+/* The rope leaves the drum's left edge */
 .lift-rope {
     position: absolute;
-    top: 38px;
-    left: 50%;
+    top: 28px;
+    left: 13px;
     width: 2px;
-    height: max(0px, calc(var(--y) - 38px));
-    margin-left: -1px;
+    height: max(0px, calc(var(--y) - 28px));
     background: var(--lift-rope);
 }
 
-/* The car: hook at the top, soul sitting in a basket wider than his shoulders, hands on the rim */
+/* The car: hook at the top, the soul sitting in a basket wider than his shoulders */
 .lift-car {
     position: absolute;
     top: 0;
-    left: 50%;
+    left: -18px;
     width: 64px;
     height: 61px;
-    margin-left: -32px;
     translate: 0 var(--y);
     rotate: var(--swing);
     transform-origin: 50% 0;
@@ -2271,7 +2273,12 @@ button.shell-ui {
     top: 0;
     left: 14px;
     width: 36px;
+    opacity: 0;
     filter: drop-shadow(0 0 5px var(--lift-glow));
+}
+
+.lift.has-soul .lift-soul {
+    opacity: 1;
 }
 
 .lift-soul .cc {
@@ -2293,33 +2300,15 @@ button.shell-ui {
     box-shadow: inset 0 3px 0 #c8925a, 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.lift-hand {
-    position: absolute;
-    top: 31px;
-    width: 9px;
-    height: 8px;
-    border-radius: 50% 50% 40% 40%;
-    background: var(--cc-skin, #d9966a);
-    box-shadow: inset -1px -1.5px 0 var(--cc-skin-shade, #b9764d);
-}
-
-.lift-hand-l {
-    left: 13px;
-}
-
-.lift-hand-r {
-    right: 13px;
-}
-
 @media (prefers-reduced-motion: no-preference) {
-    .lift.is-on .lift-soul .cc {
+    .lift.has-soul .lift-soul .cc {
         animation: lift-bob 2.4s ease-in-out infinite;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .lift,
-    .lift-pulley {
+    .lift-machine {
         transition: none;
     }
 }
@@ -2335,16 +2324,43 @@ button.shell-ui {
     }
 }
 
-/* Notebook: Jupyter-orange pulley over the wicker basket */
+/* ---- Per theme ---- */
+html[data-theme="chatgpt"] .lift {
+    --lift-metal: #5b616b;
+    --lift-line: #1c1f23;
+    --lift-accent: #ececec;
+    --lift-led: #10a37f;
+}
+
+html[data-theme="modelcard"] .lift {
+    --lift-metal: #e5e7eb;
+    --lift-line: #9ca3af;
+    --lift-accent: #ff9d00;
+    --lift-led: #ff9d00;
+}
+
+html[data-theme="vscode"] .lift {
+    --lift-metal: #4a4f57;
+    --lift-line: #1f1f1f;
+    --lift-accent: #0078d4;
+    --lift-led: #0078d4;
+}
+
 html[data-theme="notebook"] .lift {
-    --lift-metal: #f37726;
+    --lift-metal: #e0e0e0;
+    --lift-line: #9e9e9e;
+    --lift-accent: #f37726;
+    --lift-led: #f37726;
     --lift-glow: rgba(243, 119, 38, 0.45);
 }
 
-/* Contact Card: frosted glass gondola on white lines */
+/* Contact Card: frosted glass winch and gondola on white lines */
 html[data-theme="apple"] .lift {
-    --lift-rope: rgba(255, 255, 255, 0.75);
-    --lift-metal: rgba(255, 255, 255, 0.9);
+    --lift-metal: rgba(255, 255, 255, 0.85);
+    --lift-line: rgba(0, 0, 0, 0.22);
+    --lift-accent: #ffffff;
+    --lift-led: #0a84ff;
+    --lift-rope: rgba(255, 255, 255, 0.8);
     --lift-glow: rgba(255, 255, 255, 0.6);
 }
 
@@ -2358,29 +2374,25 @@ html[data-theme="apple"] .lift-basket {
 
 /* Paper and Book: a ribbon off a spool, carrying a paper boat */
 html[data-theme="paper"] .lift {
+    --lift-metal: #d9d9d9;
+    --lift-line: #6f6f6f;
+    --lift-accent: #b31b1b;
+    --lift-led: #b31b1b;
     --lift-rope: #b31b1b;
-    --lift-metal: #b31b1b;
 }
 
 html[data-theme="book"] .lift {
+    --lift-metal: #cfd6de;
+    --lift-line: #5d6b7a;
+    --lift-accent: #20609f;
+    --lift-led: #20609f;
     --lift-rope: #20609f;
-    --lift-metal: #20609f;
     --lift-glow: rgba(32, 96, 159, 0.35);
 }
 
-html:is([data-theme="paper"], [data-theme="book"]) .lift-wheel {
-    border-width: 7px;
-    background: radial-gradient(circle, var(--lift-metal) 0 2.5px, #ffffff 3px);
-}
-
 html:is([data-theme="paper"], [data-theme="book"]) .lift-rope {
+    left: 11.5px;
     width: 5px;
-    margin-left: -2.5px;
-}
-
-html:is([data-theme="paper"], [data-theme="book"]) .lift-hanger::before,
-html:is([data-theme="paper"], [data-theme="book"]) .lift-hanger::after {
-    width: 1px;
 }
 
 html:is([data-theme="paper"], [data-theme="book"]) .lift-basket {
@@ -2390,81 +2402,57 @@ html:is([data-theme="paper"], [data-theme="book"]) .lift-basket {
     clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
 }
 
-/* Sci-Fi: amber cargo winch with hazard stripes, twin cables and a cage */
+/* Sci-Fi and Terminal: line art in the screen's one colour, glowing like the phosphor */
 html[data-theme="scifi"] .lift {
-    --lift-rope: #ffb000;
-    --lift-metal: #ffb000;
+    --lift-ink: #ffb000;
     --lift-glow: rgba(255, 176, 0, 0.6);
 }
 
-html[data-theme="scifi"] .lift-wheel {
-    border-width: 2px;
-    background: radial-gradient(circle, #0b0700 0 5px, transparent 5.5px), repeating-conic-gradient(#ffb000 0 15deg, #0b0700 0 30deg);
-    box-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
+html[data-theme="terminal"] .lift {
+    --lift-ink: #4ade80;
+    --lift-glow: rgba(74, 222, 128, 0.55);
 }
 
-html[data-theme="scifi"] .lift-rope {
-    width: 8px;
-    margin-left: -4px;
-    border-inline: 1px solid #ffb000;
-    background: none;
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift {
+    --lift-metal: rgba(0, 0, 0, 0.6);
+    --lift-line: var(--lift-ink);
+    --lift-accent: rgba(0, 0, 0, 0.6);
+    --lift-led: var(--lift-ink);
+    --lift-rope: var(--lift-ink);
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-machine {
+    filter: drop-shadow(0 0 3px var(--lift-glow));
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-coil {
+    fill: none;
+    stroke-dasharray: 2 2;
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-gear-teeth {
+    stroke: var(--lift-ink);
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-rope,
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hanger::before,
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hanger::after {
+    width: 1.5px;
+    box-shadow: 0 0 4px var(--lift-glow);
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-basket {
+    border: 1.5px solid var(--lift-ink);
+    background: repeating-linear-gradient(90deg, var(--lift-ink) 0 1.5px, transparent 1.5px 8px) rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 8px var(--lift-glow);
 }
 
 html[data-theme="scifi"] .lift-basket {
-    border: 2px solid #ffb000;
     border-radius: 2px;
-    background: repeating-linear-gradient(90deg, rgba(255, 176, 0, 0.85) 0 2px, transparent 2px 8px) rgba(11, 7, 0, 0.6);
-    box-shadow: 0 0 10px rgba(255, 176, 0, 0.45);
-}
-
-/* Terminal: drawn in characters, the pulley spins | / - \ as you scroll */
-html[data-theme="terminal"] .lift {
-    --lift-rope: #4ade80;
-    --lift-glow: rgba(74, 222, 128, 0.55);
-    color: #4ade80;
-    font: 700 16px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-html[data-theme="terminal"] .lift-pulley::before {
-    content: '(   )';
-    top: 18px;
-    left: 0;
-    width: 100%;
-    height: auto;
-    background: none;
-    text-align: center;
-    white-space: pre;
-}
-
-html[data-theme="terminal"] .lift-wheel {
-    top: 18px;
-    border: 0;
-    background: none;
-    box-shadow: none;
-    text-align: center;
-    transform: none;
-}
-
-html[data-theme="terminal"] .lift-wheel::before { content: '|'; }
-html[data-theme="terminal"] .lift[data-spin="1"] .lift-wheel::before { content: '/'; }
-html[data-theme="terminal"] .lift[data-spin="2"] .lift-wheel::before { content: '-'; }
-html[data-theme="terminal"] .lift[data-spin="3"] .lift-wheel::before { content: '\\'; }
-
-html[data-theme="terminal"] .lift-rope {
-    background: repeating-linear-gradient(#4ade80 0 7px, transparent 7px 10px);
 }
 
 html[data-theme="terminal"] .lift-basket {
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-    line-height: 30px;
-    text-align: center;
-    white-space: pre;
-}
-
-html[data-theme="terminal"] .lift-basket::before {
-    content: '\\______/';
+    background: repeating-linear-gradient(0deg, transparent 0 6px, var(--lift-ink) 6px 7px) rgba(0, 0, 0, 0.55);
 }
 
 /* Terminal theme: each OS gets its own terminal's palette and font (ANSI colours, like the real thing) */
@@ -3383,8 +3371,8 @@ html[data-theme="terminal"] .lift-basket::before {
     left: 0;
     top: 5px;
     bottom: 5px;
-    width: 4px;
-    border-radius: 2px;
+    width: 2px;
+    border-radius: 1px;
 }
 
 .nb-cell.is-active::before {
@@ -3805,7 +3793,7 @@ html[data-theme="terminal"] .lift-basket::before {
 
     .nb-cell::before {
         left: 6px;
-        width: 3px;
+        width: 2px;
     }
 
     .nb-row {

@@ -3,7 +3,8 @@
 // thinking, puzzled, then a small "got it" smile. Animations live in styles.css under .cc
 // Behaviour (bottom of this file): eyes follow the pointer; it sips coffee, blows a bug off the lid, falls asleep when
 // the visitor goes idle, gets dizzy if the pointer whips around, says hi on hover or tap, cheers a résumé download, and
-// yawns under a desk lamp at night. Wherever it isn't on screen, its "soul" rides a pulley lift down the right edge.
+// yawns under a desk lamp at night. A winch-and-basket lift on the right edge shows scroll position, and once the
+// visitor scrolls past the caricature (or in themes without one) its "soul" rides in the basket.
 
 // Round, full-cheeked face (also clips the screen glow)
 const FACE = 'M120 28c28 0 42 20 42 44 0 14-4 24-12 30-8 7-19 10-30 10s-22-3-30-10c-8-6-12-16-12-30 0-24 14-44 42-44Z';
@@ -42,9 +43,13 @@ function caricatureSVG(label = '', { head = false } = {}) {
         <circle class="cc-lamp-bulb" cx="52" cy="132" r="3.4"/>
     </g>
     <g class="cc-code" font-family="ui-monospace, monospace" font-size="11" font-weight="700">
-        <text x="34" y="122">&lt;/&gt;</text>
-        <text x="176" y="118">{ }</text>
-        <text x="54" y="118">01</text>
+        <text x="20" y="124">&lt;/&gt;</text>
+        <text x="190" y="106">{ }</text>
+        <text x="38" y="106">01</text>
+    </g>
+    <g class="cc-upper-arm">
+        <path class="cc-arm-shade" d="M178 128L205 150" fill="none" stroke-width="16" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M178 128L205 150;M178 128L206 146;M178 128L206 138;M178 128L206 138;M178 128L206 148;M178 128L205 150"/></path>
+        <path class="cc-arm" d="M178 128L205 150" fill="none" stroke-width="13" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M178 128L205 150;M178 128L206 146;M178 128L206 138;M178 128L206 138;M178 128L206 148;M178 128L205 150"/></path>
     </g>
     <path class="cc-shirt" d="M38 182c0-44 18-70 56-78h52c38 8 56 34 56 78Z"/>
     <path class="cc-shirt-shade" d="M38 182c0-18 4-38 14-52 4 18 6 36 4 52Zm164 0c0-18-4-38-14-52-4 18-6 36-4 52Z"/>
@@ -90,31 +95,10 @@ function caricatureSVG(label = '', { head = false } = {}) {
             </g>
         </g></g>
     </g>
-    <rect class="cc-desk" x="6" y="178" width="228" height="8" rx="3"/>
-    <path class="cc-laptop" d="M68 122h104a6 6 0 0 1 6 6v46H62v-46a6 6 0 0 1 6-6Z"/>
-    <path class="cc-logo" d="M113 144l-6 5 6 5m14-10 6 5-6 5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle class="cc-sticker-a" cx="158" cy="134" r="5"/>
-    <rect class="cc-sticker-b" x="74" y="156" width="16" height="9" rx="2.5" transform="rotate(-8 82 160)"/>
-    <rect class="cc-laptop-shade" x="52" y="172" width="136" height="6" rx="3"/>
-    <g class="cc-bug"><g class="cc-bug-body">
-        <path class="cc-bug-legs" d="M-2 1.6-3.4 4M.4 2.2v2.6M2.6 1.6 4 4" fill="none" stroke-width="0.9" stroke-linecap="round"/>
-        <ellipse class="cc-bug-shell" cx="0" cy="0" rx="3.6" ry="2.7"/>
-        <circle class="cc-bug-head" cx="-3.6" cy="0.2" r="1.7"/>
-        <path class="cc-bug-legs" d="M-0.2 -2.6V2.6" fill="none" stroke-width="0.6"/>
-    </g></g>
-    <g class="cc-confetti" transform="translate(120 122)">${CONFETTI.map(([x, y, r, c]) =>
-        `<rect class="cc-bit" x="-1.6" y="-3" width="3.2" height="6" rx="0.8" style="--x:${x}px;--y:${y}px;--r:${r}deg;fill:var(--cc-${c})"/>`).join('')}</g>
-    <ellipse class="cc-contact" cx="201" cy="178" rx="13" ry="1.8"/>
     <g class="cc-mugset">
-        <path class="cc-arm-shade" d="M182 118Q210 140 219 165" fill="none" stroke-width="15.5" stroke-linecap="round">
-            <animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
-                values="M182 118Q210 140 219 165;M182 118Q212 136 213 155;M182 118Q214 150 150 93;M182 118Q214 150 150 93;M182 118Q212 138 215 159;M182 118Q210 140 219 165"/>
-        </path>
-        <path class="cc-arm" d="M182 118Q210 140 219 165" fill="none" stroke-width="12" stroke-linecap="round">
-            <animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
-                values="M182 118Q210 140 219 165;M182 118Q212 136 213 155;M182 118Q214 150 150 93;M182 118Q214 150 150 93;M182 118Q212 138 215 159;M182 118Q210 140 219 165"/>
-        </path>
-        <circle class="cc-shoulder" cx="182" cy="118.5" r="7.6"/>
+        <path class="cc-arm-shade" d="M205 150L219 165" fill="none" stroke-width="15" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M205 150L219 165;M206 146L213 155;M206 138L150 93;M206 138L150 93;M206 148L215 159;M205 150L219 165"/></path>
+        <path class="cc-arm" d="M205 150L219 165" fill="none" stroke-width="12" stroke-linecap="round"><animate class="cc-sip-anim" attributeName="d" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="M205 150L219 165;M206 146L213 155;M206 138L150 93;M206 138L150 93;M206 148L215 159;M205 150L219 165"/></path>
+        <circle class="cc-elbow" cx="205" cy="150" r="6.5"><animate class="cc-sip-anim" attributeName="cx" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="205;206;206;206;206;205"/><animate class="cc-sip-anim" attributeName="cy" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}" values="150;146;138;138;148;150"/></circle>
         <g>
             <animateTransform class="cc-sip-anim" attributeName="transform" type="translate" begin="indefinite" dur="2.8s" calcMode="spline" keyTimes="0;0.2;0.42;0.66;0.86;1" keySplines="${EASE}"
                 values="0 0;-6 -10;-66 -63;-66 -63;-4 -6;0 0"/>
@@ -130,6 +114,25 @@ function caricatureSVG(label = '', { head = false } = {}) {
             </g>
         </g>
     </g>
+    <rect class="cc-desk" x="6" y="178" width="228" height="8" rx="3"/>
+    <path class="cc-laptop" d="M63 114h114a7 7 0 0 1 7 7v53H56v-53a7 7 0 0 1 7-7Z"/>
+    <rect class="cc-laptop-sheen" x="60" y="115.6" width="120" height="1.6" rx="0.8"/>
+    <g class="cc-logo">
+        <path d="M120 137.2c-1.8-1.4-5.6-1.9-7.8.6-2.8 3.2-1.9 9.4 1.3 13.1 1.5 1.7 2.8 2.4 4.1 1.9 1.1-.5 1.9-.5 3 0 1.3.5 2.6-.2 4.1-1.9 3.2-3.7 4.1-9.9 1.3-13.1-2.2-2.5-6-2-7.8-.6Z"/>
+        <path d="M120.4 136.4c.3-2.5 2-4.2 4.4-4.6-.3 2.5-2 4.2-4.4 4.6Z"/>
+    </g>
+    <rect class="cc-sticker-b" x="68" y="156" width="16" height="9" rx="2.5" transform="rotate(-8 76 160)"/>
+    <path class="cc-laptop-shade" d="M44 172h152v2.5a3.5 3.5 0 0 1-3.5 3.5h-145a3.5 3.5 0 0 1-3.5-3.5Z"/>
+    <rect class="cc-laptop-notch" x="108" y="172" width="24" height="2.2" rx="1.1"/>
+    <g class="cc-bug"><g class="cc-bug-body">
+        <path class="cc-bug-legs" d="M-2 1.6-3.4 4M.4 2.2v2.6M2.6 1.6 4 4" fill="none" stroke-width="0.9" stroke-linecap="round"/>
+        <ellipse class="cc-bug-shell" cx="0" cy="0" rx="3.6" ry="2.7"/>
+        <circle class="cc-bug-head" cx="-3.6" cy="0.2" r="1.7"/>
+        <path class="cc-bug-legs" d="M-0.2 -2.6V2.6" fill="none" stroke-width="0.6"/>
+    </g></g>
+    <g class="cc-confetti" transform="translate(120 114)">${CONFETTI.map(([x, y, r, c]) =>
+        `<rect class="cc-bit" x="-1.6" y="-3" width="3.2" height="6" rx="0.8" style="--x:${x}px;--y:${y}px;--r:${r}deg;fill:var(--cc-${c})"/>`).join('')}</g>
+    <ellipse class="cc-contact" cx="201" cy="178" rx="13" ry="1.8"/>
     <g class="cc-puff" fill="none" stroke-width="1.6" stroke-linecap="round">
         <path d="M129 103l6 5M131 99l7 3M127 107l4 6"/>
     </g>
@@ -196,8 +199,8 @@ function lookAt(x, y) {
         const dx = x - (eyes.left + eyes.width / 2);
         const dy = y - (eyes.top + eyes.height / 2);
         const k = Math.min(1, Math.hypot(dx, dy) / 240) / (Math.hypot(dx, dy) || 1); // full glance from ~240px away
-        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4 - rx}px, ${dy * k * 1.8 - ry}px)`;
-        svg.querySelector('.cc-turn').style.transform = `translate(${dx * k * 2}px, ${dy * k * 1.2}px)`;
+        svg.querySelector('.cc-look').style.transform = `translate(${dx * k * 2.4 - rx}px, ${Math.max(-0.5, dy * k * 1.8) - ry}px)`;
+        svg.querySelector('.cc-turn').style.transform = `translate(${dx * k * 2}px, ${Math.max(-0.6, dy * k * 1.2)}px)`;
     });
     clearTimeout(lookTimer);
     lookTimer = setTimeout(() => document.querySelectorAll('svg.cc--looking').forEach(svg => {
@@ -259,11 +262,11 @@ function ccTick() {
     });
 }
 
-// ---------- the soul lift: wherever the caricature isn't on screen, its soul rides a pulley down the right edge ----------
+// ---------- the soul lift: a scroll indicator on the right edge; the soul rides it whenever the caricature isn't around ----------
 
 // Copied from the theme's caricature so the soul wears the same colours
 const CC_VARS = ['skin', 'skin-shade', 'hair', 'hair-shine', 'shirt', 'shirt-shade', 'collar', 'eye', 'mouth', 'blush', 'laptop',
-    'laptop-shade', 'desk', 'mug', 'steam', 'glow', 'code', 'sticker', 'bug', 'lamp', 'lamp-light', 'bubble', 'bubble-ink'].map(v => `--cc-${v}`);
+    'laptop-shade', 'desk', 'mug', 'steam', 'code', 'sticker', 'bug', 'lamp', 'lamp-light', 'bubble', 'bubble-ink'].map(v => `--cc-${v}`);
 
 const scrolls = el => /(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 1;
 
@@ -271,24 +274,39 @@ const caricatureLift = {
     el: null,
     avatar: null,
     scroller: null,
-    away: null,
-    y: 56, // basket position, eased toward target with a spring so it settles with a small bounce
+    inBasket: null,
+    y: 64, // basket position, eased toward target with a spring so it settles with a small bounce
     v: 0,
-    target: 56,
+    target: 64,
     frame: 0,
 
     build() {
         this.el = document.createElement('div');
         this.el.className = 'lift';
         this.el.setAttribute('aria-hidden', 'true'); // a second scrollbar; keyboard and screen readers keep the real one
+        // Winch bolted to the top edge: plate, housing with vents and a status light, a gear driving the rope drum
         this.el.innerHTML = `
-            <div class="lift-pulley"><span class="lift-wheel"></span></div>
+            <svg class="lift-machine" viewBox="0 0 96 58" width="96" height="58">
+                <rect class="lift-steel" x="4" y="-3" width="88" height="9" rx="2"/>
+                <circle class="lift-bolt" cx="12" cy="2" r="1.6"/><circle class="lift-bolt" cx="84" cy="2" r="1.6"/>
+                <rect class="lift-steel" x="56" y="5" width="8" height="10"/>
+                <rect class="lift-steel" x="24" y="25.5" width="22" height="5" rx="2"/>
+                <rect class="lift-housing" x="40" y="14" width="50" height="30" rx="5"/>
+                <path class="lift-vent" d="M64 22h18M64 27h18M64 32h18"/>
+                <circle class="lift-led" cx="49" cy="22" r="2.4"/>
+                <g class="lift-gear"><circle class="lift-gear-teeth" cx="41" cy="43" r="6.5"/><circle class="lift-steel" cx="41" cy="43" r="4.2"/><circle class="lift-bolt" cx="41" cy="43" r="1.3"/></g>
+                <g class="lift-drum">
+                    <circle class="lift-flange" cx="26" cy="28" r="12"/>
+                    <circle class="lift-coil" cx="26" cy="28" r="8.5"/>
+                    <path class="lift-spoke" d="M26 19.5v17M17.5 28h17"/>
+                    <circle class="lift-bolt" cx="26" cy="28" r="2.4"/>
+                </g>
+            </svg>
             <div class="lift-rope"></div>
             <div class="lift-car">
                 <div class="lift-hanger"></div>
                 <div class="lift-soul">${caricatureSVG('', { head: true })}</div>
                 <div class="lift-basket"></div>
-                <span class="lift-hand lift-hand-l"></span><span class="lift-hand lift-hand-r"></span>
             </div>`;
         document.body.append(this.el);
         this.car = this.el.querySelector('.lift-car');
@@ -316,26 +334,26 @@ const caricatureLift = {
         });
 
         // Themes swap content (book chapters, Sci-Fi screens, terminal output), so look again after changes
+        // (the caricature's own class changes, like eyes following the pointer, don't count)
         let queued = 0;
         const rescan = () => queued || (queued = requestAnimationFrame(() => { queued = 0; this.scan(); }));
-        // (the caricature's own class changes, like eyes following the pointer, don't count)
         new MutationObserver(muts => muts.some(m => !m.target.closest?.('svg.cc')) && rescan()).observe(document.getElementById('themeContainer'), { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
         window.addEventListener('resize', rescan);
     },
 
-    // Where the basket can travel: under the pulley down to just above the theme switcher
+    // Where the basket can travel: under the winch down to just above the theme switcher
     track() {
         const dock = document.getElementById('themeDock')?.getBoundingClientRect();
         const floor = (dock ? dock.top : innerHeight) - 14 - this.car.offsetHeight;
-        return [56, Math.max(80, floor)];
+        return [64, Math.max(90, floor)];
     },
 
     // Theme switched: start over with the new theme's caricature (or none) and its scroller
     reset() {
         if (!this.el) this.build();
         this.avatar = this.scroller = null;
-        this.away = null;
-        this.el.classList.remove('is-on');
+        this.inBasket = null;
+        this.el.classList.remove('is-on', 'has-soul');
         requestAnimationFrame(() => this.scan());
     },
 
@@ -352,9 +370,10 @@ const caricatureLift = {
             scroller = big.sort((a, b) => b.clientHeight * b.clientWidth - a.clientHeight * a.clientWidth)[0] || page;
         }
         if (avatar !== this.avatar) {
-            // The soul wears the theme's colours: on its own svg (its .cc rule would beat inherited values) and on the car (hands)
+            // The soul wears the theme's colours (on its own svg: its .cc rule would beat inherited values)
             const style = avatar && getComputedStyle(avatar);
-            [this.soul.querySelector('svg'), this.car].forEach(el => CC_VARS.forEach(v => (style ? el.style.setProperty(v, style.getPropertyValue(v)) : el.style.removeProperty(v))));
+            const soul = this.soul.querySelector('svg');
+            CC_VARS.forEach(v => (style ? soul.style.setProperty(v, style.getPropertyValue(v)) : soul.style.removeProperty(v)));
         }
         this.avatar = avatar;
         this.scroller = scroller;
@@ -372,16 +391,20 @@ const caricatureLift = {
     update() {
         const s = this.scroller;
         if (!s) return;
-        // Visible area: the viewport, cut down to the scrolling panel
-        const view = s === document.scrollingElement ? { top: 0, bottom: innerHeight } : s.getBoundingClientRect();
-        const a = this.avatar?.isConnected ? this.avatar.getBoundingClientRect() : null;
-        const shown = !!a && a.width > 0 && a.bottom > Math.max(0, view.top) + 8 && a.top < Math.min(innerHeight, view.bottom) - 8;
         const max = s.scrollHeight - s.clientHeight;
+        // A scroll indicator: one-screen pages have nothing to show, so the lift stays away
+        this.el.classList.toggle('is-on', max > 24);
+        // The soul rides only once the visitor has scrolled past the caricature, or in themes and pages without one;
+        // a caricature still further down keeps its soul, and the basket travels empty
+        const view = s === document.scrollingElement ? 0 : s.getBoundingClientRect().top;
+        const a = this.avatar?.isConnected ? this.avatar.getBoundingClientRect() : null;
+        const present = !!a && a.width > 0;
+        const inBasket = !present || a.bottom < Math.max(0, view) + 8;
         const [top, bottom] = this.track();
         this.target = top + (max > 0 ? Math.min(1, s.scrollTop / max) : 0) * (bottom - top);
-        if (this.away === null) this.y = this.target; // first paint: no travel
+        if (this.inBasket === null) this.y = this.target; // first paint: no travel
         this.animate();
-        if (!shown !== this.away) this.hop(!shown, a && a.width > 0 ? a : null);
+        if (inBasket !== this.inBasket) this.hop(inBasket, present ? a : null);
     },
 
     animate() {
@@ -395,27 +418,26 @@ const caricatureLift = {
             // Spring toward the target, a little under-damped: smooth travel and a soft bounce as it stops
             this.v = (this.v + (this.target - this.y) * 0.09) * 0.72;
             this.y += this.v;
-            this.paint();
             this.frame = Math.abs(this.target - this.y) < 0.1 && Math.abs(this.v) < 0.05 ? 0 : requestAnimationFrame(step);
-            if (!this.frame) { this.y = this.target; this.paint(); }
+            if (!this.frame) this.y = this.target;
+            this.paint();
         };
         this.frame = requestAnimationFrame(step);
     },
 
     paint() {
         this.el.style.setProperty('--y', `${this.y.toFixed(2)}px`);
-        // The wheel turns as the rope pays out (radius ~14px), and the basket tilts a touch with its speed
-        this.el.style.setProperty('--spin', `${(this.y * 4).toFixed(1)}deg`);
+        // The drum turns as the rope pays out (radius ~12px); the gear turns the other way, twice as fast
+        this.el.style.setProperty('--spin', `${(this.y * 4.8).toFixed(1)}deg`);
         this.el.style.setProperty('--swing', `${Math.max(-6, Math.min(6, this.v * -0.6)).toFixed(2)}deg`);
-        this.el.dataset.spin = Math.floor(this.y / 8) % 4;
     },
 
-    // The soul leaves the caricature and lands in the basket, or climbs back into it
-    hop(away, a) {
-        const first = this.away === null;
-        this.away = away;
-        if (away) this.el.classList.add('is-on');
-        if (ccReduced.matches || first || !a) return away || this.el.classList.remove('is-on');
+    // The soul leaves the caricature for the basket, or climbs back into it; only animated when the visitor scrolls
+    hop(inBasket, a) {
+        const first = this.inBasket === null;
+        this.inBasket = inBasket;
+        if (inBasket) this.el.classList.add('has-soul');
+        if (first || ccReduced.matches || !a || !this.el.classList.contains('is-on')) return inBasket || this.el.classList.remove('has-soul');
         const t = this.soul.getBoundingClientRect();
         const scale = Math.max(0.6, Math.min(3, (a.width * 0.45) / t.width));
         const dx = a.left + a.width * 0.5 - (t.left + t.width / 2);
@@ -425,8 +447,8 @@ const caricatureLift = {
             { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 70}px) scale(${(scale + 1) / 2}) rotate(-12deg)`, opacity: 1, offset: 0.55 },
             { transform: 'none', opacity: 1 }
         ];
-        const anim = this.soul.animate(away ? frames : frames.reverse(), { duration: away ? 750 : 600, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' });
-        if (!away) anim.finished.then(() => !this.away && this.el.classList.remove('is-on'), () => {});
+        const anim = this.soul.animate(inBasket ? frames : frames.reverse(), { duration: inBasket ? 750 : 600, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' });
+        if (!inBasket) anim.finished.then(() => !this.inBasket && this.el.classList.remove('has-soul'), () => {});
     }
 };
 

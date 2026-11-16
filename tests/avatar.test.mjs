@@ -7,7 +7,7 @@ mkdirSync(shots, { recursive: true });
 
 // The element that scrolls the caricature (themes scroll the page or an inner panel)
 const scroller = `(() => { let el = document.querySelector('#themeContainer svg.cc'); while ((el = el.parentElement)) { const o = getComputedStyle(el).overflowY; if (/(auto|scroll)/.test(o) && el.scrollHeight > el.clientHeight) return el; } return document.scrollingElement; })()`;
-const lift = b => b.evaluate(`JSON.stringify((l => l && { on: l.classList.contains('is-on'), y: parseFloat(l.style.getPropertyValue('--y')), spin: l.style.getPropertyValue('--spin') })(document.querySelector('.lift')))`).then(JSON.parse);
+const lift = b => b.evaluate(`JSON.stringify((l => l && { on: l.classList.contains('is-on'), soul: l.classList.contains('has-soul'), y: parseFloat(l.style.getPropertyValue('--y')), spin: l.style.getPropertyValue('--spin') })(document.querySelector('.lift')))`).then(JSON.parse);
 
 for (const theme of ['apple', 'paper', 'book', 'notebook', 'scifi', 'terminal']) {
     const b = await openTheme(theme, { width: 1280, height: 720 });
@@ -24,23 +24,35 @@ for (const theme of ['apple', 'paper', 'book', 'notebook', 'scifi', 'terminal'])
         console.log(`${theme}: caricature never leaves the screen at this size, skipped`); b.close(); continue;
     }
     const down = await lift(b);
-    assert.ok(down?.on, `${theme}: lift appears once the caricature is scrolled away`);
+    assert.ok(down?.on && down.soul, `${theme}: soul rides the lift once the caricature is scrolled away`);
     assert.ok(down.y > 200, `${theme}: basket rides down with the scroll`);
     assert.notEqual(down.spin, '0deg', `${theme}: pulley turned`);
     await b.shot(`${shots}/avatar-lift-${theme}.png`);
     await b.evaluate(`(s => s.scrollTop = 0)(${scroller})`); await sleep(1100);
-    assert.equal((await lift(b)).on, false, `${theme}: soul climbs back when the caricature returns`);
+    const back = await lift(b);
+    assert.ok(back.on && !back.soul, `${theme}: soul climbs back when the caricature returns; the empty basket stays as the scroll indicator`);
     assert.deepEqual(b.errors, [], `${theme}: no errors`);
     b.close();
     console.log(`${theme}: lift ok`);
 }
 
-// Themes and pages without the caricature on screen keep the soul in the basket from the start
+// Themes without the caricature: the soul rides from the start, but only where there's something to scroll
 for (const theme of ['chatgpt', 'modelcard', 'vscode']) {
     const b = await openTheme(theme, { width: 1280, height: 720 });
     await sleep(800);
-    assert.equal((await lift(b))?.on, true, `${theme}: soul rides the lift (no caricature in this theme)`);
+    const l = await lift(b);
+    const scrolls = await b.evaluate(`(s => s.scrollHeight - s.clientHeight > 24)(caricatureLift.scroller)`);
+    assert.equal(l.on, scrolls, `${theme}: lift shows only when the page scrolls`);
+    if (scrolls) assert.ok(l.soul, `${theme}: soul rides (no caricature in this theme)`);
     await b.shot(`${shots}/avatar-lift-${theme}.png`);
+    b.close();
+}
+// Paper: the caricature is further down, so the basket starts empty (nothing hops before the visitor scrolls)
+{
+    const b = await openTheme('paper', { width: 1280, height: 720 });
+    await sleep(800);
+    const l = await lift(b);
+    assert.ok(l.on && !l.soul, 'paper: empty basket while the caricature is still below');
     b.close();
 }
 {
@@ -48,7 +60,7 @@ for (const theme of ['chatgpt', 'modelcard', 'vscode']) {
     await sleep(800);
     await b.evaluate(`[...document.querySelectorAll('a, button')].find(el => /Projects/.test(el.textContent))?.click()`); await sleep(1200);
     assert.ok(await b.evaluate(`!document.querySelector('#themeContainer svg.cc') || document.querySelector('#themeContainer svg.cc').getBoundingClientRect().bottom < 0`), 'book: projects chapter has no caricature in view');
-    assert.equal((await lift(b)).on, true, 'book: soul rides the lift on chapters without the caricature');
+    assert.ok((l => l.on && l.soul)(await lift(b)), 'book: soul rides the lift on chapters without the caricature');
     // Space scrolls the page, and the basket follows
     const before = (await lift(b)).y;
     await b.evaluate(`document.activeElement?.blur()`);

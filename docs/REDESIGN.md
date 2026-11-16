@@ -787,6 +787,20 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - *What it follows:* the panel that scrolls the caricature, else the page, else the largest scrolling panel. It rescans when the theme's content changes.
   - *Looks:* the head sits in a basket wider than his shoulders, with his hands on the rim. Each theme dresses it differently: wicker with an orange wheel in Notebook, a frosted gondola in Contact Card, a ribbon, spool and paper boat in Paper and Book, an amber hazard winch and cage in Sci-Fi, and ASCII in Terminal. Hidden on phones.
 - **VS Code:** root-level files sit flush with the `projects` folder's chevron.
+- **Round 3 (owner feedback):**
+  - *Lift:*
+    - It's a scroll indicator, so it only appears when there's something to scroll; one-screen pages show nothing.
+    - The soul gets into the basket only once the visitor scrolls past the caricature (or straight away in themes and pages without one). While the caricature is still further down, the basket rides empty, so nothing hops before the visitor acts.
+    - A winch bolted to the top edge (plate, housing with vents and a status light, a gear driving the rope drum) shows where the rope comes from.
+    - The rim hands are gone (they stayed behind when the soul hopped out).
+    - Sci-Fi and Terminal draw the lift as glowing line art in the screen colour.
+  - *Caricature:*
+    - Coffee arm: the upper arm grows out from behind his side and bends at an elbow, and the forearm and mug pass behind the laptop lid on the way up.
+    - Laptop: a bigger MacBook-style silver laptop, closer to him, with a plain apple fruit (not the bitten logo) and one sticker.
+    - "Hi!" shows on click only.
+    - Looking up is limited so the pupils stay under the lids.
+  - *Notebook:* the selected-cell bar is 2px.
+  - *Every theme opens at the top:* `history.scrollRestoration = 'manual'` and a scroll to the top on every theme load.
 
 ## Shared backlog (shell / cross-theme)
 
