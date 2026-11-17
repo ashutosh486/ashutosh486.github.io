@@ -440,7 +440,7 @@ button.shell-ui {
 
 /* Auto-continue countdown (main.js, startAutoContinue): a tint fills the whole button left to right over the same 5s */
 .chooser-primary.is-counting {
-    background-image: linear-gradient(rgb(10 10 10 / 0.2), rgb(10 10 10 / 0.2));
+    background-image: linear-gradient(rgb(10 10 10 / 0.35), rgb(10 10 10 / 0.35));
     background-repeat: no-repeat;
     background-size: 0 100%;
     animation: chooser-count 5s linear forwards;
