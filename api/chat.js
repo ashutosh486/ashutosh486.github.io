@@ -9,10 +9,8 @@
 //   ALLOWED_ORIGINS     comma-separated sites allowed to call this (localhost is always allowed)
 //   KV_REST_API_URL, KV_REST_API_TOKEN   set by connecting Upstash Redis (Storage tab); chats are saved only when present
 //   CHAT_KEEP_DAYS      how long a saved chat is kept (default 180)
-const log = console.log;
-console.log = () => {}; // content.js logs while loading
+// Also set a monthly spend cap on the AI Gateway: anyone can send this API a fake Origin header.
 const c = require('../js/content.js');
-console.log = log;
 
 const MODELS = (process.env.CHAT_MODELS || 'anthropic/claude-sonnet-5.5,openai/gpt-oss-120b').split(',').map(m => m.trim()).filter(Boolean);
 const EFFORT = process.env.CHAT_EFFORT || 'low', MAX_TOKENS = Number(process.env.CHAT_MAX_TOKENS) || 2000;
@@ -147,6 +145,20 @@ async function save(id, question, answer, req) {
     if (!res.ok) console.error('save', res.status); // the visitor's answer is unaffected
 }
 
+// Each visitor IP gets RATE questions an hour, counted in the same store (no store: no limit; the gateway's spend cap
+// still applies). If the store can't be reached the question goes through: one missed count beats a broken chat.
+const RATE = 40;
+async function limited(req) {
+    const ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim();
+    if (!STORE || !ip) return false;
+    const key = `rate:${ip}:${Math.floor(Date.now() / 3600000)}`;
+    const counts = await fetch(`${STORE}/pipeline`, {
+        method: 'POST', headers: { Authorization: `Bearer ${STORE_TOKEN}` }, signal: AbortSignal.timeout(2000),
+        body: JSON.stringify([['INCR', key], ['EXPIRE', key, 3600]])
+    }).then(r => r.json()).catch(() => null);
+    return counts?.[0]?.result > RATE;
+}
+
 async function handler(req, res) {
     const origin = req.headers.origin || '';
     if (!ORIGINS.includes(origin) && !LOCAL.test(origin)) return res.status(403).json({ error: 'origin not allowed' });
@@ -160,6 +172,7 @@ async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
     const messages = clean(req.body?.messages);
     if (!messages) return res.status(400).json({ error: 'messages must alternate user/assistant text and end with the user' });
+    if (await limited(req)) return res.status(429).json({ error: 'too many questions this hour' });
 
     const upstream = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
         method: 'POST',

@@ -767,12 +767,9 @@ const ChatGPTTheme = {
         });
     },
 
-    // Profile photo from content.js; falls back to initials. Pass alt only where the photo isn't next to the name.
+    // The caricature's head (js/caricature.js) in place of a photo. Pass alt only where it isn't next to the name.
     avatar(classes, alt = '') {
-        const c = portfolioContent;
-        if (c.picture) return `<img src="${c.picture}" alt="${alt}" width="80" height="80" class="shrink-0 rounded-full bg-[#303030] object-cover ${classes}">`;
-        const initials = c.name.split(' ').map(part => part[0]).join('').slice(0, 2);
-        return `<div class="flex shrink-0 items-center justify-center rounded-full bg-[#3a3a3a] text-xs font-semibold text-white ${classes}">${initials}</div>`;
+        return `<span class="cc-avatar shrink-0 rounded-full bg-[#303030] ${classes}">${caricatureSVG(alt, { head: true })}</span>`;
     },
 
     chip(text) {
