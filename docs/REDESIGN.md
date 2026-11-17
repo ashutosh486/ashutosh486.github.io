@@ -839,6 +839,15 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - *Steam:* rises from the mug's rim, in front of the sleeve; brighter on the Contact Card poster.
   - *Coffee hand:* fingers go through the handle: the handle is drawn over the fist and the thumb rests on top, so the handle stays visible. The drawn sleeve stops 8 units short of the hand (`CUFF` in `scripts/caricature-arm-ik.py`), so it ends behind the mug instead of showing as a blue ring around the fist.
 
+### Caricature head replaces the photo (`theme/shell`)
+
+The owner asked for the caricature in place of their face everywhere the photo showed.
+
+- ChatGPT (sidebar header, profile row, welcome, reply avatars, About card), Model Card (header, sidebar card, Résumé tab) and the VS Code README header now show the caricature's head (`caricatureSVG('', { head: true })`, the lift's soul) in a circle (`.cc-avatar` in styles.css). The eyes follow the pointer like the full caricature.
+- Terminal `neofetch` shows the head in a 140px box instead of the photo as half-block art; `pixelArt()` and the `.tm-art` / `.tm-photo` styles are gone, and the boot no longer waits on the image.
+- The lift ignores these heads when looking for the theme's caricature (`svg.cc:not(.cc--soul)`), so the soul still rides in ChatGPT, Model Card and VS Code.
+- `content.js` `picture` (images/profile.jpg) stays for the JSON-LD and social metadata; no page shows it now.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)

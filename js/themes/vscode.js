@@ -111,7 +111,7 @@ const VSCodeTheme = {
         const c = portfolioContent, s = c.stats;
         return `
             <header class="vs-md-head">
-                ${c.picture ? `<img src="${c.picture}" alt="" class="vs-md-avatar" onerror="this.remove()">` : ''}
+                <span class="vs-md-avatar cc-avatar">${caricatureSVG('', { head: true })}</span>
                 <div><h1>${c.name}</h1><p>${c.title} · ${c.location}</p></div>
             </header>
             <blockquote><p>${c.tagline}</p></blockquote>

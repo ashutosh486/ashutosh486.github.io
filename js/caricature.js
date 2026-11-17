@@ -433,7 +433,7 @@ const caricatureLift = {
     // The scroller is the panel that scrolls the caricature, else the page if it scrolls, else the biggest scrolling panel
     scan() {
         const root = document.getElementById('themeContainer');
-        const avatar = root.querySelector('svg.cc') || null;
+        const avatar = root.querySelector('svg.cc:not(.cc--soul)') || null;
         let scroller = null;
         for (let el = avatar?.parentElement; el && el !== root.parentElement && !scroller; el = el.parentElement) if (scrolls(el)) scroller = el;
         const page = document.scrollingElement;
