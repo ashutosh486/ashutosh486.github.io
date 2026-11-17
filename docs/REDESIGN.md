@@ -128,7 +128,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
   - It's a native `<dialog>`, which gives a focus trap, Escape and an inert background.
   - Escape, a backdrop click, the collapse button or "Continue with X" collapses it: the window shrinks into the switcher.
   - On phones it's a bottom sheet.
-  - On the visit's automatic open, it continues with the preselected theme after 5s with no click, key, scroll or tap in it. The clock starts once the page has loaded, and a bar fills along the bottom of "Continue with X". Opening it from the switcher never auto-closes.
+  - On the visit's automatic open, it continues with the preselected theme after 5s with no click, key, scroll or tap in it. The clock starts once the page has loaded, and a tint fills the whole "Continue with X" button left to right. Opening it from the switcher never auto-closes.
 - **Switcher pill:** shows the current theme's tile and name. It mounts inside a theme's `[data-theme-slot]` when there is one (ChatGPT's header), otherwise it floats bottom-right. On phones it's a 44px icon button.
 - **Transitions:** themes cross-fade with the View Transitions API, with no artificial delay. Reduced motion switches instantly.
 - **Page details:**
@@ -778,6 +778,7 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
 ### Random, cursors, eye contact (`theme/shell`)
 
 - **Random:** a "Random" button in the chooser header (next to collapse). It lights cards in turn, slowing down like a roulette wheel, then opens the one it lands on, never the current theme. Closing the chooser mid-roll cancels it. With reduced motion it switches straight away.
+  - Now a checkbox styled as the same button. Ticking it rolls as above and keeps every refresh random: each visit opens a theme other than the last one, over the URL hash (stored in `localStorage`, `portfolio-random`). Unticking only stops the random refreshes.
 - **Theme cursors:** `paintCursor()` in main.js draws each theme's pointer as inline SVG and sets `--cursor-default/-pointer/-text` on `<html>`, and styles.css reads them. Classic arrow and hand in the theme's colours (ChatGPT monochrome, Model Card orange, VS Code blue, Notebook orange, Paper arXiv red, Book link blue, Terminal green with a green I-beam). Contact Card gets an iPad-style circle pointer (bigger blue circle on buttons, capsule text bar). Sci-Fi gets an amber reticle (closing brackets on buttons, block text bar). Any new `cursor:` rule must use `var(--cursor-pointer, pointer)` / `var(--cursor-text, text)`, or it shows the system cursor.
 - **Cursor animation:** browsers can't animate cursor images, so a click draws a ripple in the theme's style: a ring in the accent colour, a block-cursor flash in Terminal, an iPad press-and-bloom in Contact Card, and a target-lock bracket in Sci-Fi. Mouse and pen only, off with reduced motion.
 - **Caricature eye contact:** the pupils (and the head, slightly) follow the pointer in every theme that shows the caricature. After 2.5s at rest it goes back to reading the screen.

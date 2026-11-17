@@ -62,8 +62,11 @@ class PortfolioController {
         // Themes read --theme-dock-w to keep their bottom-right corner clear of the switcher
         new ResizeObserver(() => document.documentElement.style.setProperty('--theme-dock-w', `${this.dock.offsetWidth}px`)).observe(this.dock);
 
-        // URL first (shareable links), then this browser's last pick, then the first theme
-        const initial = [location.hash.slice(1), this.readSaved()].find(key => this.themes[key]) || Object.keys(this.themes)[0];
+        // "Random" ticked: every visit opens a theme other than the last one. Otherwise the URL first (shareable links),
+        // then this browser's last pick, then the first theme
+        const initial = this.readSaved('portfolio-random')
+            ? this.randomTheme(this.readSaved())
+            : [location.hash.slice(1), this.readSaved()].find(key => this.themes[key]) || Object.keys(this.themes)[0];
         this.loadTheme(initial, { animate: false });
 
         // Ask on every visit, with the current theme preselected, unless this browser ticked "Don't show again"
@@ -212,7 +215,11 @@ class PortfolioController {
 
     bindChooser() {
         this.dock.addEventListener('click', () => this.openChooser());
-        this.random.addEventListener('click', () => this.pickRandom());
+        // Ticking rolls now and keeps every refresh random; unticking only stops the refreshes
+        this.random.addEventListener('change', () => {
+            this.save(this.random.checked ? '1' : null, 'portfolio-random');
+            if (this.random.checked) this.pickRandom();
+        });
 
         // Click ripple in the theme's style (styles.css, .cursor-ping); the cursor image itself can't animate
         window.addEventListener('pointerdown', (e) => {
@@ -260,6 +267,7 @@ class PortfolioController {
             item.style.setProperty('--i', i);
         });
         this.skip.checked = !!this.readSaved('portfolio-chooser-hide');
+        this.random.checked = !!this.readSaved('portfolio-random');
         document.getElementById('themeChooserContinue').textContent = `Continue with ${this.metaFor(this.currentTheme).label}`;
         document.getElementById('themeChooserContinue').setAttribute('aria-label', `Continue with ${current.name}`);
 
@@ -271,7 +279,7 @@ class PortfolioController {
     }
 
     // First visit only: with no click, key, scroll or tap in the chooser for 5s, continue with the preselected theme.
-    // The clock starts once the page has loaded; the bar under "Continue" (styles.css, .is-counting) shows it.
+    // The clock starts once the page has loaded; a fill across "Continue" (styles.css, .is-counting) shows it.
     startAutoContinue() {
         const button = document.getElementById('themeChooserContinue');
         const events = ['pointerdown', 'keydown', 'wheel'];
@@ -292,11 +300,16 @@ class PortfolioController {
         else window.addEventListener('load', start, { once: true });
     }
 
+    randomTheme(except) {
+        const keys = Object.keys(this.themes).filter(key => key !== except);
+        return keys[Math.floor(Math.random() * keys.length)];
+    }
+
     // Lights cards up in turn, slowing down like a roulette wheel, then opens the one it lands on (never the current one)
     pickRandom() {
         if (this.rolling) return;
         const keys = Object.keys(this.themes).filter(key => key !== this.currentTheme);
-        const pick = keys[Math.floor(Math.random() * keys.length)];
+        const pick = this.randomTheme(this.currentTheme);
         const go = () => this.closeChooser(() => this.loadTheme(pick, { pushHistory: true }));
         if (this.reducedMotion.matches) return go();
 
