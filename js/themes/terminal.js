@@ -53,7 +53,6 @@ const TerminalTheme = {
         this.at = 0;
         this.commands = this.registry();
         this.token = (this.token || 0) + 1;
-        this.art = this.pixelArt(48);
         const scheme = this.savedScheme();
 
         document.getElementById('themeContainer').innerHTML = `
@@ -156,7 +155,6 @@ const TerminalTheme = {
         box.removeAttribute('aria-hidden');
 
         const out = add(entry, '', 'tm-out');
-        this.artLines = await this.art; if (!live()) return;
         add(out, this.header());
         await this.wait(600); if (!live()) return;
         add(out, this.menu());
@@ -186,11 +184,6 @@ const TerminalTheme = {
             </div>`;
     },
 
-    portrait() {
-        const c = portfolioContent;
-        if (this.artLines) return `<pre class="tm-art" aria-hidden="true">${this.artLines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</pre>`;
-        return c.picture ? `<img src="${c.picture}" alt="" class="tm-photo" onerror="this.remove()">` : '';
-    },
 
     // The first name in 5x5 block letters with a drop shadow, built from the name in content.js
     font: {
@@ -211,39 +204,6 @@ const TerminalTheme = {
         const cols = px[0].length + 1;
         const rows = [0, 1, 2, 3, 4, 5].map(r => Array.from({ length: cols }, (_, c) => on(r, c) ? '█' : on(r - 1, c - 1) ? '<span class="tm-shade">░</span>' : ' ').join(''));
         return `<pre aria-label="${this.esc(word)}" style="--cols:${cols}">${rows.map((r, i) => `<span style="--i:${i}">${r}</span>`).join('')}</pre>`;
-    },
-
-    // The profile photo as a half-block portrait (how terminal image viewers draw): each character is two pixels,
-    // ▀ in the top one's shade on the bottom one's, in the theme's green. A centred head-and-shoulders crop,
-    // contrast-stretched and faded out at the edges. Resolves to null when the canvas can't read the image
-    // (e.g. a local file:// copy); the photo is shown instead
-    pixelArt(cols) {
-        const src = portfolioContent.picture;
-        if (!src) return Promise.resolve(null);
-        return new Promise(resolve => {
-            const img = new Image();
-            img.onload = () => {
-                try {
-                    // A character is 0.6em wide and each half 0.5em tall, so 1.2 pixel rows per column keeps the aspect
-                    const rows = Math.round(cols * 1.2 / 2) * 2, size = Math.min(img.naturalWidth, img.naturalHeight) * 0.64;
-                    const cv = Object.assign(document.createElement('canvas'), { width: cols, height: rows });
-                    const g = cv.getContext('2d', { willReadFrequently: true });
-                    g.drawImage(img, (img.naturalWidth - size) / 2, img.naturalHeight * 0.17, size, size, 0, 0, cols, rows);
-                    const d = g.getImageData(0, 0, cols, rows).data;
-                    const lum = Array.from({ length: cols * rows }, (_, i) => 0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]);
-                    const sorted = [...lum].sort((a, b) => a - b), lo = sorted[Math.floor(lum.length * 0.03)], hi = sorted[Math.floor(lum.length * 0.97)];
-                    const level = (x, y) => {
-                        const fade = Math.min(1, Math.max(0, (1.1 - Math.hypot(((x + 0.5) / cols - 0.5) / 0.34, ((y + 0.5) / rows - 0.47) / 0.52)) / 0.25));
-                        return Math.round(Math.min(1, Math.max(0, (lum[y * cols + x] - lo) / (hi - lo))) * fade * 20) * 5;
-                    };
-                    resolve(Array.from({ length: rows / 2 }, (_, r) => Array.from({ length: cols }, (_, x) => `<i style="--a:${level(x, r * 2)};--b:${level(x, r * 2 + 1)}">▀</i>`).join('')));
-                } catch {
-                    resolve(null);
-                }
-            };
-            img.onerror = () => resolve(null);
-            img.src = src;
-        });
     },
 
     // ---------- commands: chatCommands from content.js, plus a few shell built-ins ----------
@@ -282,7 +242,7 @@ const TerminalTheme = {
             ['Companies', s.companies], ['Projects', s.projects], ['Skills', s.skills], ['Shell', this.p.shell]];
         return `
             <div class="tm-fetch">
-                ${this.portrait()}
+                <span class="tm-portrait cc-avatar">${caricatureSVG('', { head: true })}</span>
                 <div class="tm-info">
                     <p><b class="tm-acc">${c.name}</b></p>
                     <p class="tm-dim" aria-hidden="true">${'-'.repeat(c.name.length)}</p>

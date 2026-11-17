@@ -328,12 +328,9 @@ const ModelCardTheme = {
             }).join('');
     },
 
-    // Profile photo with initials behind it, shown if the image fails
+    // The caricature's head (js/caricature.js) in place of a photo
     avatar(size) {
-        const c = portfolioContent;
-        const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2);
-        return `<span class="relative inline-flex ${size} shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 font-semibold text-gray-600" aria-hidden="true">${initials}
-            ${c.picture ? `<img src="${c.picture}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">` : ''}</span>`;
+        return `<span class="cc-avatar ${size} shrink-0 rounded-full bg-gray-200">${caricatureSVG('', { head: true })}</span>`;
     },
 
     // ---------- behaviour ----------

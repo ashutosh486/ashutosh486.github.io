@@ -1,6 +1,4 @@
 // Portfolio Content - Edit this file to update your information
-console.log('📄 Loading portfolioContent...');
-
 const portfolioContent = {
     // Personal Information
     name: "Ashutosh Pandey",
@@ -319,12 +317,6 @@ const seenSkills = new Set();
 portfolioContent.skillGroups = Object.entries(portfolioContent.skills)
     .map(([key, list]) => [portfolioContent.skillLabels[key] || key, list.filter(s => !seenSkills.has(s.toLowerCase()) && seenSkills.add(s.toLowerCase()))])
     .filter(([, list]) => list.length);
-
-console.log('✅ portfolioContent loaded successfully');
-console.log('   Name:', portfolioContent.name);
-console.log('   Skills categories:', Object.keys(portfolioContent.skills));
-console.log('   Experience entries:', portfolioContent.experience.length);
-console.log('   First experience has achievements?', portfolioContent.experience[0].achievements ? 'YES' : 'NO');
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

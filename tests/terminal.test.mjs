@@ -125,7 +125,7 @@ for (const [label, opts] of [['desk', {}], ['m', { width: 390, height: 844, mobi
     await b.evaluate(press('l', 'ctrlKey: true,'));
     assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length + '|' + document.querySelectorAll('#tmOut .tm-head').length`), '1|1', `${label}: Ctrl+L clears the screen but keeps the boot header`);
     await enter(b, 'neofetch');
-    assert.ok(await b.evaluate(`document.querySelectorAll('#tmOut .tm-entry:last-child .tm-art > span').length > 20 || !!document.querySelector('#tmOut .tm-entry:last-child .tm-photo')`), `${label}: neofetch draws the pixel portrait`);
+    assert.ok(await b.evaluate(`!!document.querySelector('#tmOut .tm-entry:last-child .tm-portrait svg.cc--soul') && !document.querySelector('#tmRoot img')`), `${label}: neofetch shows the caricature head`);
     await enter(b, 'clear');
     assert.equal(await b.evaluate(`document.getElementById('tmOut').children.length + '|' + !!document.querySelector('#tmOut .tm-head .cc')`), '1|true', `${label}: clear keeps the header with the caricature`);
     await b.shot(`${out}-${label}-6-cleared.png`);

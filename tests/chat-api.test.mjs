@@ -6,7 +6,7 @@ process.env.KV_REST_API_URL = 'https://store.example'; process.env.KV_REST_API_T
 const handler = require('../api/chat.js');
 const { clean, deltas, prompt, tenure } = handler;
 const SYSTEM = prompt();
-const c = (log => { console.log = () => {}; const content = require('../js/content.js'); console.log = log; return content; })(console.log);
+const c = require('../js/content.js');
 
 const stream = parts => new ReadableStream({ start(ctl) { parts.forEach(p => ctl.enqueue(new TextEncoder().encode(p))); ctl.close(); } });
 const collect = async gen => { let s = ''; for await (const t of gen) s += t; return s; };
@@ -80,4 +80,17 @@ console.error = err;
 assert.ok(down.ended && down.body === 'Hello', 'store down: answer still delivered');
 assert.equal((await call({}, () => new Response('no credits', { status: 402 }))).res.code, 502, 'gateway error -> 502');
 assert.equal((await call({}, () => Promise.reject(new Error('down')))).res.code, 502, 'network error -> 502');
+// Rate limit: counted per visitor IP per hour in the store; over 40 is refused before the model is called
+for (const [count, code] of [[1, 200], [40, 200], [41, 429]]) {
+    const calls = [];
+    globalThis.fetch = async (url, opts) => {
+        calls.push(url);
+        if (url.startsWith('https://store.example')) return new Response(JSON.stringify(JSON.parse(opts.body)[0][0] === 'INCR' ? [{ result: count }, { result: 1 }] : []));
+        return ok();
+    };
+    const r = { code: 200, body: '', headers: {}, status(n) { this.code = n; return this; }, json() {}, setHeader() {}, write() {}, end() {} };
+    await handler({ method: 'POST', headers: { origin: 'https://ashutoshcodes.in', 'x-real-ip': '203.0.113.9' }, body: { messages: [u('hi')] } }, r);
+    assert.equal(r.code, code, `question ${count} this hour -> ${code}`);
+    assert.equal(calls.some(u => u.includes('ai-gateway')), code === 200, `model ${code === 200 ? '' : 'not '}called at ${count}`);
+}
 console.log('all chat api checks passed');

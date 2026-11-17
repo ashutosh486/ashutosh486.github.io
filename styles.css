@@ -1410,7 +1410,7 @@ button.shell-ui {
     height: 64px;
     flex-shrink: 0;
     border-radius: 50%;
-    object-fit: cover;
+    background: rgb(255 255 255 / 0.06);
     box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 
@@ -1974,6 +1974,11 @@ button.shell-ui {
 .cc-chair-wing { fill: var(--cc-chair-accent); }
 .cc-chair-rim { stroke: var(--cc-chair-shine); }
 .cc--soul .cc-chair { display: none; }
+/* The head in place of a profile photo (ChatGPT, Model Card, VS Code): the wrapper sets size, shape and backdrop */
+.cc-avatar { display: inline-block; overflow: hidden; }
+.cc-avatar > .cc { display: block; width: 100%; height: 100%; }
+/* ChatGPT: one head per answer; frozen so a long chat doesn't run hundreds of endless animations */
+#cgThread .cc-avatar .cc * { animation: none !important; }
 .cc-lamp-metal { fill: var(--cc-lamp); }
 .cc-lamp-arm { stroke: var(--cc-lamp); }
 .cc-lamp-light { fill: var(--cc-lamp-light); opacity: 0.2; }
@@ -2263,7 +2268,7 @@ button.shell-ui {
     top: 0;
     left: 0;
     width: 70.4px;
-    height: 96.8px;
+    height: 114.4px;
     overflow: visible;
     pointer-events: auto;
     transform: translateY(-100%);
@@ -2283,31 +2288,47 @@ button.shell-ui {
     font: 700 7px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Control buttons: a screen up, a screen down, park */
+/* Pendant remote: rubber keys on an industrial-yellow body, a red mushroom stop; each key has a wider invisible hit area */
 .lift-btn {
     cursor: var(--cursor-pointer, pointer);
 }
 
-.lift-btn rect {
-    fill: var(--lift-btn, #f3f4f6);
-    transition: fill 0.15s;
+.lift-machine .lift-hit {
+    fill: transparent;
+    stroke: none;
 }
 
-.lift-machine .lift-btn path {
-    stroke: var(--lift-icon, #374151);
+.lift-pendant-body { fill: var(--lift-pendant, #f2b705); }
+.lift-grip { fill: var(--lift-cable, var(--lift-line)); }
+.lift-machine .lift-cable { fill: none; stroke: var(--lift-cable, var(--lift-line)); stroke-width: 1.6; stroke-linecap: round; }
+.lift-key { fill: var(--lift-key, #2b2f36); }
+.lift-collar { fill: var(--lift-collar, #1f2328); }
+.lift-stop { fill: var(--lift-stop, #dc2626); }
+
+.lift-machine :is(.lift-key-ink, .lift-stop-ink) {
     fill: none;
-    stroke-width: 1.8;
+    stroke: var(--lift-key-ink, #f3f4f6);
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-.lift-btn:hover rect {
-    fill: var(--lift-btn-hover, #ffffff);
+.lift-machine .lift-stop-ink { stroke: var(--lift-stop-ink, #ffffff); stroke-width: 1.3; }
+
+.lift-btn :is(.lift-key, .lift-stop) {
+    transition: filter 0.15s;
 }
 
-.lift-btn:active rect {
-    fill: var(--lift-led);
+.lift-btn:hover :is(.lift-key, .lift-stop) {
+    filter: brightness(1.35);
 }
+
+.lift-btn:active > :not(.lift-hit) {
+    translate: 0 0.6px;
+}
+
+.lift-fin { fill: none; stroke-linecap: round; opacity: 0.55; }
+.lift-cap { fill: var(--lift-accent); }
 
 /* Hidden: the winch winds everything up out of view; a small tab at the top brings it back */
 .lift-recall {
@@ -2358,28 +2379,39 @@ button.shell-ui {
     pointer-events: none;
 }
 
-/* How to operate it: shown once per browser when the lift first appears, and whenever the winch is hovered */
+/* One short label beside the hovered key or the basket; shown once by itself, pointing at the basket */
 .lift-hint {
-    position: absolute;
-    top: 14px;
-    right: calc(100% + 8px);
-    padding: 7px 10px;
-    border-radius: 8px;
+    position: fixed;
+    top: var(--hint-y, 40px);
+    right: var(--hint-r, 108px);
+    padding: 4px 8px;
+    border-radius: 6px;
     background: #111418;
     color: #f3f4f6;
-    font: 500 12px/1.45 system-ui, sans-serif;
+    font: 500 12px/1.3 system-ui, sans-serif;
     white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     opacity: 0;
-    translate: 6px 0;
-    transition: opacity 0.2s, translate 0.2s;
+    transform: translate(4px, -50%);
+    transition: opacity 0.15s, transform 0.15s;
     pointer-events: none;
 }
 
+/* A small arrow toward the lift */
+.lift-hint::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    border: 5px solid transparent;
+    border-left-color: #111418;
+    translate: 0 -50%;
+}
+
 .lift.show-hint .lift-hint,
-.lift-machine:hover ~ .lift-hint {
+.lift:not(.is-dragging):has(.lift-btn:hover, .lift-car:hover) .lift-hint {
     opacity: 1;
-    translate: 0 0;
+    transform: translate(0, -50%);
 }
 
 .lift-machine :is(rect, circle, path) {
@@ -2519,9 +2551,8 @@ button.shell-ui {
 /* ---- Per theme ---- */
 html[data-theme="chatgpt"] .lift,
 html[data-theme="vscode"] .lift {
-    --lift-btn: #2b2e33;
-    --lift-btn-hover: #3a3e44;
     --lift-icon: #e5e7eb;
+    --lift-cable: #8b929c; /* the outline colour is near-black here, so the remote's cable and clip vanished */
 }
 
 html[data-theme="chatgpt"] .lift {
@@ -2601,8 +2632,12 @@ html:is([data-theme="scifi"], [data-theme="terminal"]) .lift {
     --lift-metal: var(--lift-bg);
     --lift-line: var(--lift-ink);
     --lift-accent: var(--lift-bg);
-    --lift-btn: var(--lift-bg);
-    --lift-btn-hover: #1c1c1c;
+    --lift-pendant: var(--lift-bg);
+    --lift-key: var(--lift-bg);
+    --lift-key-ink: var(--lift-ink);
+    --lift-collar: var(--lift-bg);
+    --lift-stop: var(--lift-bg);
+    --lift-stop-ink: var(--lift-ink);
     --lift-icon: var(--lift-ink);
     --lift-led: var(--lift-ink);
     --lift-rope: var(--lift-ink);
@@ -2627,6 +2662,10 @@ html:is([data-theme="scifi"], [data-theme="terminal"]) :is(.lift-screen, .lift-h
     color: var(--lift-ink);
     fill: var(--lift-bg);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-hint::after {
+    border-left-color: var(--lift-ink);
 }
 
 html:is([data-theme="scifi"], [data-theme="terminal"]) .lift-rope,
@@ -3130,7 +3169,8 @@ html[data-theme="terminal"] .lift-basket {
     animation: none !important;
 }
 
-.tm-head .cc {
+.tm-head .cc,
+.tm-portrait .cc {
     --cc-code: var(--tm-green);
     --cc-glow: var(--tm-cyan);
     width: 140px;
@@ -3168,8 +3208,7 @@ html[data-theme="terminal"] .lift-basket {
     color: color-mix(in srgb, var(--tm-green) 35%, transparent);
 }
 
-.tm-banner pre > span,
-.tm-art > span {
+.tm-banner pre > span {
     display: block;
 }
 
@@ -3179,25 +3218,13 @@ html[data-theme="terminal"] .lift-basket {
     align-items: flex-start;
 }
 
-/* Half-block portrait: --a / --b are the top / bottom pixel's share of green over the background */
-.tm-art {
-    flex: none;
-    font: 7px/1 var(--tm-font);
-    letter-spacing: 0;
-}
-
-.tm-art i {
-    font-style: normal;
-    color: color-mix(in srgb, var(--tm-green) calc(var(--a) * 1%), var(--tm-bg));
-    background: color-mix(in srgb, var(--tm-green) calc(var(--b) * 1%), var(--tm-bg));
-}
-
-.tm-photo {
-    width: 200px;
-    height: 200px;
+/* neofetch's portrait: the caricature's head, clipped to a box (the laptop and code marks sit outside it) */
+.tm-portrait {
+    width: 140px;
+    height: 146px;
     flex: none;
     border-radius: 6px;
-    object-fit: cover;
+    background: color-mix(in srgb, var(--tm-green) 8%, transparent);
 }
 
 .tm-info {
@@ -3273,7 +3300,6 @@ html[data-theme="terminal"] .lift-basket {
     .tm-out > *,
     .tm-load > *,
     .tm-banner pre > span,
-    .tm-art > span,
     .tm-info > *,
     .tm-sys {
         animation: tm-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;

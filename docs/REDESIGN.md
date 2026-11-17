@@ -839,6 +839,31 @@ An agent-readiness scan of ashutoshcodes.in listed 19 issues.
   - *Steam:* rises from the mug's rim, in front of the sleeve; brighter on the Contact Card poster.
   - *Coffee hand:* fingers go through the handle: the handle is drawn over the fist and the thumb rests on top, so the handle stays visible. The drawn sleeve stops 8 units short of the hand (`CUFF` in `scripts/caricature-arm-ik.py`), so it ends behind the mug instead of showing as a blue ring around the fist.
 
+### Caricature head replaces the photo (`theme/shell`)
+
+The owner asked for the caricature in place of their face everywhere the photo showed.
+
+- ChatGPT (sidebar header, profile row, welcome, reply avatars, About card), Model Card (header, sidebar card, Résumé tab) and the VS Code README header now show the caricature's head (`caricatureSVG('', { head: true })`, the lift's soul) in a circle (`.cc-avatar` in styles.css). The eyes follow the pointer like the full caricature.
+- Terminal `neofetch` shows the head in a 140px box instead of the photo as half-block art; `pixelArt()` and the `.tm-art` / `.tm-photo` styles are gone, and the boot no longer waits on the image.
+- The lift ignores these heads when looking for the theme's caricature (`svg.cc:not(.cc--soul)`), so the soul still rides in ChatGPT, Model Card and VS Code.
+- `content.js` `picture` (images/profile.jpg) stays for the JSON-LD and social metadata; no page shows it now.
+
+### Hoist lift and caricature icons (`theme/shell`)
+
+The owner said the lift's winch read as "3 buttons", the two-line hover box looked bad, and the favicon still showed the photo.
+
+- **Winch → hoist** (js/caricature.js, styles.css `.lift-*`): a ceiling beam, a finned motor with a theme-coloured end cap and status light, a gear behind the shaft, and the rope drum (same position, so the rope and basket didn't move). The controls are a yellow pendant remote hanging on its cable: the % readout, ▲ / ▼ rubber keys (a screen up / down), and a red mushroom stop that hides the lift. Each key has a wider invisible hit area. Terminal and Sci-Fi draw it in their single ink colour.
+- **Labels:** one short label beside whatever is hovered ("Up a screen", "Down a screen", "Hide the lift", "Drag to scroll"), with an arrow toward it. The first time the lift shows in a browser, "Drag the basket to scroll" points at the basket for 7s.
+- **Icons:** `images/favicon.png` (64px, round) and `images/apple-touch-icon.png` (180px) are now the caricature's head, rendered with headless Chrome. The links carry `?v=2` so browsers drop the cached photo.
+
+### Audit fixes (`theme/shell`)
+
+- **Chat API rate limit:** each visitor IP gets 40 questions an hour, counted in the Upstash store (`rate:<ip>:<hour>`); the 41st gets 429 before the model is called. No store, no limit; store unreachable, the question goes through. The `Origin` check alone can be faked by any script, so the AI Gateway also needs a monthly spend cap (set in the Vercel dashboard, not in code).
+- **ChatGPT:** the heads beside answers are frozen (`#cgThread .cc-avatar .cc *`), so a long chat doesn't run hundreds of endless animations; the sidebar and welcome heads still move.
+- **Caricatures:** only on-screen ones follow the pointer (`visibleCCs()` in `lookAt`).
+- **Lift:** the first-visit label and the basket's hover label follow the basket as it moves. In ChatGPT and VS Code the remote's cable and clip were drawn in the near-black outline colour and vanished, so the remote looked like it floated; they use `--lift-cable` now.
+- **Clean-up:** `content.js` no longer logs on every visit, so `api/chat.js`, `build-seo.js` and the API test drop their console-silencing code. `.DS_Store` files are out of git and ignored properly.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
