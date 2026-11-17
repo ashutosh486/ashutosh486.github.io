@@ -302,28 +302,39 @@ const caricatureLift = {
         this.el = document.createElement('div');
         this.el.className = 'lift';
         this.el.setAttribute('aria-hidden', 'true'); // a second scrollbar; keyboard and screen readers keep the real one
-        // Winch bolted to the top edge: plate, housing with vents and a status light, a gear driving the rope drum
+        // A hoist bolted to the top edge: ceiling beam, finned motor driving the rope drum through a gear, and a pendant
+        // remote hanging on its cable (readout, ▲ ▼ a screen, red stop hides the lift)
+        const key = (dir, y, label, icon) => `<g class="lift-btn" data-lift="${dir}" data-label="${label}"><rect class="lift-hit" x="5" y="${y - 6.5}" width="28" height="13"/>${icon}</g>`;
         this.el.innerHTML = `
-            <svg class="lift-machine" viewBox="0 0 64 88">
-                <rect class="lift-steel" x="0" y="-3" width="64" height="8" rx="2"/>
-                <circle class="lift-bolt" cx="6" cy="1.5" r="1.4"/><circle class="lift-bolt" cx="58" cy="1.5" r="1.4"/>
-                <rect class="lift-steel" x="14" y="4" width="8" height="6"/>
-                <rect class="lift-steel" x="32" y="21.5" width="20" height="5" rx="2"/>
-                <rect class="lift-housing" x="2" y="8" width="32" height="78" rx="4"/>
-                <rect class="lift-screen" x="5" y="11" width="26" height="13" rx="2"/>
-                <text class="lift-readout" x="18" y="20.5" text-anchor="middle">0%</text>
-                <g class="lift-btn" data-lift="up"><rect x="5" y="27" width="26" height="17" rx="3"/><path d="M13 38.5l5-6 5 6"/></g>
-                <g class="lift-btn" data-lift="down"><rect x="5" y="47" width="26" height="17" rx="3"/><path d="M13 52.5l5 6 5-6"/></g>
-                <g class="lift-btn" data-lift="hide"><rect x="5" y="67" width="26" height="16" rx="3"/><path d="M14 71.5l8 7M22 71.5l-8 7"/></g>
-                <g class="lift-gear"><circle class="lift-gear-teeth" cx="44" cy="40" r="6"/><circle class="lift-steel" cx="44" cy="40" r="3.8"/><circle class="lift-bolt" cx="44" cy="40" r="1.2"/></g>
+            <svg class="lift-machine" viewBox="0 0 64 104">
+                <rect class="lift-steel" x="0" y="-3" width="64" height="8" rx="1"/>
+                <circle class="lift-bolt" cx="4" cy="1.5" r="1.4"/><circle class="lift-bolt" cx="60" cy="1.5" r="1.4"/>
+                <rect class="lift-steel" x="8" y="4" width="5" height="7"/><rect class="lift-steel" x="25" y="4" width="5" height="7"/>
+                <path class="lift-steel" d="M45 4h10v20H45Z"/>
+                <g class="lift-gear"><circle class="lift-gear-teeth" cx="40" cy="31" r="6"/><circle class="lift-steel" cx="40" cy="31" r="3.8"/><circle class="lift-bolt" cx="40" cy="31" r="1.2"/></g>
+                <rect class="lift-steel" x="34" y="21" width="16" height="6" rx="1.5"/>
+                <rect class="lift-housing" x="3" y="10" width="33" height="26" rx="6"/>
+                <path class="lift-fin" d="M10 13v20M15 13v20M20 13v20M25 13v20"/>
+                <rect class="lift-cap" x="0" y="14" width="6" height="18" rx="2"/>
+                <circle class="lift-led" cx="31" cy="15" r="1.6"/>
                 <g class="lift-drum">
                     <circle class="lift-flange" cx="50" cy="24" r="11"/>
                     <circle class="lift-coil" cx="50" cy="24" r="7.8"/>
                     <path class="lift-spoke" d="M50 16.2v15.6M42.2 24h15.6"/>
                     <circle class="lift-bolt" cx="50" cy="24" r="2.2"/>
                 </g>
+                <path class="lift-cable" d="M19 36c0 3 3 3.5 0 5"/>
+                <g class="lift-pendant">
+                    <rect class="lift-grip" x="14" y="40" width="10" height="6" rx="2"/>
+                    <rect class="lift-pendant-body" x="5" y="44" width="28" height="58" rx="7"/>
+                    <rect class="lift-screen" x="9" y="49" width="20" height="10" rx="2"/>
+                    <text class="lift-readout" x="19" y="56.4" text-anchor="middle">0%</text>
+                    ${key('up', 67.5, 'Up a screen', '<circle class="lift-key" cx="19" cy="67.5" r="5.8"/><path class="lift-key-ink" d="M16.2 69l2.8-3 2.8 3"/>')}
+                    ${key('down', 80.5, 'Down a screen', '<circle class="lift-key" cx="19" cy="80.5" r="5.8"/><path class="lift-key-ink" d="M16.2 79.2l2.8 3 2.8-3"/>')}
+                    ${key('hide', 94, 'Hide the lift', '<circle class="lift-collar" cx="19" cy="94" r="6.4"/><circle class="lift-stop" cx="19" cy="94" r="4.8"/><path class="lift-stop-ink" d="M17.4 92.4l3.2 3.2m0-3.2-3.2 3.2"/>')}
+                </g>
             </svg>
-            <div class="lift-hint" role="presentation">Drag the basket to scroll<br>▲ ▼ one screen · ✕ hide the lift</div>
+            <div class="lift-hint" role="presentation"></div>
             <button type="button" class="lift-recall" tabindex="-1" title="Show the lift"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M6 3h12M7.5 7.5l4.5 4.5 4.5-4.5"/></svg></button>
             <div class="lift-rope"></div>
             <div class="lift-car">
@@ -335,6 +346,10 @@ const caricatureLift = {
         this.car = this.el.querySelector('.lift-car');
         this.soul = this.el.querySelector('.lift-soul');
         this.readout = this.el.querySelector('.lift-readout');
+        this.hint = this.el.querySelector('.lift-hint');
+        // One short label beside whatever is hovered
+        this.el.querySelectorAll('[data-label]').forEach(btn => btn.addEventListener('pointerenter', () => this.label(btn, btn.dataset.label)));
+        this.car.addEventListener('pointerenter', () => this.label(this.car, 'Drag to scroll'));
         // Hidden stays hidden in this browser until the tab at the top brings it back
         this.el.classList.toggle('is-hidden', this.stored('portfolio-lift-hidden') === '1');
         const hide = (hidden) => {
@@ -390,10 +405,18 @@ const caricatureLift = {
         return [top, Math.max(top + 40, floor)];
     },
 
-    // First time the lift shows in this browser: say how it works (hovering the winch shows it again)
+    label(target, text) {
+        const r = target.getBoundingClientRect();
+        this.hint.textContent = text;
+        this.el.style.setProperty('--hint-y', `${(r.top + r.height / 2).toFixed(1)}px`);
+        this.el.style.setProperty('--hint-r', `${(document.documentElement.clientWidth - r.left + 8).toFixed(1)}px`);
+    },
+
+    // First time the lift shows in this browser: point at the basket (hovering any part labels it again)
     showHint() {
         if (this.hinted || this.stored('portfolio-lift-hint')) return;
         this.hinted = true;
+        this.label(this.car, 'Drag the basket to scroll');
         this.el.classList.add('show-hint');
         this.hintTimer = setTimeout(() => this.hideHint(), 7000);
     },

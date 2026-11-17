@@ -848,6 +848,14 @@ The owner asked for the caricature in place of their face everywhere the photo s
 - The lift ignores these heads when looking for the theme's caricature (`svg.cc:not(.cc--soul)`), so the soul still rides in ChatGPT, Model Card and VS Code.
 - `content.js` `picture` (images/profile.jpg) stays for the JSON-LD and social metadata; no page shows it now.
 
+### Hoist lift and caricature icons (`theme/shell`)
+
+The owner said the lift's winch read as "3 buttons", the two-line hover box looked bad, and the favicon still showed the photo.
+
+- **Winch → hoist** (js/caricature.js, styles.css `.lift-*`): a ceiling beam, a finned motor with a theme-coloured end cap and status light, a gear behind the shaft, and the rope drum (same position, so the rope and basket didn't move). The controls are a yellow pendant remote hanging on its cable: the % readout, ▲ / ▼ rubber keys (a screen up / down), and a red mushroom stop that hides the lift. Each key has a wider invisible hit area. Terminal and Sci-Fi draw it in their single ink colour.
+- **Labels:** one short label beside whatever is hovered ("Up a screen", "Down a screen", "Hide the lift", "Drag to scroll"), with an arrow toward it. The first time the lift shows in a browser, "Drag the basket to scroll" points at the basket for 7s.
+- **Icons:** `images/favicon.png` (64px, round) and `images/apple-touch-icon.png` (180px) are now the caricature's head, rendered with headless Chrome. The links carry `?v=2` so browsers drop the cached photo.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)
