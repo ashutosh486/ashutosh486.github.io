@@ -67,7 +67,10 @@ class PortfolioController {
         this.loadTheme(initial, { animate: false });
 
         // Ask on every visit, with the current theme preselected, unless this browser ticked "Don't show again"
-        if (!this.readSaved('portfolio-chooser-hide')) this.openChooser();
+        if (!this.readSaved('portfolio-chooser-hide')) {
+            this.openChooser();
+            this.startAutoContinue();
+        }
 
         this.registerAgentTools();
 
@@ -267,6 +270,28 @@ class PortfolioController {
         this.chooser.querySelector('.chooser-panel').focus();
     }
 
+    // First visit only: with no click, key, scroll or tap in the chooser for 5s, continue with the preselected theme.
+    // The clock starts once the page has loaded; the bar under "Continue" (styles.css, .is-counting) shows it.
+    startAutoContinue() {
+        const button = document.getElementById('themeChooserContinue');
+        const events = ['pointerdown', 'keydown', 'wheel'];
+        const start = () => {
+            if (!this.chooser.open) return;
+            button.classList.add('is-counting');
+            this.autoContinue = setTimeout(() => this.closeChooser(), 5000);
+        };
+        this.stopAutoContinue = () => {
+            clearTimeout(this.autoContinue);
+            button.classList.remove('is-counting');
+            events.forEach(type => this.chooser.removeEventListener(type, this.stopAutoContinue));
+            window.removeEventListener('load', start);
+            this.stopAutoContinue = null;
+        };
+        events.forEach(type => this.chooser.addEventListener(type, this.stopAutoContinue, { passive: true }));
+        if (document.readyState === 'complete') start();
+        else window.addEventListener('load', start, { once: true });
+    }
+
     // Lights cards up in turn, slowing down like a roulette wheel, then opens the one it lands on (never the current one)
     pickRandom() {
         if (this.rolling) return;
@@ -298,6 +323,7 @@ class PortfolioController {
 
     closeChooser(then) {
         if (!this.chooser.open || this.chooser.classList.contains('is-closing')) return;
+        this.stopAutoContinue?.();
         const finish = () => {
             this.chooser.classList.remove('is-closing');
             this.chooser.close();
