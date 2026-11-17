@@ -136,6 +136,19 @@ s = await state(b);
 assert.equal(s.open, false, 'random closes the chooser');
 assert.notEqual(s.theme, 'paper', 'random picks a different theme');
 assert.equal(s.hash, `#${s.theme}`, 'random pick is in the URL');
+// Ticked, every refresh opens a different theme; unticked, a refresh keeps the theme
+for (let i = 0; i < 3; i++) {
+    const before = s.theme;
+    await b.reload();
+    s = await state(b);
+    assert.notEqual(s.theme, before, 'random refresh opens a different theme');
+    assert.equal(s.hash, `#${s.theme}`, 'random refresh is in the URL');
+}
+assert.equal(await b.evaluate(`document.getElementById('themeChooserRandom').checked`), true, 'random stays ticked');
+await b.evaluate(`document.getElementById('themeChooserRandom').click()`);
+await b.reload();
+assert.equal((await state(b)).theme, s.theme, 'unticked, refresh keeps the theme');
+await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);
 
 // Cursors follow the theme; the ripple shows on click
 assert.equal(await b.evaluate(`document.documentElement.dataset.theme`), s.theme, 'html carries the theme');

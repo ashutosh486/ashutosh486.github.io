@@ -418,6 +418,23 @@ button.shell-ui {
     background: var(--shell-hover);
 }
 
+/* Random is a checkbox (main.js): ticked, every visit opens a random theme */
+.chooser-random {
+    cursor: var(--cursor-pointer, pointer);
+}
+
+.chooser-random input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--shell-text);
+    cursor: var(--cursor-pointer, pointer);
+}
+
+.chooser-random:has(:checked) {
+    border-color: var(--shell-text);
+}
+
 .chooser-secondary[hidden] {
     display: none;
 }
