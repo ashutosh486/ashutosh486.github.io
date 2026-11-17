@@ -271,7 +271,7 @@ class PortfolioController {
     }
 
     // First visit only: with no click, key, scroll or tap in the chooser for 5s, continue with the preselected theme.
-    // The clock starts once the page has loaded; the bar under "Continue" (styles.css, .is-counting) shows it.
+    // The clock starts once the page has loaded; a fill across "Continue" (styles.css, .is-counting) shows it.
     startAutoContinue() {
         const button = document.getElementById('themeChooserContinue');
         const events = ['pointerdown', 'keydown', 'wheel'];

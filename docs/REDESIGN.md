@@ -128,7 +128,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
   - It's a native `<dialog>`, which gives a focus trap, Escape and an inert background.
   - Escape, a backdrop click, the collapse button or "Continue with X" collapses it: the window shrinks into the switcher.
   - On phones it's a bottom sheet.
-  - On the visit's automatic open, it continues with the preselected theme after 5s with no click, key, scroll or tap in it. The clock starts once the page has loaded, and a bar fills along the bottom of "Continue with X". Opening it from the switcher never auto-closes.
+  - On the visit's automatic open, it continues with the preselected theme after 5s with no click, key, scroll or tap in it. The clock starts once the page has loaded, and a tint fills the whole "Continue with X" button left to right. Opening it from the switcher never auto-closes.
 - **Switcher pill:** shows the current theme's tile and name. It mounts inside a theme's `[data-theme-slot]` when there is one (ChatGPT's header), otherwise it floats bottom-right. On phones it's a 44px icon button.
 - **Transitions:** themes cross-fade with the View Transitions API, with no artificial delay. Reduced motion switches instantly.
 - **Page details:**
