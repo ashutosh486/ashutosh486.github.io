@@ -856,6 +856,14 @@ The owner said the lift's winch read as "3 buttons", the two-line hover box look
 - **Labels:** one short label beside whatever is hovered ("Up a screen", "Down a screen", "Hide the lift", "Drag to scroll"), with an arrow toward it. The first time the lift shows in a browser, "Drag the basket to scroll" points at the basket for 7s.
 - **Icons:** `images/favicon.png` (64px, round) and `images/apple-touch-icon.png` (180px) are now the caricature's head, rendered with headless Chrome. The links carry `?v=2` so browsers drop the cached photo.
 
+### Audit fixes (`theme/shell`)
+
+- **Chat API rate limit:** each visitor IP gets 40 questions an hour, counted in the Upstash store (`rate:<ip>:<hour>`); the 41st gets 429 before the model is called. No store, no limit; store unreachable, the question goes through. The `Origin` check alone can be faked by any script, so the AI Gateway also needs a monthly spend cap (set in the Vercel dashboard, not in code).
+- **ChatGPT:** the heads beside answers are frozen (`#cgThread .cc-avatar .cc *`), so a long chat doesn't run hundreds of endless animations; the sidebar and welcome heads still move.
+- **Caricatures:** only on-screen ones follow the pointer (`visibleCCs()` in `lookAt`).
+- **Lift:** the first-visit label and the basket's hover label follow the basket as it moves. In ChatGPT and VS Code the remote's cable and clip were drawn in the near-black outline colour and vanished, so the remote looked like it floated; they use `--lift-cable` now.
+- **Clean-up:** `content.js` no longer logs on every visit, so `api/chat.js`, `build-seo.js` and the API test drop their console-silencing code. `.DS_Store` files are out of git and ignored properly.
+
 ## Shared backlog (shell / cross-theme)
 
 - [x] ~~Loading spinner with artificial delay~~ (shell)

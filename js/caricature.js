@@ -198,7 +198,7 @@ let lookFrame = 0;
 let lookTimer = 0;
 const ccReadPose = new WeakMap();
 function lookAt(x, y) {
-    document.querySelectorAll('svg.cc').forEach(svg => {
+    visibleCCs().forEach(svg => {
         const eyes = svg.querySelector('.cc-eye-white').getBoundingClientRect();
         if (!eyes.width) return; // copy in a hidden panel
         if (!svg.classList.contains('cc--looking')) {
@@ -528,6 +528,7 @@ const caricatureLift = {
 
     paint() {
         this.el.style.setProperty('--y', `${this.y.toFixed(2)}px`);
+        if (this.el.matches('.show-hint, :has(.lift-car:hover)')) this.label(this.car, this.hint.textContent); // label rides along
         // The drum turns as the rope pays out (radius ~12px); the gear turns the other way, twice as fast
         this.el.style.setProperty('--spin', `${(this.y * 4.8).toFixed(1)}deg`);
         this.el.style.setProperty('--swing', `${Math.max(-6, Math.min(6, this.v * -0.6)).toFixed(2)}deg`);

@@ -5,7 +5,6 @@ const { readFileSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
 
 const root = join(__dirname, '..');
-console.log = () => {}; // content.js logs while loading
 const c = require(join(root, 'js/content.js'));
 
 const site = c.site.replace(/\/$/, '');
