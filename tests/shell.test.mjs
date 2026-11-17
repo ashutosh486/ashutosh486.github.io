@@ -147,6 +147,20 @@ await sleep(700);
 assert.equal(await b.evaluate(`document.querySelectorAll('.cursor-ping').length`), 0, 'click ripple cleans up');
 b.close();
 
+// Auto-continue: 5s untouched continues with the preselected theme; a key press keeps the chooser open
+b = await openPage('paper');
+await b.evaluate('portfolioController.startAutoContinue()'); await sleep(300);
+assert.ok(await b.evaluate(`document.getElementById('themeChooserContinue').classList.contains('is-counting')`), 'countdown bar shows on Continue');
+await sleep(5200);
+s = await state(b);
+assert.deepEqual([s.open, s.theme], [false, 'paper'], 'untouched for 5s continues with the current theme');
+await b.evaluate(`document.getElementById('themeDock').click()`); await sleep(400);
+await b.evaluate('portfolioController.startAutoContinue()'); await sleep(300);
+await b.key('ArrowRight'); await sleep(5200);
+assert.equal((await state(b)).open, true, 'a key press cancels auto-continue');
+assert.equal(await b.evaluate(`document.getElementById('themeChooserContinue').classList.contains('is-counting')`), false, 'countdown bar goes once cancelled');
+b.close();
+
 // Caricature: the eyes follow the pointer
 b = await openPage('apple');
 await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);

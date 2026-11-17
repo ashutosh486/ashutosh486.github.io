@@ -60,6 +60,8 @@ export async function openPage(hash = '', { width = 1440, height = 900, mobile =
     const ready = async () => {
         await sleep(200);
         for (let t = 0; t < 150 && await evaluate(`document.readyState === 'complete' && !!window.portfolioController`) !== true; t++) await sleep(100);
+        // Tests drive the chooser themselves; shell.test.mjs checks the 5s auto-continue on its own
+        await evaluate(`portfolioController.stopAutoContinue?.()`);
         await sleep(500);
     };
     await ready();

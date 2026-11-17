@@ -438,6 +438,21 @@ button.shell-ui {
     background: #ffffff;
 }
 
+/* Auto-continue countdown (main.js, startAutoContinue): a bar fills along the bottom of the button over the same 5s */
+.chooser-primary.is-counting {
+    background-image: linear-gradient(var(--shell-bg), var(--shell-bg));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0 2px;
+    animation: chooser-count 5s linear forwards;
+}
+
+@keyframes chooser-count {
+    to {
+        background-size: 100% 2px;
+    }
+}
+
 .chooser[open] {
     animation: chooser-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
