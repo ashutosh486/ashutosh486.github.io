@@ -81,6 +81,7 @@ node tests/paper.test.mjs      # desktop + 390px phone
 node tests/book.test.mjs       # desktop + 390px phone
 node tests/apple.test.mjs      # desktop + 390px phone
 node tests/scifi.test.mjs      # desktop + 390px phone
+node tests/vote-api.test.mjs   # vote API against an in-memory store
 ```
 
 `tests/cdp.mjs` has two helpers:
@@ -106,6 +107,7 @@ node tests/scifi.test.mjs      # desktop + 390px phone
 | Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
 | Caricature moments + soul lift | — | **Done, merged** | `theme/avatar` | Live on `main` |
 | ChatGPT AI answers + JD fit check (`api/chat.js` on Vercel) | — | **Done, in review** | `theme/chatgpt-ai` | Not merged yet |
+| Best-theme vote in the chooser (`api/vote.js` on Vercel) | — | **Done, in review** | `theme/vote` | Needs the Vercel deploy + Upstash store |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
 
@@ -885,3 +887,10 @@ The owner said the lift's winch read as "3 buttons", the two-line hover box look
 - The phone number is shown publicly in several themes (and in the résumé PDF).
 - The Model Card BibTeX lists only `name` as the patent's author. If the patent has co-inventors, add them to `patents[]` in `content.js`.
 - The résumé PDF lives in `docs/` next to this tracker. Consider moving it to `files/` or `assets/` and updating `resume` in `content.js`.
+
+### Best-theme vote (`theme/vote`)
+- **Vote** (trophy) in the chooser header flips it into vote mode: the title becomes "Vote for the Best Theme" and tapping a card votes instead of switching.
+- Results stay hidden until you vote, then show on the cards right away: a fill bar for each theme's share, `31% · 5 votes`, a crown on the leader (tied leaders all get one), your pick outlined, and a hint that ranks it ("You backed the winner…" or "Paper is #3…").
+- Tapping another card moves your vote. Visitors who already voted see the results as soon as they enter vote mode. Closing the chooser leaves vote mode.
+- **API** `api/vote.js` runs on the same Vercel project and Upstash store as the chat: `GET` returns `{counts, mine}`, `POST {theme}` votes. One vote per IP, which is stored only as a SHA-256 hash; the swap is atomic (`SET … GET`), so double clicks count once. Same origin allowlist as the chat. Its `THEMES` list must match the enabled themes in `main.js`; `tests/vote-api.test.mjs` fails when they drift.
+- Phones: the chooser header is now a grid, so the hint spans the full width under the title and buttons.

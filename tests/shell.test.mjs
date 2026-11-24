@@ -183,4 +183,42 @@ assert.ok(await b.evaluate(`document.querySelector('svg.cc').classList.contains(
 // Pupils = paused reading pose + look offset; together they point right
 assert.ok(await b.evaluate(`(svg => new DOMMatrixReadOnly(getComputedStyle(svg.querySelector('.cc-pupils')).transform).e + parseFloat(svg.querySelector('.cc-look').style.transform.slice(10)) > 2)(document.querySelector('svg.cc'))`), 'pupils turn right toward a pointer on the right');
 b.close();
+// Vote mode: a card click votes instead of switching; results appear on the cards right away (API stubbed: file:// origin)
+for (const [width, height, mobile] of [[1440, 900, false], [390, 844, true]]) {
+    b = await openPage('chatgpt', { width, height, mobile });
+    await b.evaluate(`(() => {
+        const counts = { chatgpt: 5, modelcard: 1, vscode: 2, terminal: 4, notebook: 0, paper: 1, book: 0, apple: 0, scifi: 2 };
+        let mine = null;
+        window.fetch = async (url, opts = {}) => {
+            if (opts.method === 'POST') { const t = JSON.parse(opts.body).theme; if (mine !== t) { counts[t]++; if (mine) counts[mine]--; mine = t; } }
+            return new Response(JSON.stringify({ counts, mine }));
+        };
+    })()`);
+    await b.evaluate(`document.getElementById('themeChooserVote').click()`); await sleep(200);
+    assert.equal(await b.evaluate(`document.getElementById('themeChooserList').classList.contains('has-results')`), false, 'results hidden before voting');
+    await b.evaluate(`document.querySelector('[data-theme="terminal"]').click()`); await sleep(800);
+    const v = JSON.parse(await b.evaluate(`JSON.stringify({
+        theme: portfolioController.currentTheme, open: document.getElementById('themeChooser').open,
+        results: document.getElementById('themeChooserList').classList.contains('has-results'),
+        mine: document.querySelector('[data-theme="terminal"]').getAttribute('aria-pressed'),
+        votes: document.querySelector('[data-theme="terminal"] .chooser-item-votes').textContent,
+        leaders: [...document.querySelectorAll('.is-leader')].map(el => el.dataset.theme),
+        hint: document.getElementById('themeChooserHint').textContent,
+        overflow: document.documentElement.scrollWidth > innerWidth
+    })`));
+    assert.deepEqual([v.theme, v.open, v.results, v.mine], ['chatgpt', true, true, 'true'], 'vote keeps the theme and the chooser, shows results');
+    assert.equal(v.votes, '31% · 5 votes', 'card shows share and count');
+    assert.deepEqual(v.leaders.sort(), ['chatgpt', 'terminal'], 'tied leaders both crowned');
+    assert.match(v.hint, /^You backed the winner: Terminal/, 'hint ranks the pick');
+    assert.equal(v.overflow, false, 'no horizontal scroll');
+    await b.shot(`${out}-vote-${width}.png`);
+    await b.evaluate(`document.querySelector('[data-theme="paper"]').click()`); await sleep(300);
+    assert.match(await b.evaluate(`document.getElementById('themeChooserHint').textContent`), /^Paper is #3 with 13%; ChatGPT leads/, 'changing the vote re-ranks');
+    // Leaving vote mode restores normal picking
+    await b.evaluate(`document.getElementById('themeChooserVote').click()`); await sleep(100);
+    assert.equal(await b.evaluate(`document.getElementById('themeChooserTitle').textContent`), 'Choose a Theme');
+    await b.evaluate(`document.querySelector('[data-theme="book"]').click()`); await sleep(900);
+    assert.equal(await b.evaluate('portfolioController.currentTheme'), 'book', 'cards switch themes again');
+    b.close();
+}
 console.log('all shell checks passed');

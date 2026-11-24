@@ -54,6 +54,10 @@ class PortfolioController {
         this.list = document.getElementById('themeChooserList');
         this.skip = document.getElementById('themeChooserSkip');
         this.random = document.getElementById('themeChooserRandom');
+        this.voteButton = document.getElementById('themeChooserVote');
+        this.hint = document.getElementById('themeChooserHint');
+        // Best-theme vote (api/vote.js on the same Vercel project as the résumé chat). Use '/api/vote' under `vercel dev`
+        this.voteApi = 'https://ashutoshgpt.vercel.app/api/vote';
         this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
         this.buildChooser();
@@ -188,7 +192,8 @@ class PortfolioController {
 
     buildChooser() {
         const count = Object.keys(this.themes).length;
-        document.getElementById('themeChooserHint').textContent = `One résumé, ${count} interfaces. Switch anytime from the theme button.`;
+        this.hintText = `One résumé, ${count} interfaces. Switch anytime from the theme button.`;
+        this.hint.textContent = this.hintText;
         const resume = portfolioContent.resume;
         if (resume) {
             const link = document.getElementById('themeChooserResume');
@@ -207,8 +212,10 @@ class PortfolioController {
                     <span class="chooser-item-text">
                         <span class="chooser-item-name">${theme.name}</span>
                         <span class="chooser-item-blurb">${meta.blurb}</span>
+                        <span class="chooser-item-votes"></span>
                     </span>
                     <i class="fas fa-check chooser-item-check" aria-hidden="true"></i>
+                    <i class="fas fa-crown chooser-item-crown" aria-hidden="true"></i>
                 </button>`;
         }).join('');
     }
@@ -237,6 +244,7 @@ class PortfolioController {
             const item = e.target.closest('[data-theme]');
             if (!item) return;
             const key = item.dataset.theme;
+            if (this.voting) return this.castVote(key);
             // Collapse first, then cross-fade to the new theme
             this.closeChooser(() => {
                 if (key !== this.currentTheme) this.loadTheme(key, { pushHistory: true });
@@ -245,6 +253,8 @@ class PortfolioController {
 
         // The switcher still opens the chooser; unticking the box brings it back on every visit
         this.skip.addEventListener('change', () => this.save(this.skip.checked ? '1' : null, 'portfolio-chooser-hide'));
+
+        this.voteButton.addEventListener('click', () => this.setVoting(!this.voting));
 
         this.chooser.querySelectorAll('[data-collapse]').forEach(button => button.addEventListener('click', () => this.closeChooser()));
 
@@ -266,6 +276,7 @@ class PortfolioController {
             item.setAttribute('aria-current', item.dataset.theme === this.currentTheme ? 'true' : 'false');
             item.style.setProperty('--i', i);
         });
+        this.setVoting(false);
         this.skip.checked = !!this.readSaved('portfolio-chooser-hide');
         this.random.checked = !!this.readSaved('portfolio-random');
         document.getElementById('themeChooserContinue').textContent = `Continue with ${this.metaFor(this.currentTheme).label}`;
@@ -332,6 +343,56 @@ class PortfolioController {
             }, 380);
         };
         tick();
+    }
+
+    // ---------- best-theme vote ----------
+
+    // Vote mode: tapping a card votes for it instead of opening it. Results stay hidden until this visitor has voted.
+    setVoting(on) {
+        this.voting = on;
+        this.chooser.classList.toggle('is-voting', on);
+        this.voteButton.setAttribute('aria-pressed', String(on));
+        document.getElementById('themeChooserTitle').textContent = on ? 'Vote for the Best Theme' : 'Choose a Theme';
+        this.hint.textContent = on ? 'Pick your favourite to see how everyone else voted.' : this.hintText;
+        this.list.classList.remove('has-results');
+        this.list.querySelectorAll('[data-theme]').forEach(item => (on ? item.setAttribute('aria-pressed', 'false') : item.removeAttribute('aria-pressed')));
+        if (on) this.voteRequest().then(data => this.voting && data.mine && this.showResults(data)).catch(() => {});
+    }
+
+    castVote(key) {
+        if (this.voteBusy) return;
+        this.voteBusy = true;
+        this.voteRequest({ theme: key })
+            .then(data => this.voting && this.showResults(data))
+            .catch(() => this.voting && (this.hint.textContent = 'Voting is offline right now. Try again in a bit.'))
+            .finally(() => (this.voteBusy = false));
+    }
+
+    voteRequest(body) {
+        const init = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
+        return fetch(this.voteApi, { ...init, signal: AbortSignal.timeout(6000) }).then(res => (res.ok ? res.json() : Promise.reject(res.status)));
+    }
+
+    // Each card fills with its share of the votes; the leader gets a crown and the hint says how this visitor's pick ranks
+    showResults({ counts, mine }) {
+        const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+        const pct = key => Math.round((counts[key] / total) * 100);
+        const top = Math.max(...Object.values(counts));
+        const leader = Object.keys(counts).find(key => counts[key] === top);
+        const rank = 1 + Object.values(counts).filter(n => n > counts[mine]).length; // ties share a place
+        this.list.querySelectorAll('[data-theme]').forEach(item => {
+            const key = item.dataset.theme;
+            const n = counts[key] || 0;
+            item.style.setProperty('--share', n / total);
+            item.setAttribute('aria-pressed', String(key === mine));
+            item.classList.toggle('is-leader', n === top && n > 0);
+            item.querySelector('.chooser-item-votes').textContent = `${pct(key)}% · ${n} vote${n === 1 ? '' : 's'}`;
+        });
+        this.list.classList.add('has-results');
+        const label = key => this.metaFor(key).label;
+        this.hint.textContent = rank === 1
+            ? `You backed the winner: ${label(mine)} leads with ${pct(mine)}% of ${total} vote${total === 1 ? '' : 's'}. Tap another card to change your vote.`
+            : `${label(mine)} is #${rank} with ${pct(mine)}%; ${label(leader)} leads with ${pct(leader)}%. Tap another card to change your vote.`;
     }
 
     closeChooser(then) {
