@@ -107,6 +107,7 @@ node tests/vote-api.test.mjs   # vote API against an in-memory store
 | Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
 | Caricature moments + soul lift | — | **Done, merged** | `theme/avatar` | Live on `main` |
 | ChatGPT AI answers + JD fit check (`api/chat.js` on Vercel) | — | **Done, in review** | `theme/chatgpt-ai` | Not merged yet |
+| Custom theme cursors removed (system pointers again) | — | **Done** | `theme/cursors` | Owner: they didn't look good. Click ripple kept |
 | Best-theme vote in the chooser (`api/vote.js` on Vercel) | — | **Done, in review** | `theme/vote` | Needs the Vercel deploy + Upstash store |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |

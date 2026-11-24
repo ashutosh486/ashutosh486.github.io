@@ -150,10 +150,10 @@ await b.reload();
 assert.equal((await state(b)).theme, s.theme, 'unticked, refresh keeps the theme');
 await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);
 
-// Cursors follow the theme; the ripple shows on click
+// System cursors (arrow, hand on buttons); the theme-coloured ripple shows on click
 assert.equal(await b.evaluate(`document.documentElement.dataset.theme`), s.theme, 'html carries the theme');
-assert.match(await b.evaluate(`getComputedStyle(document.body).cursor`), /^url\("data:image\/svg\+xml/, 'theme cursor applied');
-assert.match(await b.evaluate(`getComputedStyle(document.getElementById('themeDock')).cursor`), /^url\(.*pointer$/, 'theme hand on buttons');
+assert.equal(await b.evaluate(`getComputedStyle(document.body).cursor`), 'auto', 'system arrow');
+assert.equal(await b.evaluate(`getComputedStyle(document.getElementById('themeDock')).cursor`), 'pointer', 'system hand on buttons');
 await click(b, 300, 300);
 assert.equal(await b.evaluate(`document.querySelectorAll('.cursor-ping').length`), 1, 'click ripple appears');
 await sleep(700);

@@ -5976,7 +5976,7 @@ html:has(#sfRoot) { scrollbar-color: var(--line, rgba(255, 176, 0, 0.28)) transp
     .sf-boot { position: fixed; padding: 20px 16px; }
 }
 
-/* ---------- Theme cursors: main.js paintCursor() sets --cursor-* per theme; unset, they fall back to the system cursors ---------- */
+/* ---------- Cursors: system arrow, hand on anything clickable, I-beam in fields. Nothing sets --cursor-*, so the fallbacks apply ---------- */
 html {
     cursor: var(--cursor-default, auto);
 }

@@ -32,19 +32,6 @@ class PortfolioController {
             scifi: { label: 'Sci-Fi', blurb: 'A starship crew records terminal', icon: 'fas fa-satellite-dish', bg: '#0b0700', fg: '#ffb000' }
         };
 
-        // Pointer per theme: arrow and hand in the theme's colours, or the device's own pointer (iPad circle, CRT reticle)
-        this.cursors = {
-            chatgpt: { fill: '#ececec', stroke: '#0d0d0d', accent: '#ffffff' },
-            modelcard: { fill: '#111827', stroke: '#ffffff', accent: '#ff9d00' },
-            vscode: { fill: '#ffffff', stroke: '#1f1f1f', accent: '#0078d4' },
-            terminal: { fill: '#4ade80', stroke: '#0c0c0c', accent: '#4ade80', text: 'beam' },
-            notebook: { fill: '#1f1f1f', stroke: '#ffffff', accent: '#f37726' },
-            paper: { fill: '#1f1f1f', stroke: '#ffffff', accent: '#b31b1b' },
-            book: { fill: '#1f1f1f', stroke: '#ffffff', accent: '#20609f' },
-            apple: { shape: 'ipad', accent: '#0a84ff' },
-            scifi: { shape: 'reticle', accent: '#ffb000' }
-        };
-
         // Every theme opens at the top: no restored scroll position on refresh
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
@@ -147,45 +134,6 @@ class PortfolioController {
         const [r, g, b] = [1, 3, 5].map(i => parseInt(meta.bg.slice(i, i + 2), 16));
         document.documentElement.style.colorScheme = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? 'dark' : 'light';
         document.documentElement.dataset.theme = this.currentTheme;
-        this.paintCursor();
-    }
-
-    // Sets --cursor-default / --cursor-pointer / --cursor-text (read in styles.css); themes without a set keep the system ones
-    paintCursor() {
-        const c = this.cursors[this.currentTheme];
-        const root = document.documentElement.style;
-        const url = (size, x, y, body, fallback) => `url("data:image/svg+xml,${encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`
-        )}") ${x} ${y}, ${fallback}`;
-        // Dark underlay then the colour, so thin strokes stay visible on any background
-        const lines = (d, colour, under = 'rgba(0,0,0,0.75)') => `<path d="${d}" stroke="${under}" stroke-width="3.6"/><path d="${d}" stroke="${colour}" stroke-width="1.6"/>`;
-        const ARROW = 'M7 4v17.6l4.3-4.2 2.9 6.6 3.2-1.4-2.9-6.5h6.1Z';
-        const HAND = 'M11.5 3.2a1.7 1.7 0 0 1 1.7 1.7v7.2c.4-.9 2.7-1 3.2.3.6-.8 2.7-.6 3 .7.6-.5 2.5-.1 2.5 1.5V19c0 3.4-2.3 5.8-5.6 5.8h-1.9c-1.9 0-3.4-.8-4.5-2.3l-3.7-5.2c-.7-.9-.5-2 .3-2.5.8-.5 1.8-.3 2.4.5l.9 1.2V4.9a1.7 1.7 0 0 1 1.7-1.7Z';
-        const BEAM = 'M10 4.5h2.5c1 0 1.5.5 1.5 1.5 0-1 .5-1.5 1.5-1.5H18M14 6v16M10 23.5h2.5c1 0 1.5-.5 1.5-1.5 0 1 .5 1.5 1.5 1.5H18';
-        let set = {};
-        if (c?.shape === 'ipad') {
-            set = {
-                default: url(24, 12, 12, '<circle cx="12" cy="12" r="9" fill="rgba(60,60,67,0.55)" stroke="rgba(255,255,255,0.8)" stroke-width="1.2"/>', 'auto'),
-                pointer: url(32, 16, 16, `<circle cx="16" cy="16" r="13" fill="${c.accent}" fill-opacity="0.35" stroke="rgba(255,255,255,0.85)" stroke-width="1.2"/>`, 'pointer'),
-                text: url(24, 12, 12, '<rect x="10.5" y="1.5" width="3" height="21" rx="1.5" fill="rgba(60,60,67,0.75)" stroke="rgba(255,255,255,0.8)"/>', 'text')
-            };
-        } else if (c?.shape === 'reticle') {
-            set = {
-                default: url(32, 16, 16, `${lines('M16 3v6M16 23v6M3 16h6M23 16h6', c.accent)}<circle cx="16" cy="16" r="7" stroke="rgba(0,0,0,0.75)" stroke-width="3.6"/><circle cx="16" cy="16" r="7" stroke="${c.accent}" stroke-width="1.6"/><circle cx="16" cy="16" r="1.6" fill="${c.accent}"/>`, 'crosshair'),
-                pointer: url(32, 16, 16, `${lines('M5 11V5h6M21 5h6v6M27 21v6h-6M11 27H5v-6', c.accent)}<path d="M16 11.5l4.5 4.5-4.5 4.5-4.5-4.5Z" fill="${c.accent}" stroke="rgba(0,0,0,0.75)"/>`, 'pointer'),
-                text: url(32, 16, 16, `<rect x="14.5" y="4" width="3" height="24" fill="${c.accent}" stroke="rgba(0,0,0,0.75)"/>`, 'text')
-            };
-        } else if (c) {
-            const shape = (d, fill) => `<path d="${d}" fill="${fill}" stroke="${c.stroke}" stroke-width="1.6"/>`;
-            set = {
-                default: url(28, 7, 4, shape(ARROW, c.fill), 'auto'),
-                pointer: url(28, 11, 3, shape(HAND, c.accent === c.fill ? c.fill : c.accent) + `<path d="M13.2 12.1v4.4M16.4 12.4v4M19.4 13.1v3.6" stroke="${c.stroke}" stroke-width="1.2"/>`, 'pointer'),
-                text: c.text === 'beam' ? url(28, 14, 14, lines(BEAM, c.fill), 'text') : null
-            };
-        }
-        for (const kind of ['default', 'pointer', 'text']) {
-            set[kind] ? root.setProperty(`--cursor-${kind}`, set[kind]) : root.removeProperty(`--cursor-${kind}`);
-        }
     }
 
     // ---------- chooser ----------
