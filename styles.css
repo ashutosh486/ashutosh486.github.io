@@ -336,6 +336,77 @@ button.shell-ui {
     display: inline-block;
 }
 
+/* Vote mode (main.js, setVoting): the toggle reads as pressed, cards vote instead of opening */
+.chooser-secondary[aria-pressed="true"] {
+    border-color: var(--shell-text);
+    background: var(--shell-hover);
+}
+
+.chooser-item-votes,
+.chooser-item-crown {
+    display: none;
+}
+
+.is-voting .chooser-item[aria-current="true"] {
+    border-color: var(--shell-border);
+}
+
+.is-voting .chooser-item-check {
+    display: none !important;
+}
+
+/* Results: each card fills with its share of the votes (--share, 0–1), the leader wears a crown */
+.has-results .chooser-item {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.has-results .chooser-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(255, 255, 255, 0.09);
+    transform: scaleX(var(--share, 0));
+    transform-origin: left;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.has-results .chooser-item-blurb {
+    display: none;
+}
+
+.has-results .chooser-item-votes {
+    display: block;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--shell-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.has-results .chooser-item[aria-pressed="true"] {
+    border-color: var(--shell-text);
+}
+
+.has-results .chooser-item[aria-pressed="true"] .chooser-item-votes {
+    color: var(--shell-text);
+}
+
+.has-results .is-leader .chooser-item-crown {
+    display: inline-block;
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 12px;
+    color: #f5c542;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .has-results .chooser-item::before {
+        transition: none;
+    }
+}
+
 .chooser-foot {
     display: flex;
     align-items: center;
@@ -548,8 +619,20 @@ button.shell-ui {
         border-bottom: 0;
         border-radius: 16px 16px 0 0;
     }
+    /* Hint spans the full width under the title and buttons instead of squeezing beside them */
     .chooser-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
         padding: 16px 16px 8px;
+    }
+    .chooser-head > div:first-child {
+        display: contents;
+    }
+    .chooser-hint {
+        grid-column: 1 / -1;
+    }
+    .chooser-head-actions {
+        grid-area: 1 / 2;
     }
     .chooser-list {
         grid-template-columns: 1fr;

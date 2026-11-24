@@ -205,3 +205,5 @@ module.exports.clean = clean;
 module.exports.deltas = deltas;
 module.exports.prompt = prompt;
 module.exports.tenure = tenure;
+// Shared with api/vote.js
+Object.assign(module.exports, { ORIGINS, LOCAL, STORE, STORE_TOKEN });
