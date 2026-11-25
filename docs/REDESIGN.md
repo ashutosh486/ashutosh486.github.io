@@ -107,6 +107,7 @@ node tests/vote-api.test.mjs   # vote API against an in-memory store
 | Random pick, theme cursors, caricature eyes follow pointer | — | **Done, merged** | `theme/shell` | Live on `main` |
 | Caricature moments + soul lift | — | **Done, merged** | `theme/avatar` | Live on `main` |
 | ChatGPT AI answers + JD fit check (`api/chat.js` on Vercel) | — | **Done, in review** | `theme/chatgpt-ai` | Not merged yet |
+| Custom theme cursors removed (system pointers again) | — | **Done** | `theme/cursors` | Owner: they didn't look good. Click ripple kept |
 | Best-theme vote in the chooser (`api/vote.js` on Vercel) | — | **Done, in review** | `theme/vote` | Needs the Vercel deploy + Upstash store |
 | Neural, API, Prompt, Git Diff, JSON, Training | ❌ | Parked | | Training needs Chart.js, which isn't loaded |
 | Agent, AI Playground | ❌ (not loaded) | Parked | | Agent has links to agents that don't exist |
@@ -893,4 +894,5 @@ The owner said the lift's winch read as "3 buttons", the two-line hover box look
 - Results stay hidden until you vote, then show on the cards right away: a fill bar for each theme's share, `31% · 5 votes`, a crown on the leader (tied leaders all get one), your pick outlined, and a hint that ranks it ("You backed the winner…" or "Paper is #3…").
 - Tapping another card moves your vote. Visitors who already voted see the results as soon as they enter vote mode. Closing the chooser leaves vote mode.
 - **API** `api/vote.js` runs on the same Vercel project and Upstash store as the chat: `GET` returns `{counts, mine}`, `POST {theme}` votes. One vote per IP, which is stored only as a SHA-256 hash; the swap is atomic (`SET … GET`), so double clicks count once. Same origin allowlist as the chat. Its `THEMES` list must match the enabled themes in `main.js`; `tests/vote-api.test.mjs` fails when they drift.
+- **Instant feedback** (owner: a tap showed nothing for 2–3s while the cold Vercel function woke up): counts load in the background when the chooser opens, so a tap redraws the results at once from them and the server's reply corrects the numbers. If the counts haven't loaded yet, the tap outlines the card and says "Counting your vote for X…". If the vote fails, the previous result comes back with an offline note. Taps made while a vote is in flight are queued, and only the last one is sent.
 - Phones: the chooser header is now a grid, so the hint spans the full width under the title and buttons.
