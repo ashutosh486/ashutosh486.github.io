@@ -225,6 +225,7 @@ class PortfolioController {
             item.style.setProperty('--i', i);
         });
         this.setVoting(false);
+        if (!this.votes) this.loadVotes();
         this.skip.checked = !!this.readSaved('portfolio-chooser-hide');
         this.random.checked = !!this.readSaved('portfolio-random');
         document.getElementById('themeChooserContinue').textContent = `Continue with ${this.metaFor(this.currentTheme).label}`;
@@ -304,16 +305,58 @@ class PortfolioController {
         this.hint.textContent = on ? 'Pick your favourite to see how everyone else voted.' : this.hintText;
         this.list.classList.remove('has-results');
         this.list.querySelectorAll('[data-theme]').forEach(item => (on ? item.setAttribute('aria-pressed', 'false') : item.removeAttribute('aria-pressed')));
-        if (on) this.voteRequest().then(data => this.voting && data.mine && this.showResults(data)).catch(() => {});
+        if (!on) return;
+        if (this.votes?.mine) this.showResults(this.votes); // already loaded when the chooser opened: no wait
+        this.loadVotes();
     }
 
+    // Runs when the chooser opens too, so the counts are ready and the (often cold) Vercel function is awake by the first tap
+    loadVotes() {
+        return this.voteRequest().then(data => {
+            if (this.voteBusy) return; // a vote in flight has newer numbers
+            this.votes = data;
+            if (this.voting && data.mine) this.showResults(data);
+        }).catch(() => {});
+    }
+
+    // The tap shows its result at once from the last known counts, and the server's reply corrects them. Taps made while a
+    // vote is in flight wait their turn, so the server ends up with the last one.
     castVote(key) {
-        if (this.voteBusy) return;
+        const before = this.votes;
+        if (before) {
+            const counts = { ...before.counts };
+            if (before.mine !== key) {
+                counts[key]++;
+                if (before.mine) counts[before.mine]--;
+            }
+            this.votes = { counts, mine: key };
+            this.showResults(this.votes);
+        } else {
+            // Counts not loaded yet: mark the pick and say so until the reply lands
+            this.list.querySelectorAll('[data-theme]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.theme === key)));
+            this.hint.textContent = `Counting your vote for ${this.metaFor(key).label}…`;
+        }
+        if (this.voteBusy) return (this.voteNext = key);
         this.voteBusy = true;
         this.voteRequest({ theme: key })
-            .then(data => this.voting && this.showResults(data))
-            .catch(() => this.voting && (this.hint.textContent = 'Voting is offline right now. Try again in a bit.'))
-            .finally(() => (this.voteBusy = false));
+            .then(data => {
+                this.votes = data;
+                if (this.voting && !this.voteNext) this.showResults(data);
+            })
+            .catch(() => {
+                this.votes = before;
+                this.voteNext = null;
+                if (!this.voting) return;
+                if (before?.mine) this.showResults(before);
+                else this.setVoting(true);
+                this.hint.textContent = 'Voting is offline right now. Try again in a bit.';
+            })
+            .finally(() => {
+                this.voteBusy = false;
+                const next = this.voteNext;
+                this.voteNext = null;
+                if (next) this.castVote(next);
+            });
     }
 
     voteRequest(body) {

@@ -385,7 +385,7 @@ button.shell-ui {
     font-variant-numeric: tabular-nums;
 }
 
-.has-results .chooser-item[aria-pressed="true"] {
+.is-voting .chooser-item[aria-pressed="true"] {
     border-color: var(--shell-text);
 }
 
