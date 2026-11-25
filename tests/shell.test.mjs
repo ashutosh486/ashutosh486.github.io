@@ -150,10 +150,10 @@ await b.reload();
 assert.equal((await state(b)).theme, s.theme, 'unticked, refresh keeps the theme');
 await b.evaluate(`document.getElementById('themeChooser').close()`); await sleep(300);
 
-// Cursors follow the theme; the ripple shows on click
+// System cursors (arrow, hand on buttons); the theme-coloured ripple shows on click
 assert.equal(await b.evaluate(`document.documentElement.dataset.theme`), s.theme, 'html carries the theme');
-assert.match(await b.evaluate(`getComputedStyle(document.body).cursor`), /^url\("data:image\/svg\+xml/, 'theme cursor applied');
-assert.match(await b.evaluate(`getComputedStyle(document.getElementById('themeDock')).cursor`), /^url\(.*pointer$/, 'theme hand on buttons');
+assert.equal(await b.evaluate(`getComputedStyle(document.body).cursor`), 'auto', 'system arrow');
+assert.equal(await b.evaluate(`getComputedStyle(document.getElementById('themeDock')).cursor`), 'pointer', 'system hand on buttons');
 await click(b, 300, 300);
 assert.equal(await b.evaluate(`document.querySelectorAll('.cursor-ping').length`), 1, 'click ripple appears');
 await sleep(700);
@@ -189,14 +189,18 @@ for (const [width, height, mobile] of [[1440, 900, false], [390, 844, true]]) {
     await b.evaluate(`(() => {
         const counts = { chatgpt: 5, modelcard: 1, vscode: 2, terminal: 4, notebook: 0, paper: 1, book: 0, apple: 0, scifi: 2 };
         let mine = null;
+        window.voteLog = [];
         window.fetch = async (url, opts = {}) => {
+            if (opts.method === 'POST') { await new Promise(r => setTimeout(r, 1500)); voteLog.push(JSON.parse(opts.body).theme); } // a cold start
             if (opts.method === 'POST') { const t = JSON.parse(opts.body).theme; if (mine !== t) { counts[t]++; if (mine) counts[mine]--; mine = t; } }
             return new Response(JSON.stringify({ counts, mine }));
         };
     })()`);
     await b.evaluate(`document.getElementById('themeChooserVote').click()`); await sleep(200);
     assert.equal(await b.evaluate(`document.getElementById('themeChooserList').classList.contains('has-results')`), false, 'results hidden before voting');
-    await b.evaluate(`document.querySelector('[data-theme="terminal"]').click()`); await sleep(800);
+    await b.evaluate(`document.querySelector('[data-theme="terminal"]').click()`); await sleep(100);
+    assert.equal(await b.evaluate(`document.querySelector('[data-theme="terminal"] .chooser-item-votes').textContent`), '31% · 5 votes', 'results show at once, before the server replies');
+    await sleep(1700);
     const v = JSON.parse(await b.evaluate(`JSON.stringify({
         theme: portfolioController.currentTheme, open: document.getElementById('themeChooser').open,
         results: document.getElementById('themeChooserList').classList.contains('has-results'),
@@ -212,8 +216,14 @@ for (const [width, height, mobile] of [[1440, 900, false], [390, 844, true]]) {
     assert.match(v.hint, /^You backed the winner: Terminal/, 'hint ranks the pick');
     assert.equal(v.overflow, false, 'no horizontal scroll');
     await b.shot(`${out}-vote-${width}.png`);
-    await b.evaluate(`document.querySelector('[data-theme="paper"]').click()`); await sleep(300);
-    assert.match(await b.evaluate(`document.getElementById('themeChooserHint').textContent`), /^Paper is #3 with 13%; ChatGPT leads/, 'changing the vote re-ranks');
+    await b.evaluate(`document.querySelector('[data-theme="paper"]').click()`); await sleep(100);
+    assert.match(await b.evaluate(`document.getElementById('themeChooserHint').textContent`), /^Paper is #3 with 13%; ChatGPT leads/, 'changing the vote re-ranks at once');
+    // Quick changes while a vote is in flight: the server ends up with the last tap
+    await b.evaluate(`document.querySelector('[data-theme="vscode"]').click()`); await sleep(100);
+    await b.evaluate(`document.querySelector('[data-theme="scifi"]').click()`); await sleep(3400);
+    assert.deepEqual(JSON.parse(await b.evaluate('JSON.stringify(voteLog)')), ['terminal', 'paper', 'scifi'], 'queued taps send only the last');
+    assert.equal(await b.evaluate(`document.querySelector('#themeChooserList [aria-pressed="true"]').dataset.theme`), 'scifi', 'last tap is the vote shown');
+    assert.equal(await b.evaluate(`document.querySelector('[data-theme="scifi"] .chooser-item-votes').textContent`), '19% · 3 votes', 'server counts shown');
     // Leaving vote mode restores normal picking
     await b.evaluate(`document.getElementById('themeChooserVote').click()`); await sleep(100);
     assert.equal(await b.evaluate(`document.getElementById('themeChooserTitle').textContent`), 'Choose a Theme');
